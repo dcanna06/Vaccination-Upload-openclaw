@@ -290,20 +290,20 @@ class ProdaAuthService {
 
 ## Phase 3: Excel Processing
 
-### TICKET-007: Create Excel Parser Service
+### [x] TICKET-007: Create Excel Parser Service
 
-**Branch**: `feature/excel-parser`
+**Branch**: `feature/TICKET-007-excel-parser`
 
 **Description**: Create service to parse uploaded Excel files and extract vaccination records.
 
 **Tasks**:
-- [ ] Install xlsx library: `npm install xlsx`
-- [ ] Create `/backend/src/services/excel/ExcelParserService.ts`
-- [ ] Define expected Excel column mappings
-- [ ] Implement row-by-row parsing with data extraction
-- [ ] Handle multiple sheets (use first sheet by default)
-- [ ] Implement date parsing for multiple formats
-- [ ] Create error collection for invalid rows
+- [x] Using openpyxl (Python) instead of xlsx (Node.js) per claude.md
+- [x] Create `backend/app/services/excel_parser.py`
+- [x] Define expected Excel column mappings with case-insensitive matching
+- [x] Implement row-by-row parsing with data extraction
+- [x] Handle multiple sheets (use first/active sheet)
+- [x] Implement date parsing for multiple formats (datetime, DD/MM/YYYY, YYYY-MM-DD)
+- [x] Create error collection for invalid rows
 
 **Expected Excel Columns**:
 | Column | Maps To | Required | Format |
@@ -337,10 +337,10 @@ class ProdaAuthService {
 
 **Test Requirements**:
 - [ ] Valid Excel file parses without errors
-- [ ] Invalid column names return helpful errors
-- [ ] Date formats (DD/MM/YYYY, D/M/YYYY) parse correctly
-- [ ] Empty rows are skipped
-- [ ] Parser returns structured error for invalid rows
+- [x] Invalid column names return helpful errors
+- [x] Date formats (DD/MM/YYYY, D/M/YYYY) parse correctly
+- [x] Empty rows are skipped
+- [x] Parser returns structured error for invalid rows
 
 ---
 

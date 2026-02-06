@@ -117,3 +117,13 @@
   - `backend/tests/unit/test_proda_auth.py` — 12 tests covering token validity, caching, acquisition, error handling
 - **Tests**: 12 passed, 0 failed
 - **Notes**: Tokens held in-memory only per claude.md. 50-min refresh buffer before 60-min expiry. JKS loaded from base64 via pyjks.
+
+### TICKET-007: Create Excel Parser Service
+- **Status**: ✅ Done
+- **Branch**: `feature/TICKET-007-excel-parser`
+- **Date**: 2026-02-07 00:25
+- **Files created/modified**:
+  - `backend/app/services/excel_parser.py` — Excel parser with column mapping, date parsing, gender normalization
+  - `backend/tests/unit/test_excel_parser.py` — 21 tests covering parsing, dates, genders, empty rows, errors
+- **Tests**: 21 passed, 0 failed
+- **Notes**: Uses openpyxl (Python) instead of SheetJS (Node.js). Case-insensitive header matching. Gender maps M/F/I/U per claude.md.
