@@ -82,3 +82,13 @@
   - `frontend/lib/__tests__/env.test.ts` — 2 env config tests
 - **Tests**: 12 passed, 0 failed; TypeScript compilation clean
 - **Notes**: Adapted from Vite/React Router to Next.js 14 App Router per claude.md. Custom UI components instead of shadcn/ui (not a dependency).
+
+### TICKET-005: Create Configuration Service
+- **Status**: ✅ Done
+- **Branch**: `feature/TICKET-005-config-service`
+- **Date**: 2026-02-07 00:15
+- **Files created/modified**:
+  - `backend/app/config.py` — Expanded with full PRODA, AIR API, JWT settings; env validation; mask_secret helper
+  - `backend/tests/unit/test_config.py` — 12 tests for config, masking, env switching
+- **Tests**: 12 passed, 0 failed
+- **Notes**: Pydantic Settings with field_validator for APP_ENV, air_api_base_url property for vendor/prod switching.

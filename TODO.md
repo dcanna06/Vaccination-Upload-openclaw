@@ -223,17 +223,17 @@ interface ProviderIdentifierType {
 
 ## Phase 2: Configuration Management
 
-### TICKET-005: Create Configuration Service
+### [x] TICKET-005: Create Configuration Service
 
-**Branch**: `feature/config-service`
+**Branch**: `feature/TICKET-005-config-service`
 
-**Description**: Create a configuration service to manage AIR API credentials and environment settings.
+**Description**: Create Pydantic Settings configuration with AIR API credentials and environment switching (adapted from Express per claude.md).
 
 **Tasks**:
-- [ ] Create `/backend/src/config/index.ts` with configuration schema
-- [ ] Implement environment variable validation on startup
-- [ ] Create separate configs for vendor/production environments
-- [ ] Store configuration securely (never log sensitive values)
+- [x] Expand config.py with full AIR/PRODA/JWT settings
+- [x] Implement environment variable validation (APP_ENV)
+- [x] Create vendor/production URL switching via air_api_base_url property
+- [x] Create mask_secret helper for safe logging
 
 **Configuration Schema**:
 ```typescript
@@ -251,9 +251,9 @@ interface AIRConfig {
 ```
 
 **Test Requirements**:
-- [ ] Application fails to start with missing required config
-- [ ] Sensitive values are masked in logs
-- [ ] Config switches correctly between environments
+- [x] Application fails to start with missing required config
+- [x] Sensitive values are masked in logs
+- [x] Config switches correctly between environments
 
 ---
 
