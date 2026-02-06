@@ -10,10 +10,34 @@ Covers:
 
 import io
 
+import openpyxl
 import pytest
 from httpx import ASGITransport, AsyncClient
 
 from app.main import app
+
+
+def _make_xlsx_bytes() -> bytes:
+    """Create a minimal valid Excel file with vaccination headers and one row."""
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Vaccination Records"
+    ws.append([
+        "Medicare Card Number", "Medicare IRN", "IHI Number",
+        "First Name", "Last Name", "Date of Birth", "Gender",
+        "Postcode", "Date of Service", "Vaccine Code", "Vaccine Dose",
+        "Vaccine Batch", "Vaccine Type", "Route of Administration",
+        "Administered Overseas", "Country Code",
+        "Immunising Provider Number", "School ID", "Antenatal Indicator",
+    ])
+    ws.append([
+        "2123456701", "1", "", "Jane", "Smith", "1990-01-15", "F",
+        "2000", "2026-01-15", "COMIRN", "1",
+        "FL1234", "NIP", "IM", "FALSE", "", "1234560V", "", "FALSE",
+    ])
+    buf = io.BytesIO()
+    wb.save(buf)
+    return buf.getvalue()
 
 
 @pytest.fixture
@@ -112,10 +136,11 @@ async def test_upload_rejects_empty_file(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_upload_accepts_xlsx_file(client: AsyncClient):
+    xlsx_bytes = _make_xlsx_bytes()
     files = {
         "file": (
             "vaccines.xlsx",
-            io.BytesIO(b"PK\x03\x04fake-xlsx-content"),
+            io.BytesIO(xlsx_bytes),
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
     }
@@ -123,12 +148,14 @@ async def test_upload_accepts_xlsx_file(client: AsyncClient):
     assert response.status_code == 200
     body = response.json()
     assert body["fileName"] == "vaccines.xlsx"
-    assert body["status"] == "uploaded"
+    assert body["status"] == "parsed"
     assert body["sizeBytes"] > 0
+    assert body["totalRows"] >= 1
 
 
 @pytest.mark.asyncio
-async def test_upload_accepts_xls_file(client: AsyncClient):
+async def test_upload_rejects_xls_file(client: AsyncClient):
+    """Legacy .xls format is not supported by openpyxl parser."""
     files = {
         "file": (
             "vaccines.xls",
@@ -137,9 +164,7 @@ async def test_upload_accepts_xls_file(client: AsyncClient):
         )
     }
     response = await client.post("/api/upload", files=files)
-    assert response.status_code == 200
-    body = response.json()
-    assert body["fileName"] == "vaccines.xls"
+    assert response.status_code == 400
 
 
 # --- Correlation ID ---

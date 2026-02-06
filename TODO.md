@@ -902,20 +902,20 @@ interface FileUploadProps {
 
 ## Phase 7: API Endpoints
 
-### TICKET-025: Create Upload API Endpoint
+### [x] TICKET-025: Create Upload API Endpoint
 
-**Branch**: `feature/upload-endpoint`
+**Branch**: `feature/TICKET-025-api-endpoints`
 
 **Description**: Create API endpoint for Excel file upload and initial parsing.
 
 **Endpoint**: POST /api/upload
 
 **Tasks**:
-- [ ] Create `/backend/src/routes/upload.ts`
-- [ ] Handle multipart file upload
-- [ ] Parse Excel file
-- [ ] Return parsed data and validation results
-- [ ] Clean up uploaded file after processing
+- [x] Create `/backend/app/routers/upload.py` (enhanced existing)
+- [x] Handle multipart file upload
+- [x] Parse Excel file
+- [x] Return parsed data and validation results
+- [x] Clean up uploaded file after processing
 
 **Request**: multipart/form-data with file field
 
@@ -933,27 +933,27 @@ interface FileUploadProps {
 ```
 
 **Test Requirements**:
-- [ ] Valid file uploads successfully
-- [ ] Invalid file returns error
-- [ ] Large files handle correctly
-- [ ] Response includes all parsed data
+- [x] Valid file uploads successfully
+- [x] Invalid file returns error
+- [x] Large files handle correctly
+- [x] Response includes all parsed data
 
 ---
 
-### TICKET-026: Create Validation API Endpoint
+### [x] TICKET-026: Create Validation API Endpoint
 
-**Branch**: `feature/validation-endpoint`
+**Branch**: `feature/TICKET-025-api-endpoints`
 
 **Description**: Create API endpoint for detailed validation of parsed records.
 
 **Endpoint**: POST /api/validate
 
 **Tasks**:
-- [ ] Create `/backend/src/routes/validate.ts`
-- [ ] Accept parsed records from upload
-- [ ] Run full validation suite
-- [ ] Return detailed validation results
-- [ ] Support validation options (strict/lenient)
+- [x] Create `/backend/app/routers/validate.py`
+- [x] Accept parsed records from upload
+- [x] Run full validation suite
+- [x] Return detailed validation results
+- [x] Support validation options (strict/lenient)
 
 **Request**:
 ```typescript
@@ -980,27 +980,27 @@ interface FileUploadProps {
 ```
 
 **Test Requirements**:
-- [ ] Validation completes for 1000 records < 5s
-- [ ] Errors include row numbers
-- [ ] Warnings are separate from errors
-- [ ] Grouped batches are correct
+- [x] Validation completes for 1000 records < 5s
+- [x] Errors include row numbers
+- [x] Warnings are separate from errors
+- [x] Grouped batches are correct
 
 ---
 
-### TICKET-027: Create Submission API Endpoint
+### [x] TICKET-027: Create Submission API Endpoint
 
-**Branch**: `feature/submission-endpoint`
+**Branch**: `feature/TICKET-025-api-endpoints`
 
 **Description**: Create API endpoint to initiate batch submission to AIR.
 
 **Endpoint**: POST /api/submit
 
 **Tasks**:
-- [ ] Create `/backend/src/routes/submit.ts`
-- [ ] Accept validated and grouped batches
-- [ ] Initiate background submission process
-- [ ] Return submission ID for tracking
-- [ ] Support dry-run mode
+- [x] Create `/backend/app/routers/submit.py`
+- [x] Accept validated and grouped batches
+- [x] Initiate background submission process
+- [x] Return submission ID for tracking
+- [x] Support dry-run mode
 
 **Request**:
 ```typescript
@@ -1026,26 +1026,26 @@ interface FileUploadProps {
 ```
 
 **Test Requirements**:
-- [ ] Submission starts successfully
-- [ ] Submission ID is unique
-- [ ] Dry run doesn't submit to AIR
-- [ ] Invalid batches are rejected
+- [x] Submission starts successfully
+- [x] Submission ID is unique
+- [x] Dry run doesn't submit to AIR
+- [x] Invalid batches are rejected
 
 ---
 
-### TICKET-028: Create Progress API Endpoint
+### [x] TICKET-028: Create Progress API Endpoint
 
-**Branch**: `feature/progress-endpoint`
+**Branch**: `feature/TICKET-025-api-endpoints`
 
 **Description**: Create API endpoint for submission progress updates.
 
 **Endpoint**: GET /api/submit/:submissionId/progress
 
 **Tasks**:
-- [ ] Create progress endpoint in `/backend/src/routes/submit.ts`
-- [ ] Return current progress state
-- [ ] Include detailed status per batch
-- [ ] Support WebSocket connection for real-time updates
+- [x] Create progress endpoint in `/backend/app/routers/submit.py`
+- [x] Return current progress state
+- [x] Include detailed status per batch
+- [x] Support WebSocket connection for real-time updates
 
 **Response**:
 ```typescript
@@ -1069,26 +1069,26 @@ interface FileUploadProps {
 ```
 
 **Test Requirements**:
-- [ ] Progress updates correctly
-- [ ] WebSocket sends real-time updates
-- [ ] Completed submissions show final state
+- [x] Progress updates correctly
+- [x] WebSocket sends real-time updates
+- [x] Completed submissions show final state
 
 ---
 
-### TICKET-029: Create Confirmation API Endpoint
+### [x] TICKET-029: Create Confirmation API Endpoint
 
-**Branch**: `feature/confirmation-endpoint`
+**Branch**: `feature/TICKET-025-api-endpoints`
 
 **Description**: Create API endpoint for submitting confirmations.
 
 **Endpoint**: POST /api/submit/:submissionId/confirm
 
 **Tasks**:
-- [ ] Create confirmation endpoint in `/backend/src/routes/submit.ts`
-- [ ] Accept records to confirm
-- [ ] Submit confirmation to AIR
-- [ ] Return confirmation results
-- [ ] Update submission progress
+- [x] Create confirmation endpoint in `/backend/app/routers/submit.py`
+- [x] Accept records to confirm
+- [x] Submit confirmation to AIR
+- [x] Return confirmation results
+- [x] Update submission progress
 
 **Request**:
 ```typescript
@@ -1102,26 +1102,26 @@ interface FileUploadProps {
 ```
 
 **Test Requirements**:
-- [ ] Confirmations submit successfully
-- [ ] Declined confirmations are marked
-- [ ] Progress updates after confirmation
+- [x] Confirmations submit successfully
+- [x] Declined confirmations are marked
+- [x] Progress updates after confirmation
 
 ---
 
-### TICKET-030: Create Results API Endpoint
+### [x] TICKET-030: Create Results API Endpoint
 
-**Branch**: `feature/results-endpoint`
+**Branch**: `feature/TICKET-025-api-endpoints`
 
 **Description**: Create API endpoint for retrieving final submission results.
 
 **Endpoint**: GET /api/submit/:submissionId/results
 
 **Tasks**:
-- [ ] Create results endpoint in `/backend/src/routes/submit.ts`
-- [ ] Return complete submission results
-- [ ] Include all claim IDs
-- [ ] Include all error details
-- [ ] Support export to CSV/Excel
+- [x] Create results endpoint in `/backend/app/routers/submit.py`
+- [x] Return complete submission results
+- [x] Include all claim IDs
+- [x] Include all error details
+- [x] Support export to CSV/Excel
 
 **Response**:
 ```typescript
@@ -1147,10 +1147,10 @@ interface FileUploadProps {
 ```
 
 **Test Requirements**:
-- [ ] Results include all records
-- [ ] Claim IDs are present for successes
-- [ ] Errors include details
-- [ ] Export generates valid file
+- [x] Results include all records
+- [x] Claim IDs are present for successes
+- [x] Errors include details
+- [x] Export generates valid file
 
 ---
 

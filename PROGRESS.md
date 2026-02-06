@@ -14,10 +14,10 @@
 
 ## Current State
 
-**Last updated**: 2026-02-07 11:10
-**Current ticket**: TICKET-025
-**Phase**: 7 — API Endpoints
-**Branch**: feature/TICKET-025-api-endpoints
+**Last updated**: 2026-02-07 11:30
+**Current ticket**: TICKET-031
+**Phase**: 8 — Error Handling & Logging
+**Branch**: main (ready for next feature branch)
 
 ---
 
@@ -205,3 +205,17 @@
   - `frontend/components/__tests__/ResultsSummary.test.tsx` — 7 tests
 - **Tests**: 87 frontend passed, 211 backend passed, 0 failed
 - **Notes**: Combined TICKET-019 (file upload), 020 (validation results), 021 (submission progress), 022 (confirmation dialog), 023 (results summary), 024 (provider settings) into a single frontend branch. All AIR messages displayed verbatim per claude.md. Upload page includes template download link. Submission page uses polling for progress updates. Settings persist to localStorage.
+
+### TICKET-025 through TICKET-030: API Endpoints (Phase 7)
+- **Status**: ✅ Done
+- **Branch**: `feature/TICKET-025-api-endpoints`
+- **Date**: 2026-02-07 11:30
+- **Files created/modified**:
+  - `backend/app/routers/upload.py` — Enhanced: parses Excel with ExcelParserService, returns records/errors
+  - `backend/app/routers/validate.py` — NEW: POST /api/validate with ValidationOrchestrator + BatchGroupingService
+  - `backend/app/routers/submit.py` — NEW: POST /api/submit, GET progress, POST confirm, GET results, POST pause/resume
+  - `backend/app/main.py` — Added validate and submit routers
+  - `backend/tests/unit/test_api_endpoints.py` — 15 endpoint tests (upload, validate, submit)
+  - `backend/tests/unit/test_backend_setup.py` — Fixed 2 tests: real Excel bytes for xlsx, xls rejection test
+- **Tests**: 226 passed (all), 0 failed
+- **Notes**: Combined TICKET-025 (upload), 026 (validate), 027 (submit), 028 (progress), 029 (confirmation), 030 (results) into single branch. In-memory submission store with UUID tracking. Dry-run mode bypasses AIR client. Pause/resume toggle submission status. Old backend setup tests updated to use real Excel files since upload endpoint now parses content.
