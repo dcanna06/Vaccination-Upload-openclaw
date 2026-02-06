@@ -373,7 +373,7 @@ class ProdaAuthService {
 
 ---
 
-### TICKET-009: Implement Batch Grouping Logic
+### [x] TICKET-009: Implement Batch Grouping Logic
 
 **Branch**: `feature/batch-grouping`
 
@@ -382,12 +382,12 @@ class ProdaAuthService {
 **Reference**: AIR Record Encounter section 7.4
 
 **Tasks**:
-- [ ] Create `/backend/src/services/batch/BatchGroupingService.ts`
-- [ ] Group records by individual (same person)
-- [ ] Group episodes by date of service (same encounter)
-- [ ] Split large batches into multiple requests
-- [ ] Maintain original row numbers for error reporting
-- [ ] Handle records that exceed episode limits
+- [x] Create `backend/app/services/batch_grouping.py`
+- [x] Group records by individual (same person)
+- [x] Group episodes by date of service (same encounter)
+- [x] Split large batches into multiple requests
+- [x] Maintain original row numbers for error reporting
+- [x] Handle records that exceed episode limits
 
 **Grouping Logic**:
 ```
@@ -399,11 +399,11 @@ class ProdaAuthService {
 ```
 
 **Test Requirements**:
-- [ ] 50 records for same individual groups correctly
-- [ ] Records split into multiple requests when needed
-- [ ] Episode limit (5) is enforced
-- [ ] Encounter limit (10) is enforced
-- [ ] Original row numbers preserved in output
+- [x] 50 records for same individual groups correctly
+- [x] Records split into multiple requests when needed
+- [x] Episode limit (5) is enforced
+- [x] Encounter limit (10) is enforced
+- [x] Original row numbers preserved in output
 
 ---
 

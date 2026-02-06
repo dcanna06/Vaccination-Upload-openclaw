@@ -14,10 +14,10 @@
 
 ## Current State
 
-**Last updated**: 2026-02-07 10:00
-**Current ticket**: TICKET-008
+**Last updated**: 2026-02-07 10:15
+**Current ticket**: TICKET-009
 **Phase**: 3 — Excel Processing
-**Branch**: feature/TICKET-008-excel-template
+**Branch**: feature/TICKET-009-batch-grouping
 
 ---
 
@@ -151,3 +151,13 @@
   - `backend/tests/unit/test_excel_template.py` — 29 tests covering generation, validations, instructions, round-trip, endpoint
 - **Tests**: 87 passed, 0 failed
 - **Notes**: Dropdowns use claude.md values (Gender: M/F/I/U, VaccineType: NIP/AEN/OTH, Route: IM/SC/ID/OR/IN/NAS). Template round-trip tested with ExcelParserService.
+
+### TICKET-009: Implement Batch Grouping Logic
+- **Status**: ✅ Done
+- **Branch**: `feature/TICKET-009-batch-grouping`
+- **Date**: 2026-02-07 10:20
+- **Files created/modified**:
+  - `backend/app/services/batch_grouping.py` — Groups records by individual, date, enforces 5-episode/10-encounter limits
+  - `backend/tests/unit/test_batch_grouping.py` — 37 tests covering grouping, limits, field extraction
+- **Tests**: 37 passed, 0 failed
+- **Notes**: Groups by Medicare+IRN+DOB+Gender, then IHI, then demographic fallback. Episodes split across encounters when >5. Encounter IDs assigned 1-based per batch.
