@@ -189,19 +189,19 @@ interface ProviderIdentifierType {
 
 ---
 
-### TICKET-004: Set Up Frontend React Application
+### [x] TICKET-004: Set Up Frontend Next.js Application
 
-**Branch**: `feature/frontend-setup`
+**Branch**: `feature/TICKET-004-frontend-setup`
 
-**Description**: Initialize React application with Vite, TailwindCSS, and component library.
+**Description**: Set up Next.js 14 frontend with TailwindCSS, layout components, and navigation (adapted from Vite per claude.md).
 
 **Tasks**:
-- [ ] Configure Vite with React and TypeScript
-- [ ] Install and configure TailwindCSS
-- [ ] Install shadcn/ui components (Button, Card, Table, Alert, Dialog, Progress)
-- [ ] Create basic layout components (Header, Footer, Layout)
-- [ ] Set up React Router with basic routes
-- [ ] Configure environment variables for API URL
+- [x] Next.js 14 with App Router configured (from TICKET-001)
+- [x] TailwindCSS with dark theme, slate/emerald palette
+- [x] Create UI components (Button, Card with variants)
+- [x] Create layout components (Sidebar navigation, dashboard layout)
+- [x] App Router routes for all pages (upload, validate, submit, history, settings)
+- [x] Configure environment variables for API URL
 
 **Files to Create**:
 - `/frontend/src/App.tsx`
@@ -214,10 +214,10 @@ interface ProviderIdentifierType {
 - `/frontend/src/pages/Results.tsx`
 
 **Test Requirements**:
-- [ ] Application loads without console errors
-- [ ] TailwindCSS classes apply correctly
-- [ ] Route navigation works
-- [ ] Environment variables are accessible
+- [x] Application loads without console errors
+- [x] TailwindCSS classes apply correctly
+- [x] Route navigation works
+- [x] Environment variables are accessible
 
 ---
 

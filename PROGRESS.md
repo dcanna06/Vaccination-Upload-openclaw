@@ -66,3 +66,19 @@
   - `backend/tests/unit/test_backend_setup.py` — 12 tests covering health, CORS, upload validation, correlation IDs
 - **Tests**: 13 passed, 0 failed
 - **Notes**: Adapted from Express/Node.js to FastAPI/Python per claude.md. All logging uses structlog (not stdlib logging). Error handlers wired as exception handlers.
+
+### TICKET-004: Set Up Frontend Next.js Application
+- **Status**: ✅ Done
+- **Branch**: `feature/TICKET-004-frontend-setup`
+- **Date**: 2026-02-07 00:10
+- **Files created/modified**:
+  - `frontend/components/ui/Button.tsx` — Button component with primary/secondary/danger/ghost variants
+  - `frontend/components/ui/Card.tsx` — Card, CardHeader, CardTitle components
+  - `frontend/components/layout/Sidebar.tsx` — Navigation sidebar with active route highlighting
+  - `frontend/app/(dashboard)/layout.tsx` — Dashboard layout updated with sidebar
+  - `frontend/lib/env.ts` — Environment variable configuration
+  - `frontend/components/__tests__/Button.test.tsx` — 7 button tests
+  - `frontend/components/__tests__/Card.test.tsx` — 3 card tests
+  - `frontend/lib/__tests__/env.test.ts` — 2 env config tests
+- **Tests**: 12 passed, 0 failed; TypeScript compilation clean
+- **Notes**: Adapted from Vite/React Router to Next.js 14 App Router per claude.md. Custom UI components instead of shadcn/ui (not a dependency).
