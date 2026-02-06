@@ -34,59 +34,7 @@ Statuses that stay here: OPEN, FIXED (awaiting QA retest), REOPENED
 
 -->
 
-### QA-FIX-003: Duplicate httpx in requirements.txt
-- **Source ticket**: TICKET-001
-- **Severity**: 🟢 MINOR
-- **Status**: FIXED
-- **File(s)**: `backend/requirements.txt`
-- **Problem**: `httpx==0.27.0` listed twice (under HTTP client and Testing sections)
-- **Expected**: Listed once only
-- **Dev fix notes**: Removed duplicate entry under Testing section
-
-### QA-FIX-004: EncounterSchema.id missing pattern validation
-- **Source ticket**: TICKET-002
-- **Severity**: 🟢 MINOR
-- **Status**: FIXED
-- **File(s)**: `backend/app/schemas/air_request.py`
-- **Problem**: `EncounterSchema.id` had no pattern constraint; should be 1-10
-- **Expected**: Pattern `^([1-9]|10)$` to match encounter ID spec
-- **Dev fix notes**: Added `pattern=r"^([1-9]|10)$"` to EncounterSchema.id Field
-
-### QA-FIX-005: EpisodeSchema.vaccineDose missing pattern validation
-- **Source ticket**: TICKET-002
-- **Severity**: 🟢 MINOR
-- **Status**: FIXED
-- **File(s)**: `backend/app/schemas/air_request.py`
-- **Problem**: `vaccineDose` had no pattern; should be 'B' or '1'-'20'
-- **Expected**: Pattern `^(B|[1-9]|1[0-9]|20)$`
-- **Dev fix notes**: Added `pattern=r"^(B|[1-9]|1[0-9]|20)$"` to EpisodeSchema.vaccineDose
-
-### QA-FIX-006: Exception classes in wrong file
-- **Source ticket**: TICKET-003
-- **Severity**: 🟢 MINOR
-- **Status**: FIXED
-- **File(s)**: `backend/app/exceptions.py`, `backend/app/middleware/error_handler.py`
-- **Problem**: Exception classes defined in middleware/error_handler.py; claude.md says app/exceptions.py
-- **Expected**: Exception classes in `app/exceptions.py` per coding standards
-- **Dev fix notes**: Created `app/exceptions.py` with all exception classes. Updated `error_handler.py` to import from exceptions.py and re-export for backward compatibility.
-
-### QA-FIX-007: upload.py uses dict return type instead of Pydantic model
-- **Source ticket**: TICKET-003
-- **Severity**: 🟢 MINOR
-- **Status**: FIXED
-- **File(s)**: `backend/app/routers/upload.py`
-- **Problem**: Upload endpoint returns `-> dict` instead of a Pydantic model
-- **Expected**: Pydantic response model per claude.md coding standards
-- **Dev fix notes**: Created `UploadResponse` Pydantic model and updated endpoint to use `response_model=UploadResponse`
-
-### QA-FIX-008: Unused import in file_upload.py
-- **Source ticket**: TICKET-003
-- **Severity**: 🟢 MINOR
-- **Status**: FIXED
-- **File(s)**: `backend/app/middleware/file_upload.py`
-- **Problem**: `status` imported from FastAPI but never used
-- **Expected**: No unused imports
-- **Dev fix notes**: Removed unused `status` import
+*(No open issues)*
 
 ---
 
@@ -95,6 +43,48 @@ Statuses that stay here: OPEN, FIXED (awaiting QA retest), REOPENED
 <!--
 Only VERIFIED items go here.
 -->
+
+### QA-FIX-008: Unused import in file_upload.py
+- **Source ticket**: TICKET-003
+- **Severity**: 🟢 MINOR
+- **Status**: VERIFIED ✅
+- **Verified by QA**: 2026-02-07
+- **Retest result**: `file_upload.py` no longer imports `status`. Only `UploadFile` imported from FastAPI. Clean.
+
+### QA-FIX-007: upload.py uses dict return type instead of Pydantic model
+- **Source ticket**: TICKET-003
+- **Severity**: 🟢 MINOR
+- **Status**: VERIFIED ✅
+- **Verified by QA**: 2026-02-07
+- **Retest result**: `UploadResponse` Pydantic model at line 11-14, endpoint uses `response_model=UploadResponse`, returns `UploadResponse(...)`. Correct.
+
+### QA-FIX-006: Exception classes in wrong file
+- **Source ticket**: TICKET-003
+- **Severity**: 🟢 MINOR
+- **Status**: VERIFIED ✅
+- **Verified by QA**: 2026-02-07
+- **Retest result**: `app/exceptions.py` contains all 5 exception classes (AppError, ValidationError, AuthenticationError, FileProcessingError, AIRApiError). `error_handler.py` imports from `exceptions.py` and re-exports via `__all__`. Clean.
+
+### QA-FIX-005: EpisodeSchema.vaccineDose missing pattern validation
+- **Source ticket**: TICKET-002
+- **Severity**: 🟢 MINOR
+- **Status**: VERIFIED ✅
+- **Verified by QA**: 2026-02-07
+- **Retest result**: `air_request.py:47` has `vaccineDose: str = Field(..., pattern=r"^(B|[1-9]|1[0-9]|20)$")`. Allows B and 1-20. Correct.
+
+### QA-FIX-004: EncounterSchema.id missing pattern validation
+- **Source ticket**: TICKET-002
+- **Severity**: 🟢 MINOR
+- **Status**: VERIFIED ✅
+- **Verified by QA**: 2026-02-07
+- **Retest result**: `air_request.py:54` has `id: str = Field(..., pattern=r"^([1-9]|10)$")`. Allows 1-10. Correct.
+
+### QA-FIX-003: Duplicate httpx in requirements.txt
+- **Source ticket**: TICKET-001
+- **Severity**: 🟢 MINOR
+- **Status**: VERIFIED ✅
+- **Verified by QA**: 2026-02-07
+- **Retest result**: `httpx==0.27.0` appears once (line 20, under HTTP client section). No duplicate in Testing section. Correct.
 
 ### QA-FIX-002: TICKET-002 not merged to main
 - **Source ticket**: TICKET-002

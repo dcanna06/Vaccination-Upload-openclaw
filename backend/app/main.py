@@ -11,6 +11,7 @@ from app.middleware.error_handler import (
     unhandled_error_handler,
 )
 from app.middleware.request_logger import RequestLoggerMiddleware
+from app.middleware.security import RateLimitMiddleware, SecurityHeadersMiddleware
 from app.routers import health, submit, template, upload, validate
 
 
@@ -52,6 +53,12 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # Security headers
+    app.add_middleware(SecurityHeadersMiddleware)
+
+    # Rate limiting
+    app.add_middleware(RateLimitMiddleware, requests_per_minute=120)
 
     # Request logging
     app.add_middleware(RequestLoggerMiddleware)
