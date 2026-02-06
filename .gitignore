@@ -71,6 +71,13 @@ yarn-error.log*
 *.tgz
 .cache/
 
+# Secrets / Credentials (PRODA keystores, certificates)
+*.jks
+*.keystore
+*.pem
+*.p12
+*.pfx
+
 # Uploaded files (never commit patient data)
 uploads/
 temp/
