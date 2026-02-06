@@ -815,6 +815,56 @@ async def submit_with_retry(payload, attempt=0):
 
 ---
 
+## Ticket Tracking Protocol
+
+Claude Code must follow this workflow for every ticket. No exceptions.
+
+### Before Starting a Ticket
+
+1. Read `PROGRESS.md` to confirm the previous ticket is ✅ Done
+2. Never start a new ticket if the previous one has failing tests
+3. Update `PROGRESS.md` → "Current State" section:
+   ```
+   **Last updated**: YYYY-MM-DD HH:MM
+   **Current ticket**: TICKET-NNN
+   **Phase**: N — Phase Name
+   **Branch**: feature/TICKET-NNN-short-name
+   ```
+4. In `TODO.md`, change the ticket's status marker from `[ ]` to `[🔄]`
+5. Create the feature branch: `git checkout -b feature/TICKET-NNN-short-name`
+
+### While Working on a Ticket
+
+- Complete ALL tasks listed under the ticket in `TODO.md`
+- In `TODO.md`, check off individual sub-tasks as you go: `- [ ]` → `- [x]`
+- Run tests after each significant change, not just at the end
+- If you encounter a blocker, update `PROGRESS.md` with status ❌ and explain why
+
+### After Completing a Ticket
+
+1. Run ALL tests for the ticket and confirm they pass
+2. In `TODO.md`, change the ticket's status marker from `[🔄]` to `[x]`
+3. Append a log entry to `PROGRESS.md` using this exact format:
+   ```
+   ### TICKET-NNN: Title
+   - **Status**: ✅ Done
+   - **Branch**: `feature/TICKET-NNN-short-name`
+   - **Date**: YYYY-MM-DD HH:MM
+   - **Files created/modified**:
+     - `path/to/file.py` — what it does
+   - **Tests**: X passed, Y failed
+   - **Notes**: Any decisions, issues, or observations
+   ```
+4. Commit: `git add -A && git commit -m "feat(scope): TICKET-NNN description"`
+5. Only then proceed to the next ticket in sequence
+
+### Rules
+
+- **Never skip a failing ticket** — fix it or mark it ❌ Blocked with a reason
+- **Never modify PROGRESS.md log entries** — append only
+- **Always update both files** — TODO.md (checkboxes) AND PROGRESS.md (log)
+- **Commit message format**: `feat|fix|test|docs(scope): TICKET-NNN short description`
+
 ## Reminders for Claude Code
 
 1. **Always validate both client-side AND server-side** — never trust frontend validation alone
