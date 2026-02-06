@@ -815,23 +815,43 @@ async def submit_with_retry(payload, attempt=0):
 
 ---
 
+## Reminders for Claude Code
+
+1. **Always validate both client-side AND server-side** — never trust frontend validation alone
+2. **AIR error messages are sacred** — display them exactly as received, no modifications
+3. **Group Excel rows into encounters** before API submission — one individual + one date = one encounter
+4. **Max 10 encounters per API call** — batch accordingly
+5. **Handle `AIR-W-1004` gracefully** — it's a normal flow, not an error. User confirms, then resubmit.
+6. **PRODA token refresh at 50 minutes** — don't wait for expiry
+7. **Test with Vendor environment first** — production access only after NOI certification
+8. **Date formats differ**: API body uses `yyyy-MM-dd`, `dhs-subjectId` header uses `ddMMyyyy`
+9. **All fields are mandatory for developers** even if optional for health professionals (per TECH.SIS.AIR.02)
+10. **IHI does NOT use Luhn validation** — format check only (16 numeric digits)
+
+---
+
 ## Ticket Tracking Protocol
 
 Claude Code must follow this workflow for every ticket. No exceptions.
 
-### Before Starting a Ticket
+### Before Starting Any New Ticket
 
-1. Read `PROGRESS.md` to confirm the previous ticket is ✅ Done
-2. Never start a new ticket if the previous one has failing tests
-3. Update `PROGRESS.md` → "Current State" section:
+1. Check `QA_FIXES.md` for OPEN or REOPENED items. Fix ALL of them first before starting the next ticket. After fixing:
+   - Change the item's status from OPEN/REOPENED to FIXED
+   - Add "Dev fix notes" explaining what you changed
+   - Commit with: `git add -A && git commit -m "fix(qa): QA-FIX-NNN description"`
+   - Do NOT move items to "Closed Issues" — QA agent does that after re-testing
+2. Read `PROGRESS.md` to confirm the previous ticket is ✅ Done
+3. Never start a new ticket if the previous one has failing tests
+4. Update `PROGRESS.md` → "Current State" section:
    ```
    **Last updated**: YYYY-MM-DD HH:MM
    **Current ticket**: TICKET-NNN
    **Phase**: N — Phase Name
    **Branch**: feature/TICKET-NNN-short-name
    ```
-4. In `TODO.md`, change the ticket's status marker from `[ ]` to `[🔄]`
-5. Create the feature branch: `git checkout -b feature/TICKET-NNN-short-name`
+5. In `TODO.md`, change the ticket's status marker from `[ ]` to `[🔄]`
+6. Create the feature branch: `git checkout -b feature/TICKET-NNN-short-name`
 
 ### While Working on a Ticket
 
@@ -856,7 +876,8 @@ Claude Code must follow this workflow for every ticket. No exceptions.
    - **Notes**: Any decisions, issues, or observations
    ```
 4. Commit: `git add -A && git commit -m "feat(scope): TICKET-NNN description"`
-5. Only then proceed to the next ticket in sequence
+5. Merge to main: `git checkout main && git merge feature/TICKET-NNN-short-name`
+6. Only then proceed to the next ticket in sequence
 
 ### Rules
 
@@ -864,16 +885,3 @@ Claude Code must follow this workflow for every ticket. No exceptions.
 - **Never modify PROGRESS.md log entries** — append only
 - **Always update both files** — TODO.md (checkboxes) AND PROGRESS.md (log)
 - **Commit message format**: `feat|fix|test|docs(scope): TICKET-NNN short description`
-
-## Reminders for Claude Code
-
-1. **Always validate both client-side AND server-side** — never trust frontend validation alone
-2. **AIR error messages are sacred** — display them exactly as received, no modifications
-3. **Group Excel rows into encounters** before API submission — one individual + one date = one encounter
-4. **Max 10 encounters per API call** — batch accordingly
-5. **Handle `AIR-W-1004` gracefully** — it's a normal flow, not an error. User confirms, then resubmit.
-6. **PRODA token refresh at 50 minutes** — don't wait for expiry
-7. **Test with Vendor environment first** — production access only after NOI certification
-8. **Date formats differ**: API body uses `yyyy-MM-dd`, `dhs-subjectId` header uses `ddMMyyyy`
-9. **All fields are mandatory for developers** even if optional for health professionals (per TECH.SIS.AIR.02)
-10. **IHI does NOT use Luhn validation** — format check only (16 numeric digits)
