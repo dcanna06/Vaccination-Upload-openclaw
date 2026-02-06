@@ -107,3 +107,13 @@
   - `backend/tests/unit/test_config.py` — 12 tests for config, masking, env switching
 - **Tests**: 12 passed, 0 failed
 - **Notes**: Pydantic Settings with field_validator for APP_ENV, air_api_base_url property for vendor/prod switching.
+
+### TICKET-006: Implement PRODA Authentication Service
+- **Status**: ✅ Done
+- **Branch**: `feature/TICKET-006-proda-auth`
+- **Date**: 2026-02-07 00:20
+- **Files created/modified**:
+  - `backend/app/services/proda_auth.py` — PRODA B2B auth with JWT assertion, token caching, JKS keystore loading
+  - `backend/tests/unit/test_proda_auth.py` — 12 tests covering token validity, caching, acquisition, error handling
+- **Tests**: 12 passed, 0 failed
+- **Notes**: Tokens held in-memory only per claude.md. 50-min refresh buffer before 60-min expiry. JKS loaded from base64 via pyjks.

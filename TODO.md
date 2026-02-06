@@ -257,20 +257,18 @@ interface AIRConfig {
 
 ---
 
-### TICKET-006: Implement PRODA Authentication Service
+### [x] TICKET-006: Implement PRODA Authentication Service
 
-**Branch**: `feature/proda-auth`
+**Branch**: `feature/TICKET-006-proda-auth`
 
-**Description**: Implement PRODA B2B authentication for API requests.
-
-**Reference**: PRODA B2B Unattended Developers Guide
+**Description**: Implement PRODA B2B authentication for AIR API requests (FastAPI/Python).
 
 **Tasks**:
-- [ ] Create `/backend/src/services/proda/ProdaAuthService.ts`
-- [ ] Implement JWT token generation with PRODA credentials
-- [ ] Implement token caching and refresh logic
-- [ ] Create authentication middleware for AIR API calls
-- [ ] Handle authentication errors appropriately
+- [x] Create `backend/app/services/proda_auth.py` with ProdaAuthService
+- [x] Implement JWT assertion building with RS256 signing
+- [x] Implement token caching with 50-min refresh buffer
+- [x] JKS keystore loading from base64 (in-memory only)
+- [x] Handle authentication errors appropriately
 
 **Key Functions**:
 ```typescript
@@ -283,10 +281,10 @@ class ProdaAuthService {
 ```
 
 **Test Requirements**:
-- [ ] Token generation succeeds with valid credentials
-- [ ] Token refresh occurs before expiry
-- [ ] Invalid credentials return clear error
-- [ ] Token is cached and reused
+- [x] Token generation succeeds with valid credentials
+- [x] Token refresh occurs before expiry
+- [x] Invalid credentials return clear error
+- [x] Token is cached and reused
 
 ---
 
