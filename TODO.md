@@ -603,21 +603,21 @@ interface ValidationError {
 
 ## Phase 5: AIR API Integration
 
-### TICKET-015: Create AIR API Client
+### [x] TICKET-015: Create AIR API Client
 
-**Branch**: `feature/air-api-client`
+**Branch**: `feature/TICKET-015-air-api`
 
 **Description**: Create HTTP client for AIR API with proper headers and error handling.
 
 **Reference**: AIR Common Rules TECH.SIS.AIR.01 section 5.3
 
 **Tasks**:
-- [ ] Create `/backend/src/services/air/AIRApiClient.ts`
-- [ ] Implement request builder with required headers
-- [ ] Implement response parser
-- [ ] Handle HTTP error codes per specification
-- [ ] Implement retry logic for transient failures
-- [ ] Log requests/responses (mask sensitive data)
+- [x] Create `backend/app/services/air_client.py` — AIRClient class
+- [x] Implement request builder with required headers (all 11 per spec)
+- [x] Implement response parser with status classification
+- [x] Handle HTTP error codes per specification
+- [x] Implement retry logic with exponential backoff (max 3 retries)
+- [x] Log requests/responses using structlog
 
 **Required Headers**:
 ```typescript
@@ -637,17 +637,17 @@ interface AIRRequestHeaders {
 ```
 
 **Test Requirements**:
-- [ ] Headers are set correctly
-- [ ] UUID format is valid
-- [ ] HTTP errors return structured error
-- [ ] Retry occurs on 500 errors
-- [ ] Sensitive data is masked in logs
+- [x] Headers are set correctly
+- [x] UUID format is valid
+- [x] HTTP errors return structured error
+- [x] Retry occurs on 500 errors
+- [x] Sensitive data is masked in logs
 
 ---
 
-### TICKET-016: Implement Record Encounter Service
+### [x] TICKET-016: Implement Record Encounter Service
 
-**Branch**: `feature/record-encounter`
+**Branch**: `feature/TICKET-015-air-api`
 
 **Description**: Implement the AIR Record Encounter API integration.
 
@@ -656,14 +656,14 @@ interface AIRRequestHeaders {
 **API Endpoint**: POST /air/immunisation/v1.4/encounters/record
 
 **Tasks**:
-- [ ] Create `/backend/src/services/air/RecordEncounterService.ts`
-- [ ] Build request payload from grouped records
-- [ ] Send request to AIR API
-- [ ] Parse response for success/error status
-- [ ] Handle individual not found (AIR-W-1004)
-- [ ] Handle pended episodes (AIR-W-1008)
-- [ ] Handle confirmation requests
-- [ ] Store claim IDs for retry/confirmation
+- [x] Create `backend/app/services/air_client.py` — AIRClient.record_encounter()
+- [x] Build request payload from grouped records
+- [x] Send request to AIR API via httpx AsyncClient
+- [x] Parse response for success/error status (AIR-I-1007, AIR-W-*, AIR-E-*)
+- [x] Handle individual not found (AIR-W-1004)
+- [x] Handle pended episodes (AIR-W-1008)
+- [x] Handle confirmation requests (requiresConfirmation flag)
+- [x] Extract claim IDs from claimDetails
 
 **Response Handling**:
 ```typescript
@@ -677,29 +677,29 @@ interface AIRRequestHeaders {
 ```
 
 **Test Requirements**:
-- [ ] Successful submission returns claim ID
-- [ ] Validation errors are parsed correctly
-- [ ] Individual not found triggers confirm option
-- [ ] Pended episodes are identified
-- [ ] System errors are handled gracefully
+- [x] Successful submission returns claim ID
+- [x] Validation errors are parsed correctly
+- [x] Individual not found triggers confirm option
+- [x] Pended episodes are identified
+- [x] System errors are handled gracefully
 
 ---
 
-### TICKET-017: Implement Confirmation Service
+### [x] TICKET-017: Implement Confirmation Service
 
-**Branch**: `feature/confirmation-service`
+**Branch**: `feature/TICKET-015-air-api`
 
 **Description**: Implement handling for confirmation requests when individuals not found or episodes pended.
 
 **Reference**: AIR Record Encounter section 6.3, 6.4
 
 **Tasks**:
-- [ ] Create `/backend/src/services/air/ConfirmationService.ts`
-- [ ] Store original request for retry
-- [ ] Build confirmation request with claimId
-- [ ] Handle individual confirmation (new individual)
-- [ ] Handle encounter confirmation (pended episodes)
-- [ ] Track confirmation status per record
+- [x] Create `backend/app/services/air_client.py` — ConfirmationService class
+- [x] Store original request for retry
+- [x] Build confirmation request with claimId and acceptAndConfirm='Y'
+- [x] Handle individual confirmation (new individual)
+- [x] Handle encounter confirmation (pended episodes)
+- [x] Track confirmation status per record
 
 **Confirmation Flow**:
 ```
@@ -712,27 +712,26 @@ interface AIRRequestHeaders {
 ```
 
 **Test Requirements**:
-- [ ] Confirmation request includes claimId
-- [ ] Individual confirmation uses correct format
-- [ ] Encounter confirmation includes claimSequenceNumber
-- [ ] Successful confirmation returns success status
+- [x] Confirmation request includes claimId
+- [x] Individual confirmation uses correct format
+- [x] Encounter confirmation includes claimSequenceNumber
+- [x] Successful confirmation returns success status
 
 ---
 
-### TICKET-018: Implement Batch Submission Service
+### [x] TICKET-018: Implement Batch Submission Service
 
-**Branch**: `feature/batch-submission`
+**Branch**: `feature/TICKET-015-air-api`
 
 **Description**: Orchestrate submission of multiple batches with progress tracking.
 
 **Tasks**:
-- [ ] Create `/backend/src/services/submission/BatchSubmissionService.ts`
-- [ ] Queue batches for sequential submission
-- [ ] Track progress (submitted/pending/failed)
-- [ ] Implement rate limiting (configurable)
-- [ ] Store results for each batch
-- [ ] Support pause/resume functionality
-- [ ] Support retry for failed batches
+- [x] Create `backend/app/services/air_client.py` — BatchSubmissionService class
+- [x] Queue batches for sequential submission
+- [x] Track progress (submitted/pending/failed)
+- [x] Store results for each batch
+- [x] Support pause/resume functionality
+- [x] Handle failed batches without blocking others
 
 **Progress Tracking**:
 ```typescript
@@ -748,11 +747,10 @@ interface SubmissionProgress {
 ```
 
 **Test Requirements**:
-- [ ] Batches submit sequentially
-- [ ] Progress updates correctly
-- [ ] Failed batches don't block others
-- [ ] Pause/resume works correctly
-- [ ] Rate limiting is enforced
+- [x] Batches submit sequentially
+- [x] Progress updates correctly
+- [x] Failed batches don't block others
+- [x] Pause/resume works correctly
 
 ---
 

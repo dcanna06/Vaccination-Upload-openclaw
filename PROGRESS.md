@@ -14,10 +14,10 @@
 
 ## Current State
 
-**Last updated**: 2026-02-07 10:25
-**Current ticket**: TICKET-010
-**Phase**: 4 — Data Validation
-**Branch**: feature/TICKET-010-individual-validation
+**Last updated**: 2026-02-07 10:50
+**Current ticket**: TICKET-019
+**Phase**: 6 — Frontend Implementation
+**Branch**: feature/TICKET-019-file-upload-ui
 
 ---
 
@@ -173,3 +173,13 @@
   - `backend/tests/unit/test_validation_engine.py` — 60 tests covering all validators
 - **Tests**: 184 passed (all), 0 failed
 - **Notes**: Implemented TICKET-010 (individual), 011 (encounter), 012 (episode), 013 (reference data validation), 014 (orchestrator) in a single unified module. Gender M/F/I/U, VaccineType NIP/AEN/OTH, Route IM/SC/ID/OR/IN/NAS per claude.md. IHI format-only (no Luhn).
+
+### TICKET-015 through TICKET-018: AIR API Integration (Phase 5)
+- **Status**: ✅ Done
+- **Branch**: `feature/TICKET-015-air-api`
+- **Date**: 2026-02-07 10:50
+- **Files created/modified**:
+  - `backend/app/services/air_client.py` — AIRClient (headers, retry, response parsing), ConfirmationService, BatchSubmissionService
+  - `backend/tests/unit/test_air_client.py` — 27 tests covering headers, DOB conversion, response parsing, confirmation, batch submission
+- **Tests**: 211 passed (all), 0 failed
+- **Notes**: Combined TICKET-015 (API client), 016 (record encounter), 017 (confirmation), 018 (batch submission) into a single air_client.py module. All 11 required headers per TECH.SIS.AIR.01. DOB format conversion yyyy-MM-dd → ddMMyyyy for dhs-subjectId. Exponential backoff retry (max 3). Response classification: AIR-I-1007 success, AIR-W-1004/1008/1001 warning+confirmation, AIR-E-* error. httpx AsyncClient for async HTTP.
