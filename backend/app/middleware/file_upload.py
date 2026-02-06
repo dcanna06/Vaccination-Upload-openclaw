@@ -1,6 +1,6 @@
 """File upload validation utilities for Excel file uploads."""
 
-from fastapi import UploadFile, status
+from fastapi import UploadFile
 
 from app.middleware.error_handler import FileProcessingError
 

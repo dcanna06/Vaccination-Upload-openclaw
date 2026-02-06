@@ -34,28 +34,72 @@ Statuses that stay here: OPEN, FIXED (awaiting QA retest), REOPENED
 
 -->
 
-### QA-FIX-002: TICKET-002 not merged to main
-- **Source ticket**: TICKET-002
-- **Severity**: 🟡 MAJOR
+### QA-FIX-003: Duplicate httpx in requirements.txt
+- **Source ticket**: TICKET-001
+- **Severity**: 🟢 MINOR
 - **Status**: FIXED
-- **File(s)**: Git branch `feature/TICKET-002-typescript-config`
-- **Problem**: TICKET-002 commit `e6be799` was marked ✅ Done in PROGRESS.md but never merged to main. Main branch is still at `9d4e97a` (QA fix for TICKET-001). Dev proceeded to create `feature/TICKET-003-backend-setup` from the unmerged TICKET-002 branch. This violates the claude.md workflow protocol.
-- **Expected**: Per claude.md "Ticket Tracking Protocol" → "After Completing a Ticket" step 5: `git checkout main && git merge feature/TICKET-NNN-short-name`. TICKET-002 must be merged to main before TICKET-003 work can properly proceed.
-- **Evidence**: `git log main --oneline` shows main at `9d4e97a fix(qa): TICKET-001...` — does not include `e6be799 feat(types): TICKET-002...`. Branch graph shows TICKET-002 and QA fix diverged from `6ed2927` without being reconciled.
-- **Dev fix notes**: Merged `feature/TICKET-002-typescript-config` into main. Resolved merge conflict in PROGRESS.md (kept both TICKET-002 and TICKET-003-005 entries in chronological order). TICKET-002 changes (air.ts enhancements, type tests, air_request.py) now in main.
-- **Retest result**: (QA agent fills this in after retesting)
+- **File(s)**: `backend/requirements.txt`
+- **Problem**: `httpx==0.27.0` listed twice (under HTTP client and Testing sections)
+- **Expected**: Listed once only
+- **Dev fix notes**: Removed duplicate entry under Testing section
+
+### QA-FIX-004: EncounterSchema.id missing pattern validation
+- **Source ticket**: TICKET-002
+- **Severity**: 🟢 MINOR
+- **Status**: FIXED
+- **File(s)**: `backend/app/schemas/air_request.py`
+- **Problem**: `EncounterSchema.id` had no pattern constraint; should be 1-10
+- **Expected**: Pattern `^([1-9]|10)$` to match encounter ID spec
+- **Dev fix notes**: Added `pattern=r"^([1-9]|10)$"` to EncounterSchema.id Field
+
+### QA-FIX-005: EpisodeSchema.vaccineDose missing pattern validation
+- **Source ticket**: TICKET-002
+- **Severity**: 🟢 MINOR
+- **Status**: FIXED
+- **File(s)**: `backend/app/schemas/air_request.py`
+- **Problem**: `vaccineDose` had no pattern; should be 'B' or '1'-'20'
+- **Expected**: Pattern `^(B|[1-9]|1[0-9]|20)$`
+- **Dev fix notes**: Added `pattern=r"^(B|[1-9]|1[0-9]|20)$"` to EpisodeSchema.vaccineDose
+
+### QA-FIX-006: Exception classes in wrong file
+- **Source ticket**: TICKET-003
+- **Severity**: 🟢 MINOR
+- **Status**: FIXED
+- **File(s)**: `backend/app/exceptions.py`, `backend/app/middleware/error_handler.py`
+- **Problem**: Exception classes defined in middleware/error_handler.py; claude.md says app/exceptions.py
+- **Expected**: Exception classes in `app/exceptions.py` per coding standards
+- **Dev fix notes**: Created `app/exceptions.py` with all exception classes. Updated `error_handler.py` to import from exceptions.py and re-export for backward compatibility.
+
+### QA-FIX-007: upload.py uses dict return type instead of Pydantic model
+- **Source ticket**: TICKET-003
+- **Severity**: 🟢 MINOR
+- **Status**: FIXED
+- **File(s)**: `backend/app/routers/upload.py`
+- **Problem**: Upload endpoint returns `-> dict` instead of a Pydantic model
+- **Expected**: Pydantic response model per claude.md coding standards
+- **Dev fix notes**: Created `UploadResponse` Pydantic model and updated endpoint to use `response_model=UploadResponse`
+
+### QA-FIX-008: Unused import in file_upload.py
+- **Source ticket**: TICKET-003
+- **Severity**: 🟢 MINOR
+- **Status**: FIXED
+- **File(s)**: `backend/app/middleware/file_upload.py`
+- **Problem**: `status` imported from FastAPI but never used
+- **Expected**: No unused imports
+- **Dev fix notes**: Removed unused `status` import
 
 ---
 
 ## Closed Issues
 
-<!-- 
+<!--
 Only VERIFIED items go here.
-
-### QA-FIX-001: Short description
-- **Status**: VERIFIED ✅
-- **Fixed by**: commit hash or ticket reference
-- **Verified by QA**: YYYY-MM-DD
-- **Retest result**: All tests pass, issue confirmed resolved
-
 -->
+
+### QA-FIX-002: TICKET-002 not merged to main
+- **Source ticket**: TICKET-002
+- **Severity**: 🟡 MAJOR
+- **Status**: VERIFIED ✅
+- **Fixed by**: `7bf9f6e` (fix(qa): QA-FIX-002 merge TICKET-002 to main)
+- **Verified by QA**: 2026-02-07
+- **Retest result**: TICKET-002 commit `e6be799` confirmed on main via merge `7bf9f6e`. All TICKET-002 artifacts present (air.ts types, air_request.py schemas, 32 type tests). Keystore patterns from QA-FIX-001 survived merge. 37 tests passing on main.

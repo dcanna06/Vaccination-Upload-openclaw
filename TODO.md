@@ -344,32 +344,32 @@ class ProdaAuthService {
 
 ---
 
-### TICKET-008: Create Excel Template Generator
+### [x] TICKET-008: Create Excel Template Generator
 
 **Branch**: `feature/excel-template`
 
 **Description**: Create a downloadable Excel template with correct column headers and data validation.
 
 **Tasks**:
-- [ ] Create `/backend/src/services/excel/TemplateGenerator.ts`
-- [ ] Generate template with all required columns
-- [ ] Add data validation dropdowns for fixed values
-- [ ] Add example rows with sample data
-- [ ] Add instructions sheet explaining each column
-- [ ] Create API endpoint to download template
+- [x] Create `backend/app/services/excel_template.py` (Python, not TS per claude.md)
+- [x] Generate template with all 19 required columns per claude.md spec
+- [x] Add data validation dropdowns for fixed values (per claude.md, NOT TODO.md)
+- [x] Add example rows with sample data
+- [x] Add instructions sheet explaining each column
+- [x] Create API endpoint `GET /api/template` to download template
 
-**Validation Dropdowns**:
-- Gender: M, F, X
-- Vaccine Type: NIP, OTH
-- Route of Administration: PO, SC, ID, IM, NS
-- Administered Overseas: Y, N
-- Antenatal: Y, N
+**Validation Dropdowns** (per claude.md):
+- Gender: M, F, I, U
+- Vaccine Type: NIP, AEN, OTH
+- Route of Administration: IM, SC, ID, OR, IN, NAS
+- Administered Overseas: TRUE, FALSE
+- Antenatal: TRUE, FALSE
 
 **Test Requirements**:
-- [ ] Template downloads successfully
-- [ ] Dropdowns contain correct values
-- [ ] Instructions sheet is readable
-- [ ] Template can be re-uploaded and parsed
+- [x] Template downloads successfully
+- [x] Dropdowns contain correct values
+- [x] Instructions sheet is readable
+- [x] Template can be re-uploaded and parsed
 
 ---
 

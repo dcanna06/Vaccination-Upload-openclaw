@@ -44,14 +44,14 @@ class ProviderIdentifierSchema(BaseModel):
 class EpisodeSchema(BaseModel):
     id: str = Field(..., pattern=r"^[1-5]$")
     vaccineCode: str = Field(..., min_length=1, max_length=6)
-    vaccineDose: str = Field(...)  # 'B' or '1'-'20'
+    vaccineDose: str = Field(..., pattern=r"^(B|[1-9]|1[0-9]|20)$")
     vaccineBatch: str | None = Field(None, max_length=15)
     vaccineType: Literal["NIP", "AEN", "OTH"] | None = None
     routeOfAdministration: Literal["IM", "SC", "ID", "OR", "IN", "NAS"] | None = None
 
 
 class EncounterSchema(BaseModel):
-    id: str = Field(...)
+    id: str = Field(..., pattern=r"^([1-9]|10)$")
     dateOfService: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
     episodes: list[EpisodeSchema] = Field(..., min_length=1, max_length=5)
     immunisationProvider: ProviderIdentifierSchema | None = None

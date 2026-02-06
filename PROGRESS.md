@@ -14,10 +14,10 @@
 
 ## Current State
 
-**Last updated**: 2026-02-07 00:20
-**Current ticket**: TICKET-006
-**Phase**: 2 — Configuration Management
-**Branch**: feature/TICKET-006-proda-auth
+**Last updated**: 2026-02-07 10:00
+**Current ticket**: TICKET-008
+**Phase**: 3 — Excel Processing
+**Branch**: feature/TICKET-008-excel-template
 
 ---
 
@@ -127,3 +127,27 @@
   - `backend/tests/unit/test_excel_parser.py` — 21 tests covering parsing, dates, genders, empty rows, errors
 - **Tests**: 21 passed, 0 failed
 - **Notes**: Uses openpyxl (Python) instead of SheetJS (Node.js). Case-insensitive header matching. Gender maps M/F/I/U per claude.md.
+
+### QA Fixes (QA-FIX-003 through QA-FIX-008)
+- **Status**: ✅ Done
+- **Date**: 2026-02-07 10:05
+- **Files modified**:
+  - `backend/requirements.txt` — Removed duplicate httpx entry
+  - `backend/app/schemas/air_request.py` — Added EncounterSchema.id pattern (1-10) and vaccineDose pattern (B|1-20)
+  - `backend/app/exceptions.py` — NEW: exception classes moved here from middleware
+  - `backend/app/middleware/error_handler.py` — Imports from exceptions.py, re-exports for compat
+  - `backend/app/routers/upload.py` — Added UploadResponse Pydantic model
+  - `backend/app/middleware/file_upload.py` — Removed unused status import
+- **Notes**: Fixed all 6 MINOR issues from QA reviews (TICKET-001 through TICKET-003)
+
+### TICKET-008: Create Excel Template Generator
+- **Status**: ✅ Done
+- **Branch**: `feature/TICKET-008-excel-template`
+- **Date**: 2026-02-07 10:10
+- **Files created/modified**:
+  - `backend/app/services/excel_template.py` — Template generator with 19 columns, validations, instructions sheet
+  - `backend/app/routers/template.py` — GET /api/template endpoint
+  - `backend/app/main.py` — Added template router
+  - `backend/tests/unit/test_excel_template.py` — 29 tests covering generation, validations, instructions, round-trip, endpoint
+- **Tests**: 87 passed, 0 failed
+- **Notes**: Dropdowns use claude.md values (Gender: M/F/I/U, VaccineType: NIP/AEN/OTH, Route: IM/SC/ID/OR/IN/NAS). Template round-trip tested with ExcelParserService.

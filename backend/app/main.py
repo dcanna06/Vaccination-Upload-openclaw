@@ -11,7 +11,7 @@ from app.middleware.error_handler import (
     unhandled_error_handler,
 )
 from app.middleware.request_logger import RequestLoggerMiddleware
-from app.routers import health, upload
+from app.routers import health, template, upload
 
 
 def configure_structlog() -> None:
@@ -63,6 +63,7 @@ def create_app() -> FastAPI:
     # Routers
     app.include_router(health.router)
     app.include_router(upload.router)
+    app.include_router(template.router)
 
     return app
 
