@@ -14,10 +14,10 @@
 
 ## Current State
 
-**Last updated**: 2026-02-06 23:35
-**Current ticket**: TICKET-002
+**Last updated**: 2026-02-07 00:00
+**Current ticket**: TICKET-003
 **Phase**: 1 — Project Setup & Infrastructure
-**Branch**: feature/TICKET-001-project-setup
+**Branch**: feature/TICKET-003-backend-setup-v2
 
 ---
 
@@ -51,3 +51,18 @@
   - `frontend/stores/` — Zustand upload and submission stores
 - **Tests**: 1 passed (backend health), 0 failed; TypeScript compilation clean
 - **Notes**: Adapted TODO.md tech stack (Express/Vite) to claude.md tech stack (FastAPI/Next.js 14) per README rule. No /shared directory since it's a cross-language project.
+
+### TICKET-003: Set Up Backend FastAPI Server
+- **Status**: ✅ Done
+- **Branch**: `feature/TICKET-003-backend-setup-v2`
+- **Date**: 2026-02-07 00:05
+- **Files created/modified**:
+  - `backend/app/main.py` — App factory with structlog config, CORS, middleware wiring, router includes
+  - `backend/app/middleware/error_handler.py` — Custom exceptions (AppError, ValidationError, AuthenticationError, FileProcessingError, AIRApiError) using structlog
+  - `backend/app/middleware/request_logger.py` — Correlation ID tracking using structlog
+  - `backend/app/middleware/file_upload.py` — Excel file validation (type, size, empty check)
+  - `backend/app/routers/health.py` — Health check endpoint
+  - `backend/app/routers/upload.py` — File upload endpoint with validation
+  - `backend/tests/unit/test_backend_setup.py` — 12 tests covering health, CORS, upload validation, correlation IDs
+- **Tests**: 13 passed, 0 failed
+- **Notes**: Adapted from Express/Node.js to FastAPI/Python per claude.md. All logging uses structlog (not stdlib logging). Error handlers wired as exception handlers.

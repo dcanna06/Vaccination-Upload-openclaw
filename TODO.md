@@ -159,20 +159,19 @@ interface ProviderIdentifierType {
 
 ---
 
-### TICKET-003: Set Up Backend Express Server
+### [x] TICKET-003: Set Up Backend FastAPI Server
 
-**Branch**: `feature/backend-setup`
+**Branch**: `feature/TICKET-003-backend-setup-v2`
 
-**Description**: Initialize Express.js backend with middleware and basic routing structure.
+**Description**: Set up FastAPI backend with middleware, structured logging, and basic routing (adapted from Express per claude.md).
 
 **Tasks**:
-- [ ] Install dependencies: express, cors, helmet, morgan, multer, express-validator
-- [ ] Create `/backend/src/index.ts` with Express app initialization
-- [ ] Create `/backend/src/middleware/` directory with error handling middleware
-- [ ] Create `/backend/src/routes/` directory structure
-- [ ] Set up request logging with Morgan
-- [ ] Configure CORS for frontend origin
-- [ ] Set up file upload handling with Multer (max 10MB, xlsx/xls only)
+- [x] Wire error handling middleware into FastAPI app
+- [x] Wire request logging middleware (structlog) into FastAPI app
+- [x] Create `/backend/app/routers/` route stubs (health, upload)
+- [x] Set up file upload route with validation (max 10MB, xlsx/xls only)
+- [x] Configure CORS for frontend origin
+- [x] Use structlog for all logging (not stdlib logging)
 
 **Files to Create**:
 - `/backend/src/index.ts`
@@ -182,11 +181,11 @@ interface ProviderIdentifierType {
 - `/backend/src/routes/index.ts`
 
 **Test Requirements**:
-- [ ] Server starts on configured port
-- [ ] Health check endpoint returns 200
-- [ ] CORS headers present in responses
-- [ ] File upload rejects non-Excel files
-- [ ] File upload rejects files > 10MB
+- [x] Server starts on configured port
+- [x] Health check endpoint returns 200
+- [x] CORS headers present in responses
+- [x] File upload rejects non-Excel files
+- [x] File upload rejects files > 10MB
 
 ---
 
