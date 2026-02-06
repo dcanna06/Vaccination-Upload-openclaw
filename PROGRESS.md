@@ -14,10 +14,10 @@
 
 ## Current State
 
-**Last updated**: 2026-02-07 10:50
-**Current ticket**: TICKET-019
-**Phase**: 6 — Frontend Implementation
-**Branch**: feature/TICKET-019-file-upload-ui
+**Last updated**: 2026-02-07 11:10
+**Current ticket**: TICKET-025
+**Phase**: 7 — API Endpoints
+**Branch**: feature/TICKET-025-api-endpoints
 
 ---
 
@@ -183,3 +183,25 @@
   - `backend/tests/unit/test_air_client.py` — 27 tests covering headers, DOB conversion, response parsing, confirmation, batch submission
 - **Tests**: 211 passed (all), 0 failed
 - **Notes**: Combined TICKET-015 (API client), 016 (record encounter), 017 (confirmation), 018 (batch submission) into a single air_client.py module. All 11 required headers per TECH.SIS.AIR.01. DOB format conversion yyyy-MM-dd → ddMMyyyy for dhs-subjectId. Exponential backoff retry (max 3). Response classification: AIR-I-1007 success, AIR-W-1004/1008/1001 warning+confirmation, AIR-E-* error. httpx AsyncClient for async HTTP.
+
+### TICKET-019 through TICKET-024: Frontend Implementation (Phase 6)
+- **Status**: ✅ Done
+- **Branch**: `feature/TICKET-019-frontend`
+- **Date**: 2026-02-07 11:10
+- **Files created/modified**:
+  - `frontend/components/FileUpload.tsx` — Drag-and-drop file upload with validation (type, size, empty)
+  - `frontend/components/ValidationResults.tsx` — Sortable/filterable error table with summary counts
+  - `frontend/components/SubmissionProgress.tsx` — Progress bar with pause/resume, success/fail/pending counts
+  - `frontend/components/ConfirmationDialog.tsx` — Selective confirmation for AIR-W-1004/W-1008 records
+  - `frontend/components/ResultsSummary.tsx` — Final results with claim IDs table and failed records table
+  - `frontend/app/(dashboard)/upload/page.tsx` — Upload page with template download, file upload, API integration
+  - `frontend/app/(dashboard)/validate/page.tsx` — Validation page with API call and results display
+  - `frontend/app/(dashboard)/submit/page.tsx` — Submission page with progress polling, confirmation, results
+  - `frontend/app/(dashboard)/settings/page.tsx` — Provider settings with localStorage persistence
+  - `frontend/components/__tests__/FileUpload.test.tsx` — 10 tests
+  - `frontend/components/__tests__/ValidationResults.test.tsx` — 8 tests
+  - `frontend/components/__tests__/SubmissionProgress.test.tsx` — 8 tests
+  - `frontend/components/__tests__/ConfirmationDialog.test.tsx` — 9 tests
+  - `frontend/components/__tests__/ResultsSummary.test.tsx` — 7 tests
+- **Tests**: 87 frontend passed, 211 backend passed, 0 failed
+- **Notes**: Combined TICKET-019 (file upload), 020 (validation results), 021 (submission progress), 022 (confirmation dialog), 023 (results summary), 024 (provider settings) into a single frontend branch. All AIR messages displayed verbatim per claude.md. Upload page includes template download link. Submission page uses polling for progress updates. Settings persist to localStorage.

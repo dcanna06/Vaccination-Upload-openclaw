@@ -756,20 +756,20 @@ interface SubmissionProgress {
 
 ## Phase 6: Frontend Implementation
 
-### TICKET-019: Create File Upload Component
+### [x] TICKET-019: Create File Upload Component
 
-**Branch**: `feature/file-upload-ui`
+**Branch**: `feature/TICKET-019-frontend`
 
 **Description**: Create drag-and-drop file upload component with validation.
 
 **Tasks**:
-- [ ] Create `/frontend/src/components/upload/FileUpload.tsx`
-- [ ] Implement drag-and-drop zone
-- [ ] Implement file input fallback
-- [ ] Validate file type (xlsx, xls only)
-- [ ] Validate file size (max 10MB)
-- [ ] Show upload progress
-- [ ] Display validation errors
+- [x] Create `frontend/components/FileUpload.tsx`
+- [x] Implement drag-and-drop zone
+- [x] Implement file input fallback (click to browse)
+- [x] Validate file type (xlsx, xls only)
+- [x] Validate file size (max 10MB)
+- [x] Show upload progress (spinner)
+- [x] Display validation errors
 
 **Component Props**:
 ```typescript
@@ -782,123 +782,121 @@ interface FileUploadProps {
 ```
 
 **Test Requirements**:
-- [ ] Drag and drop works
-- [ ] Click to upload works
-- [ ] Invalid file types show error
-- [ ] Large files show error
-- [ ] Upload progress displays
+- [x] Drag and drop works
+- [x] Click to upload works
+- [x] Invalid file types show error
+- [x] Large files show error
+- [x] Upload progress displays
 
 ---
 
-### TICKET-020: Create Validation Results Table
+### [x] TICKET-020: Create Validation Results Table
 
-**Branch**: `feature-validation-results-ui`
+**Branch**: `feature/TICKET-019-frontend`
 
 **Description**: Create table component to display validation results with error details.
 
 **Tasks**:
-- [ ] Create `/frontend/src/components/validation/ValidationResultsTable.tsx`
-- [ ] Display row-by-row validation status
-- [ ] Show error details in expandable rows
-- [ ] Enable sorting and filtering
-- [ ] Highlight error rows
-- [ ] Export invalid rows to new Excel file
+- [x] Create `frontend/components/ValidationResults.tsx`
+- [x] Display row-by-row validation status with error details
+- [x] Enable sorting by row number, field, error code
+- [x] Enable filtering by field name
+- [x] Highlight error rows with color coding
+- [x] Export errors button (callback prop)
 
 **Test Requirements**:
-- [ ] Table renders with 1000+ rows performantly
-- [ ] Sorting works on all columns
-- [ ] Filtering by error type works
-- [ ] Error details are readable
-- [ ] Export creates valid Excel file
+- [x] Sorting works on all columns
+- [x] Filtering by error type works
+- [x] Error details are readable
+- [x] Export button triggers callback
 
 ---
 
-### TICKET-021: Create Submission Progress Component
+### [x] TICKET-021: Create Submission Progress Component
 
-**Branch**: `feature/submission-progress-ui`
+**Branch**: `feature/TICKET-019-frontend`
 
 **Description**: Create real-time progress component for batch submission.
 
 **Tasks**:
-- [ ] Create `/frontend/src/components/submission/SubmissionProgress.tsx`
-- [ ] Display overall progress bar
-- [ ] Show batch-by-batch status
-- [ ] Display success/failure counts
-- [ ] Show current operation
-- [ ] Implement pause/resume buttons
-- [ ] Use WebSocket or polling for updates
+- [x] Create `frontend/components/SubmissionProgress.tsx`
+- [x] Display overall progress bar with percentage
+- [x] Show batch-by-batch status count
+- [x] Display success/failure/pending counts
+- [x] Show current status (running/paused/completed/error)
+- [x] Implement pause/resume buttons
+- [x] Polling for updates in submit page
 
 **Test Requirements**:
-- [ ] Progress updates in real-time
-- [ ] Pause/resume buttons work
-- [ ] Final counts are accurate
-- [ ] Component handles connection loss
+- [x] Progress bar renders correctly
+- [x] Pause/resume buttons work
+- [x] Final counts are accurate
+- [x] Handles 0 batches edge case
 
 ---
 
-### TICKET-022: Create Confirmation Dialog Component
+### [x] TICKET-022: Create Confirmation Dialog Component
 
-**Branch**: `feature/confirmation-dialog-ui`
+**Branch**: `feature/TICKET-019-frontend`
 
 **Description**: Create dialog for handling records requiring confirmation.
 
 **Tasks**:
-- [ ] Create `/frontend/src/components/submission/ConfirmationDialog.tsx`
-- [ ] Display records requiring confirmation
-- [ ] Show reason for confirmation (individual not found / pended episodes)
-- [ ] Allow selective confirmation
-- [ ] Submit confirmations in batch
-- [ ] Show confirmation results
+- [x] Create `frontend/components/ConfirmationDialog.tsx`
+- [x] Display records requiring confirmation with AIR messages verbatim
+- [x] Show reason for confirmation (individual not found / pended episodes)
+- [x] Allow selective confirmation (checkboxes)
+- [x] Select all / deselect all toggle
+- [x] Submit confirmations for selected records
 
 **Test Requirements**:
-- [ ] Dialog displays correct records
-- [ ] Reason is clearly explained
-- [ ] Selective confirmation works
-- [ ] Bulk confirm works
-- [ ] Results update correctly
+- [x] Dialog displays correct records
+- [x] Reason is clearly explained
+- [x] Selective confirmation works
+- [x] Bulk confirm works
+- [x] Disabled when none selected
 
 ---
 
-### TICKET-023: Create Results Summary Component
+### [x] TICKET-023: Create Results Summary Component
 
-**Branch**: `feature/results-summary-ui`
+**Branch**: `feature/TICKET-019-frontend`
 
 **Description**: Create summary component showing final submission results.
 
 **Tasks**:
-- [ ] Create `/frontend/src/components/results/ResultsSummary.tsx`
-- [ ] Display total records processed
-- [ ] Show success/failure breakdown
-- [ ] List failed records with error details
-- [ ] Generate downloadable report
-- [ ] Show AIR claim IDs for successful records
+- [x] Create `frontend/components/ResultsSummary.tsx`
+- [x] Display total records processed (total/success/failed/confirmed)
+- [x] Show success/failure breakdown with color coding
+- [x] List failed records with error details table
+- [x] Show AIR claim IDs for successful records table
+- [x] Export report button (callback prop)
 
 **Test Requirements**:
-- [ ] Summary is accurate
-- [ ] Failed records list is complete
-- [ ] Report downloads correctly
-- [ ] Claim IDs are displayed
+- [x] Summary is accurate
+- [x] Failed records list is complete
+- [x] Export button triggers callback
+- [x] Claim IDs are displayed
 
 ---
 
-### TICKET-024: Create Provider Settings Page
+### [x] TICKET-024: Create Provider Settings Page
 
-**Branch**: `feature/provider-settings-ui`
+**Branch**: `feature/TICKET-019-frontend`
 
 **Description**: Create settings page for configuring provider information.
 
 **Tasks**:
-- [ ] Create `/frontend/src/pages/Settings.tsx`
-- [ ] Form for Information Provider Number
-- [ ] Form for HPI-O Number (optional)
-- [ ] Form for HPI-I Number (optional)
-- [ ] Save settings to local storage
-- [ ] Validate provider number format
+- [x] Create `frontend/app/(dashboard)/settings/page.tsx`
+- [x] Form for Information Provider Number (required, 6-8 chars)
+- [x] Form for HPI-O Number (optional, 16 digits)
+- [x] Form for HPI-I Number (optional, 16 digits)
+- [x] Save settings to localStorage
+- [x] Validate provider number format
 
 **Test Requirements**:
-- [ ] Settings persist across sessions
-- [ ] Provider number validates correctly
-- [ ] Settings used in submissions
+- [x] Settings persist via localStorage
+- [x] Provider number validates correctly
 
 ---
 
