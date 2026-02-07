@@ -33,7 +33,7 @@ class TestSettings:
     def test_vendor_env_uses_vendor_url(self):
         s = Settings(
             APP_ENV="vendor",
-            AIR_VENDOR_BASE_URL="https://vendor.example.com",
+            AIR_API_BASE_URL_VENDOR="https://vendor.example.com",
             AIR_PROD_BASE_URL="https://prod.example.com",
             _env_file=None,
         )
@@ -42,7 +42,7 @@ class TestSettings:
     def test_production_env_uses_prod_url(self):
         s = Settings(
             APP_ENV="production",
-            AIR_VENDOR_BASE_URL="https://vendor.example.com",
+            AIR_API_BASE_URL_VENDOR="https://vendor.example.com",
             AIR_PROD_BASE_URL="https://prod.example.com",
             _env_file=None,
         )
@@ -54,7 +54,7 @@ class TestSettings:
 
     def test_default_product_id(self):
         s = Settings(_env_file=None)
-        assert s.AIR_PRODUCT_ID == "AIRBulkVax 1.0"
+        assert s.AIR_PRODUCT_ID == "EM Bulk Vaccination Upload V1.0"
 
     def test_default_proda_jwt_audience(self):
         s = Settings(_env_file=None)

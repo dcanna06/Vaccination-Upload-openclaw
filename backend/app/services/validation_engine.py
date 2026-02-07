@@ -22,9 +22,9 @@ NAME_PATTERN = re.compile(
     r"^(?!.*\s[-'])(?!.*[-']\s)[A-Za-z0-9' \-]+$"
 )
 
-VALID_GENDERS = {"M", "F", "I", "U", "X"}
-VALID_VACCINE_TYPES = {"NIP", "AEN", "OTH"}
-VALID_ROUTES = {"IM", "SC", "ID", "OR", "IN", "NAS", "NS"}
+VALID_GENDERS = {"M", "F", "X"}
+VALID_VACCINE_TYPES = {"NIP", "OTH"}
+VALID_ROUTES = {"PO", "SC", "ID", "IM", "NS"}
 
 
 class ValidationError:
@@ -73,7 +73,7 @@ class IndividualValidator:
         elif gender not in VALID_GENDERS:
             errors.append(ValidationError(
                 row, "gender", "AIR-E-1017",
-                f"Invalid gender: '{gender}'. Must be M, F, I, U, or X", gender
+                f"Invalid gender: '{gender}'. Must be F, M, or X", gender
             ))
 
         # Identification scenario check
@@ -301,7 +301,7 @@ class EpisodeValidator:
         if vtype and vtype not in VALID_VACCINE_TYPES:
             errors.append(ValidationError(
                 row, "vaccineType", "AIR-E-1084",
-                f"Invalid vaccine type: '{vtype}'. Must be NIP, AEN, or OTH", vtype
+                f"Invalid vaccine type: '{vtype}'. Must be NIP or OTH", vtype
             ))
 
         # Route of administration
@@ -309,7 +309,7 @@ class EpisodeValidator:
         if route and route not in VALID_ROUTES:
             errors.append(ValidationError(
                 row, "routeOfAdministration", "AIR-E-1085",
-                f"Invalid route: '{route}'. Must be IM, SC, ID, OR, IN, NAS, or NS", route
+                f"Invalid route: '{route}'. Must be PO, SC, ID, IM, or NS", route
             ))
 
         return errors

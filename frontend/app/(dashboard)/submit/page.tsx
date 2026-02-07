@@ -16,7 +16,7 @@ type SubmitStatus = 'idle' | 'running' | 'paused' | 'confirming' | 'completed' |
 export default function SubmitPage() {
   const router = useRouter();
   const { submissionId, setSubmissionId, progress, setProgress } = useSubmissionStore();
-  const { parsedRows } = useUploadStore();
+  const { parsedRows, groupedBatches } = useUploadStore();
   const [status, setStatus] = useState<SubmitStatus>('idle');
   const [error, setError] = useState<string | null>(null);
   const hasStarted = useRef(false);
@@ -50,7 +50,7 @@ export default function SubmitPage() {
 
   // Auto-start submission when arriving with parsed rows
   useEffect(() => {
-    if (hasStarted.current || parsedRows.length === 0 || submissionId) return;
+    if (hasStarted.current || groupedBatches.length === 0 || submissionId) return;
     hasStarted.current = true;
 
     const startSubmission = async () => {
@@ -61,9 +61,9 @@ export default function SubmitPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            batches: [{ encounters: parsedRows }],
+            batches: groupedBatches,
             informationProvider: {},
-            dryRun: true,
+            dryRun: false,
           }),
         });
         if (!res.ok) throw new Error(`Submission failed: ${res.status}`);
@@ -85,7 +85,7 @@ export default function SubmitPage() {
     };
 
     startSubmission();
-  }, [parsedRows, submissionId, setSubmissionId, setProgress]);
+  }, [groupedBatches, submissionId, setSubmissionId, setProgress]);
 
   // Poll progress while running
   useEffect(() => {
@@ -168,11 +168,11 @@ export default function SubmitPage() {
         <h2 className="mb-4 text-2xl font-bold">Submission Progress</h2>
         <Card>
           <p className="text-slate-400">
-            {parsedRows.length === 0
+            {groupedBatches.length === 0
               ? 'No active submission. Please upload and validate records first.'
-              : `${parsedRows.length} record(s) ready. Starting submission...`}
+              : `${groupedBatches.length} batch(es) ready. Starting submission...`}
           </p>
-          {parsedRows.length === 0 && (
+          {groupedBatches.length === 0 && (
             <Button variant="secondary" size="sm" className="mt-3" onClick={() => router.push('/upload')}>
               Go to Upload
             </Button>

@@ -113,8 +113,6 @@ class TestGenderNormalization:
     @pytest.mark.parametrize("input_val,expected", [
         ("M", "M"), ("Male", "M"), ("male", "M"),
         ("F", "F"), ("Female", "F"),
-        ("I", "I"), ("Intersex", "I"),
-        ("U", "U"), ("Unknown", "U"),
         ("X", "X"), ("Not Stated", "X"),
     ])
     def test_valid_genders(self, parser, input_val, expected):
@@ -125,10 +123,11 @@ class TestGenderNormalization:
         rec = parser.parse(excel)["records"][0]
         assert rec["gender"] == expected
 
-    def test_invalid_gender_produces_error(self, parser):
+    @pytest.mark.parametrize("input_val", ["Z", "I", "Intersex", "U", "Unknown"])
+    def test_invalid_gender_produces_error(self, parser, input_val):
         excel = _make_excel(
             ["Gender", "Vaccine Code"],
-            [["Z", "FLU"]],
+            [[input_val, "FLU"]],
         )
         result = parser.parse(excel)
         assert len(result["errors"]) == 1

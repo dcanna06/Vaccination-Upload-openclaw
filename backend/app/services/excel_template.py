@@ -76,8 +76,8 @@ COLUMNS: list[dict[str, Any]] = [
         "field": "gender",
         "width": 10,
         "required": "Yes",
-        "format": "M/F/I/U/X",
-        "description": "M=Male, F=Female, I=Intersex/Indeterminate, U=Unknown, X=Not Stated",
+        "format": "F/M/X",
+        "description": "F=Female, M=Male, X=Non-binary",
         "sample": "F",
     },
     {
@@ -130,8 +130,8 @@ COLUMNS: list[dict[str, Any]] = [
         "field": "vaccineType",
         "width": 14,
         "required": "Conditional",
-        "format": "NIP/AEN/OTH",
-        "description": "NIP=National Immunisation Program, AEN=Australian Extended NIP, OTH=Other",
+        "format": "NIP/OTH",
+        "description": "NIP=NIP/Commonwealth, OTH=Other",
         "sample": "NIP",
     },
     {
@@ -139,8 +139,8 @@ COLUMNS: list[dict[str, Any]] = [
         "field": "routeOfAdministration",
         "width": 24,
         "required": "Conditional",
-        "format": "IM/SC/ID/OR/IN/NAS/NS",
-        "description": "IM=Intramuscular, SC=Subcutaneous, ID=Intradermal, OR=Oral, IN=Inhalation, NAS=Nasal, NS=Nasal (V6.0.7+)",
+        "format": "PO/SC/ID/IM/NS",
+        "description": "PO=Oral, SC=Subcutaneous, ID=Intradermal, IM=Intramuscular, NS=Nasal",
         "sample": "IM",
     },
     {
@@ -255,43 +255,43 @@ class ExcelTemplateService:
         """Add dropdown data validations to the data sheet."""
         max_row = 1000  # Validation applies to rows 2-1000
 
-        # Gender: M, F, I, U, X
+        # Gender: F, M, X per AIR V6.0.7
         gender_dv = DataValidation(
             type="list",
-            formula1='"M,F,I,U,X"',
+            formula1='"F,M,X"',
             allow_blank=True,
         )
-        gender_dv.error = "Gender must be M, F, I, U, or X"
+        gender_dv.error = "Gender must be F, M, or X"
         gender_dv.errorTitle = "Invalid Gender"
-        gender_dv.prompt = "Select gender: M=Male, F=Female, I=Intersex, U=Unknown, X=Not Stated"
+        gender_dv.prompt = "Select gender: F=Female, M=Male, X=Non-binary"
         gender_dv.promptTitle = "Gender"
         gender_col = self._get_column_letter("gender")
         gender_dv.add(f"{gender_col}2:{gender_col}{max_row}")
         ws.add_data_validation(gender_dv)
 
-        # Vaccine Type: NIP, AEN, OTH
+        # Vaccine Type: NIP, OTH per AIR V6.0.7
         vtype_dv = DataValidation(
             type="list",
-            formula1='"NIP,AEN,OTH"',
+            formula1='"NIP,OTH"',
             allow_blank=True,
         )
-        vtype_dv.error = "Vaccine Type must be NIP, AEN, or OTH"
+        vtype_dv.error = "Vaccine Type must be NIP or OTH"
         vtype_dv.errorTitle = "Invalid Vaccine Type"
-        vtype_dv.prompt = "NIP=National Immunisation Program, AEN=Australian Extended NIP, OTH=Other"
+        vtype_dv.prompt = "NIP=NIP/Commonwealth, OTH=Other"
         vtype_dv.promptTitle = "Vaccine Type"
         vtype_col = self._get_column_letter("vaccineType")
         vtype_dv.add(f"{vtype_col}2:{vtype_col}{max_row}")
         ws.add_data_validation(vtype_dv)
 
-        # Route of Administration: IM, SC, ID, OR, IN, NAS, NS
+        # Route of Administration: PO, SC, ID, IM, NS per AIR V6.0.7
         route_dv = DataValidation(
             type="list",
-            formula1='"IM,SC,ID,OR,IN,NAS,NS"',
+            formula1='"PO,SC,ID,IM,NS"',
             allow_blank=True,
         )
-        route_dv.error = "Route must be IM, SC, ID, OR, IN, NAS, or NS"
+        route_dv.error = "Route must be PO, SC, ID, IM, or NS"
         route_dv.errorTitle = "Invalid Route"
-        route_dv.prompt = "IM=Intramuscular, SC=Subcutaneous, ID=Intradermal, OR=Oral, IN=Inhalation, NAS=Nasal, NS=Nasal (V6.0.7+)"
+        route_dv.prompt = "PO=Oral, SC=Subcutaneous, ID=Intradermal, IM=Intramuscular, NS=Nasal"
         route_dv.promptTitle = "Route of Administration"
         route_col = self._get_column_letter("routeOfAdministration")
         route_dv.add(f"{route_col}2:{route_col}{max_row}")

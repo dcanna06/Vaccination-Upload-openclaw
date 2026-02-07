@@ -211,13 +211,11 @@ class ExcelParserService:
         gender_map = {
             "M": "M", "MALE": "M",
             "F": "F", "FEMALE": "F",
-            "I": "I", "INTERSEX": "I", "INDETERMINATE": "I",
-            "U": "U", "UNKNOWN": "U",
-            "X": "X", "NOT STATED": "X", "NOTSTATED": "X",
+            "X": "X", "NON-BINARY": "X", "NONBINARY": "X", "NOT STATED": "X", "NOTSTATED": "X",
         }
         if s in gender_map:
             return gender_map[s]
-        raise ValueError(f"Invalid gender: '{value}'. Expected M/F/I/U/X or Male/Female/Intersex/Unknown/NotStated.")
+        raise ValueError(f"Invalid gender: '{value}'. Expected F/M/X or Female/Male/Non-binary.")
 
     def _parse_boolean(self, value: Any) -> bool:
         """Parse a boolean-like value."""

@@ -70,34 +70,54 @@ class TestMedicareCheckDigit:
 # ============================================================================
 
 class TestMedicareProviderNumber:
-    """Test Medicare provider number validation."""
+    """Test Medicare provider number format validation."""
 
-    def test_invalid_length(self) -> None:
+    def test_invalid_length_too_short(self) -> None:
         assert validate_medicare_provider_number("12345") is False
+
+    def test_invalid_length_too_long(self) -> None:
+        assert validate_medicare_provider_number("123456789") is False
 
     def test_non_digit_stem(self) -> None:
         assert validate_medicare_provider_number("ABCDEFGH") is False
 
-    def test_invalid_plc_character(self) -> None:
-        # I, O, S, Z are not valid practice location characters
-        assert validate_medicare_provider_number("123456IA") is False
-        assert validate_medicare_provider_number("123456OA") is False
+    def test_valid_6_digit(self) -> None:
+        assert validate_medicare_provider_number("123456") is True
 
-    def test_valid_format_check(self) -> None:
-        # Test with a constructed valid number
-        result = validate_medicare_provider_number("1234567A")
-        # Whether it passes depends on the actual check digit
-        assert isinstance(result, bool)
+    def test_valid_8_char_format(self) -> None:
+        assert validate_medicare_provider_number("1234567A") is True
+
+    def test_invalid_8th_char_not_alpha(self) -> None:
+        assert validate_medicare_provider_number("12345671") is False
+
+    def test_official_sa_test_numbers(self) -> None:
+        """Official Services Australia test provider numbers must pass."""
+        assert validate_medicare_provider_number("2448141T") is True
+        assert validate_medicare_provider_number("2448151L") is True
 
 
 class TestAIRProviderNumber:
-    """Test AIR provider number validation."""
+    """Test AIR provider number format validation."""
 
     def test_invalid_state_code(self) -> None:
         assert validate_air_provider_number("Z1234567") is False
 
     def test_non_digit_body(self) -> None:
-        assert validate_air_provider_number("NABCDET ") is False
+        assert validate_air_provider_number("NABCDET") is False
+
+    def test_too_short(self) -> None:
+        assert validate_air_provider_number("N1234") is False
+
+    def test_valid_7_char(self) -> None:
+        assert validate_air_provider_number("N56725J") is True
+
+    def test_valid_8_char(self) -> None:
+        assert validate_air_provider_number("T59433Y ") is True
+
+    def test_official_sa_test_numbers(self) -> None:
+        """Official Services Australia test provider numbers must pass."""
+        assert validate_air_provider_number("N56725J") is True
+        assert validate_air_provider_number("T59433Y") is True
 
 
 class TestProviderNumberDispatch:
@@ -110,14 +130,13 @@ class TestProviderNumberDispatch:
         assert validate_provider_number("12345") is False
 
     def test_digit_start_uses_medicare(self) -> None:
-        # Starts with digit -> Medicare format
-        result = validate_provider_number("1234560Y")
-        assert isinstance(result, bool)
+        assert validate_provider_number("2448141T") is True
 
     def test_alpha_start_uses_air(self) -> None:
-        # Starts with letter -> AIR format
-        result = validate_provider_number("N12345XY")
-        assert isinstance(result, bool)
+        assert validate_provider_number("N56725J") is True
+
+    def test_special_char_start_returns_false(self) -> None:
+        assert validate_provider_number("@123456") is False
 
 
 # ============================================================================
@@ -156,10 +175,16 @@ class TestIndividualValidator:
         assert any(e.code == "AIR-E-1017" for e in errors)
 
     def test_valid_genders_pass(self, validator: IndividualValidator) -> None:
-        for g in ["M", "F", "I", "U", "X"]:
+        for g in ["M", "F", "X"]:
             errors = validator.validate(_base_record(gender=g), 2)
             gender_errors = [e for e in errors if e.field == "gender"]
             assert len(gender_errors) == 0, f"Gender '{g}' should be valid"
+
+    def test_invalid_genders_fail(self, validator: IndividualValidator) -> None:
+        for g in ["I", "U"]:
+            errors = validator.validate(_base_record(gender=g), 2)
+            gender_errors = [e for e in errors if e.field == "gender"]
+            assert len(gender_errors) > 0, f"Gender '{g}' should be invalid per AIR V6.0.7"
 
     # Identification scenarios
     def test_scenario_1_medicare(self, validator: IndividualValidator) -> None:
@@ -334,17 +359,29 @@ class TestEpisodeValidator:
         assert any(e.code == "AIR-E-1084" for e in errors)
 
     def test_valid_vaccine_types(self, validator: EpisodeValidator) -> None:
-        for vtype in ["NIP", "AEN", "OTH"]:
+        for vtype in ["NIP", "OTH"]:
             errors = validator.validate(_base_record(vaccineType=vtype), 2)
             type_errors = [e for e in errors if e.field == "vaccineType"]
             assert len(type_errors) == 0, f"VaccineType '{vtype}' should be valid"
 
+    def test_invalid_vaccine_type_aen(self, validator: EpisodeValidator) -> None:
+        """AEN was removed in AIR V6.0.7 — only NIP and OTH are valid."""
+        errors = validator.validate(_base_record(vaccineType="AEN"), 2)
+        assert any(e.code == "AIR-E-1084" for e in errors)
+
     def test_invalid_route(self, validator: EpisodeValidator) -> None:
-        errors = validator.validate(_base_record(routeOfAdministration="PO"), 2)
+        errors = validator.validate(_base_record(routeOfAdministration="OR"), 2)
         assert any(e.code == "AIR-E-1085" for e in errors)
 
+    def test_invalid_route_values(self, validator: EpisodeValidator) -> None:
+        """OR, IN, NAS are not valid per AIR V6.0.7 — PO replaced OR, NAS removed."""
+        for route in ["OR", "IN", "NAS"]:
+            errors = validator.validate(_base_record(routeOfAdministration=route), 2)
+            route_errors = [e for e in errors if e.field == "routeOfAdministration"]
+            assert len(route_errors) > 0, f"Route '{route}' should be invalid per AIR V6.0.7"
+
     def test_valid_routes(self, validator: EpisodeValidator) -> None:
-        for route in ["IM", "SC", "ID", "OR", "IN", "NAS", "NS"]:
+        for route in ["PO", "SC", "ID", "IM", "NS"]:
             errors = validator.validate(_base_record(routeOfAdministration=route), 2)
             route_errors = [e for e in errors if e.field == "routeOfAdministration"]
             assert len(route_errors) == 0, f"Route '{route}' should be valid"

@@ -16,7 +16,7 @@ from app.exceptions import AIRApiError
 
 logger = structlog.get_logger(__name__)
 
-RECORD_ENCOUNTER_PATH = "/air/immunisation/v1.4/encounters/record"
+RECORD_ENCOUNTER_PATH = "/air/immunisation/v1.3/encounters/record"
 
 MAX_RETRIES = 3
 BACKOFF_BASE = 2  # seconds
@@ -74,6 +74,8 @@ class AIRClient:
         headers = self._build_headers(dob_header)
         url = f"{settings.air_api_base_url}{RECORD_ENCOUNTER_PATH}"
 
+        import json as _json
+        logger.info("air_api_request", url=url, payload=_json.dumps(payload, default=str)[:3000])
         return await self._submit_with_retry(url, headers, payload)
 
     async def _submit_with_retry(
@@ -113,6 +115,11 @@ class AIRClient:
                     return await self._submit_with_retry(url, headers, payload, attempt + 1)
 
                 if response.status_code >= 400:
+                    logger.error(
+                        "air_api_error_response",
+                        status_code=response.status_code,
+                        response_body=response.text[:2000],
+                    )
                     raise AIRApiError(
                         message=f"AIR API error: HTTP {response.status_code}",
                         status_code=response.status_code,
@@ -233,54 +240,63 @@ class BatchSubmissionService:
     ) -> dict[str, Any]:
         """Submit all batches sequentially with progress tracking.
 
-        Returns submission results summary.
+        Each encounter is for a single individual and sent as a separate
+        API request, since the AIR API expects one individual per request.
         """
         results: list[dict[str, Any]] = []
         successful = 0
         failed = 0
         pending_confirm = 0
 
-        for batch_idx, batch in enumerate(batches):
+        # Flatten: each encounter in each batch becomes one API call
+        all_encounters = []
+        for batch in batches:
+            for enc in batch.get("encounters", []):
+                all_encounters.append(enc)
+
+        total = len(all_encounters)
+        for idx, encounter in enumerate(all_encounters):
             if self._paused:
-                logger.info("batch_submission_paused", batch_index=batch_idx)
+                logger.info("batch_submission_paused", encounter_index=idx)
                 break
 
             logger.info(
-                "submitting_batch",
-                batch_index=batch_idx + 1,
-                total_batches=len(batches),
-                encounters=batch.get("encounterCount", 0),
+                "submitting_encounter",
+                encounter_index=idx + 1,
+                total_encounters=total,
             )
 
             try:
+                # Wrap single encounter in a batch for _submit_single_batch
+                single_batch = {"encounters": [encounter]}
                 result = await self._submit_single_batch(
-                    batch, information_provider
+                    single_batch, dict(information_provider)
                 )
                 results.append(result)
 
                 if result["status"] == "success":
-                    successful += result.get("encounterCount", 0)
+                    successful += 1
                 elif result["status"] == "warning":
-                    pending_confirm += result.get("encounterCount", 0)
+                    pending_confirm += 1
                 else:
-                    failed += result.get("encounterCount", 0)
+                    failed += 1
 
             except AIRApiError as e:
                 logger.error(
-                    "batch_submission_failed",
-                    batch_index=batch_idx + 1,
+                    "encounter_submission_failed",
+                    encounter_index=idx + 1,
                     error=e.message,
                 )
                 results.append({
                     "status": "error",
                     "error": e.message,
-                    "batchIndex": batch_idx,
-                    "sourceRows": batch.get("sourceRows", []),
+                    "detail": e.detail if hasattr(e, 'detail') else None,
+                    "sourceRows": encounter.get("sourceRows", []),
                 })
-                failed += batch.get("encounterCount", 0)
+                failed += 1
 
         return {
-            "totalBatches": len(batches),
+            "totalBatches": total,
             "completedBatches": len(results),
             "successful": successful,
             "failed": failed,
@@ -288,6 +304,13 @@ class BatchSubmissionService:
             "results": results,
             "status": "completed" if not self._paused else "paused",
         }
+
+    def _to_ddmmyyyy(self, iso_date: str) -> str:
+        """Convert yyyy-MM-dd to ddMMyyyy for AIR API wire format."""
+        parts = iso_date.split("-")
+        if len(parts) == 3:
+            return f"{parts[2]}{parts[1]}{parts[0]}"
+        return iso_date
 
     async def _submit_single_batch(
         self,
@@ -299,28 +322,54 @@ class BatchSubmissionService:
         if not encounters:
             return {"status": "error", "error": "Empty batch"}
 
-        # Get individual from first encounter
-        individual = encounters[0].get("individual", {})
-        dob = individual.get("personalDetails", {}).get("dateOfBirth", "")
+        # Build individual — only personalDetails and medicareCard (no address)
+        raw_individual = encounters[0].get("individual", {})
+        personal = dict(raw_individual.get("personalDetails", {}))
+        dob_iso = personal.get("dateOfBirth", "")
+        personal["dateOfBirth"] = self._to_ddmmyyyy(dob_iso)
 
-        # Build API payload
+        individual: dict[str, Any] = {"personalDetails": personal}
+        if raw_individual.get("medicareCard"):
+            individual["medicareCard"] = raw_individual["medicareCard"]
+        if raw_individual.get("ihiNumber"):
+            individual["ihiNumber"] = raw_individual["ihiNumber"]
+
+        # Use configured provider number if informationProvider is empty
+        if not information_provider.get("providerNumber"):
+            information_provider = {
+                "providerNumber": settings.AIR_PROVIDER_NUMBER,
+            }
+
+        # Build API encounters matching proven SoapUI format
         api_encounters = []
         for enc in encounters:
-            api_enc = {
-                "id": enc["id"],
-                "dateOfService": enc["dateOfService"],
-                "episodes": enc["episodes"],
+            episodes = []
+            for ep in enc.get("episodes", []):
+                episode: dict[str, Any] = {
+                    "id": int(ep.get("id", 1)),
+                    "vaccineCode": ep.get("vaccineCode", ""),
+                    "vaccineDose": ep.get("vaccineDose", ""),
+                    "vaccineBatch": ep.get("vaccineBatch", ""),
+                    "vaccineType": ep.get("vaccineType", ""),
+                    "routeOfAdministration": ep.get("routeOfAdministration", ""),
+                }
+                episodes.append(episode)
+
+            api_enc: dict[str, Any] = {
+                "id": int(enc.get("id", 1)),
+                "dateOfService": self._to_ddmmyyyy(enc["dateOfService"]),
+                "episodes": episodes,
             }
             if enc.get("immunisationProvider"):
                 api_enc["immunisationProvider"] = enc["immunisationProvider"]
+            if enc.get("schoolId"):
+                api_enc["schoolId"] = enc["schoolId"]
             if enc.get("administeredOverseas"):
                 api_enc["administeredOverseas"] = True
                 if enc.get("countryCode"):
                     api_enc["countryCode"] = enc["countryCode"]
-            if enc.get("antenatalIndicator"):
-                api_enc["antenatalIndicator"] = True
-            if enc.get("schoolId"):
-                api_enc["schoolId"] = enc["schoolId"]
+            if enc.get("antenatalIndicator") is not None:
+                api_enc["antenatalIndicator"] = bool(enc["antenatalIndicator"])
             api_encounters.append(api_enc)
 
         payload = {
@@ -329,7 +378,7 @@ class BatchSubmissionService:
             "informationProvider": information_provider,
         }
 
-        response = await self._client.record_encounter(payload, dob)
+        response = await self._client.record_encounter(payload, dob_iso)
         response["batchIndex"] = batch.get("batchIndex", 0)
         response["sourceRows"] = batch.get("sourceRows", [])
         response["encounterCount"] = len(api_encounters)

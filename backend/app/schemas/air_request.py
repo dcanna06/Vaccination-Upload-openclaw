@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 
 class PersonalDetailsSchema(BaseModel):
     dateOfBirth: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
-    gender: Literal["F", "M", "I", "U", "X"] | None = None
+    gender: Literal["F", "M", "X"] | None = None
     firstName: str | None = Field(None, max_length=40)
     lastName: str | None = Field(None, max_length=40)
     initial: str | None = Field(None, max_length=1)
@@ -46,8 +46,8 @@ class EpisodeSchema(BaseModel):
     vaccineCode: str = Field(..., min_length=1, max_length=6)
     vaccineDose: str = Field(..., pattern=r"^(B|[1-9]|1[0-9]|20)$")
     vaccineBatch: str | None = Field(None, max_length=15)
-    vaccineType: Literal["NIP", "AEN", "OTH"] | None = None
-    routeOfAdministration: Literal["IM", "SC", "ID", "OR", "IN", "NAS", "NS"] | None = None
+    vaccineType: Literal["NIP", "OTH"] | None = None
+    routeOfAdministration: Literal["PO", "SC", "ID", "IM", "NS"] | None = None
 
 
 class EncounterSchema(BaseModel):

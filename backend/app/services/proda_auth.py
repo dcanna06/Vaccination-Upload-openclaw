@@ -69,43 +69,62 @@ class ProdaAuthService:
         return jwt.encode(claims, private_key, algorithm="RS256", headers=headers)
 
     def _load_private_key(self) -> bytes:
-        """Load private key from JKS keystore (file path or base64-encoded).
+        """Load private key from keystore (JKS or PKCS12) or base64-encoded.
 
-        Uses pyjks to extract the private key. Key is loaded into memory
-        only — never written to disk.
+        Supports both JKS (pyjks) and PKCS12 (cryptography) formats.
+        Key is loaded into memory only — never written to disk.
         """
         try:
-            import jks
-
             if self._config.PRODA_JKS_FILE_PATH:
                 with open(self._config.PRODA_JKS_FILE_PATH, "rb") as f:
-                    jks_bytes = f.read()
+                    store_bytes = f.read()
+            elif self._config.PRODA_JKS_BASE64:
+                store_bytes = base64.b64decode(self._config.PRODA_JKS_BASE64)
             else:
-                jks_bytes = base64.b64decode(self._config.PRODA_JKS_BASE64)
+                raise AuthenticationError("No keystore configured")
 
-            keystore = jks.KeyStore.load(
-                io.BytesIO(jks_bytes).read(),
-                self._config.PRODA_JKS_PASSWORD,
-            )
+            # Detect format: JKS starts with FEEDFEED, PKCS12 starts with 3082
+            if store_bytes[:4] in (b'\xfe\xed\xfe\xed', b'\xce\xce\xce\xce'):
+                return self._load_from_jks(store_bytes)
+            else:
+                return self._load_from_pkcs12(store_bytes)
 
-            alias = self._config.PRODA_KEY_ALIAS
-            if alias not in keystore.private_keys:
-                raise AuthenticationError(
-                    f"Key alias '{alias}' not found in JKS keystore"
-                )
-
-            pk_entry = keystore.private_keys[alias]
-            if not pk_entry.is_decrypted():
-                pk_entry.decrypt(self._config.PRODA_JKS_PASSWORD)
-
-            return pk_entry.pkey
-        except ImportError:
-            raise AuthenticationError("pyjks library not available")
         except AuthenticationError:
             raise
         except Exception as e:
-            logger.error("jks_load_failed", error=str(e))
-            raise AuthenticationError(f"Failed to load JKS keystore: {str(e)}")
+            logger.error("keystore_load_failed", error=str(e))
+            raise AuthenticationError(f"Failed to load keystore: {str(e)}")
+
+    def _load_from_jks(self, store_bytes: bytes) -> bytes:
+        """Extract private key from JKS keystore bytes."""
+        import jks
+
+        keystore = jks.KeyStore.loads(store_bytes, self._config.PRODA_JKS_PASSWORD)
+        alias = self._config.PRODA_KEY_ALIAS
+        if alias not in keystore.private_keys:
+            raise AuthenticationError(f"Key alias '{alias}' not found in JKS keystore")
+
+        pk_entry = keystore.private_keys[alias]
+        if not pk_entry.is_decrypted():
+            pk_entry.decrypt(self._config.PRODA_JKS_PASSWORD)
+        return pk_entry.pkey
+
+    def _load_from_pkcs12(self, store_bytes: bytes) -> bytes:
+        """Extract private key from PKCS12 keystore bytes."""
+        from cryptography.hazmat.primitives.serialization import (
+            Encoding,
+            NoEncryption,
+            PrivateFormat,
+            pkcs12,
+        )
+
+        private_key, _cert, _chain = pkcs12.load_key_and_certificates(
+            store_bytes, self._config.PRODA_JKS_PASSWORD.encode("utf-8")
+        )
+        if private_key is None:
+            raise AuthenticationError("No private key found in PKCS12 keystore")
+
+        return private_key.private_bytes(Encoding.PEM, PrivateFormat.PKCS8, NoEncryption())
 
     async def get_token(self) -> str:
         """Get a valid PRODA access token, refreshing if needed."""

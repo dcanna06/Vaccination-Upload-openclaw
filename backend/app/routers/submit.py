@@ -10,6 +10,7 @@ from pydantic import BaseModel
 import structlog
 
 from app.services.air_client import AIRClient, BatchSubmissionService
+from app.services.proda_auth import ProdaAuthService
 
 router = APIRouter(prefix="/api", tags=["submit"])
 logger = structlog.get_logger(__name__)
@@ -72,7 +73,9 @@ async def start_submission(request: SubmitRequest) -> SubmitResponse:
             ],
         }
     else:
-        client = AIRClient()
+        proda = ProdaAuthService()
+        token = await proda.get_token()
+        client = AIRClient(access_token=token)
         service = BatchSubmissionService(client)
         result = await service.submit_batches(
             request.batches, request.informationProvider

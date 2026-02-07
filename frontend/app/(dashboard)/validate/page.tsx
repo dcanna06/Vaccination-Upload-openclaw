@@ -23,7 +23,7 @@ interface ValidationResult {
 
 export default function ValidatePage() {
   const router = useRouter();
-  const { parsedRows } = useUploadStore();
+  const { parsedRows, setGroupedBatches } = useUploadStore();
   const [result, setResult] = useState<ValidationResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,6 +43,9 @@ export default function ValidatePage() {
         if (!res.ok) throw new Error(`Validation failed: ${res.status}`);
         const data = await res.json();
         setResult(data);
+        if (data.groupedBatches) {
+          setGroupedBatches(data.groupedBatches);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Validation failed');
       } finally {
