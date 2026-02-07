@@ -145,25 +145,26 @@ AIR uses PRODA (Provider Digital Access) for machine-to-machine authentication. 
 ```json
 {
   "alg": "RS256",
-  "typ": "JWT"
+  "kid": "DavidTestLaptop2"
 }
 ```
 
-**JWT Claims:**
+**JWT Claims (proven 2026-02-08):**
 ```json
 {
-  "iss": "MMS00001",                                    // Your Minor ID
-  "sub": "AIRBulkVaxSystem01",                          // Your Device Name
-  "aud": "https://medicareaustralia.gov.au/MCOL",       // PRODA audience (fixed)
-  "exp": 1643835600,                                    // Now + 5 minutes (Unix timestamp)
-  "iat": 1643835300,                                    // Current time (Unix timestamp)
-  "jti": "550e8400-e29b-41d4-a716-446655440000"         // Unique request ID (UUID)
+  "iss": "2330016739",                                   // Your PRODA Org ID
+  "sub": "DavidTestLaptop2",                             // Your Device Name
+  "aud": "https://proda.humanservices.gov.au",           // PRODA audience
+  "token.aud": "https://proda.humanservices.gov.au",     // Access token audience
+  "exp": 1643836200,                                     // Now + 10 minutes (Unix timestamp)
+  "iat": 1643835600,                                     // Current time (Unix timestamp)
+  "jti": "550e8400-e29b-41d4-a716-446655440000"          // Unique request ID (UUID)
 }
 ```
 
 **Signature:**
 - Algorithm: RS256 (RSA with SHA-256)
-- Sign using your private key from the JKS keystore
+- Sign using your private key from the JKS keystore (alias: `proda-alias`, password: `Pass-123`)
 
 **Implementation (Python):**
 ```python
@@ -171,31 +172,33 @@ import jwt
 import time
 from uuid import uuid4
 
-def build_assertion(minor_id: str, device_name: str, private_key: bytes) -> str:
+def build_assertion(org_id: str, device_name: str, private_key: bytes, access_token_audience: str) -> str:
     now = int(time.time())
     claims = {
-        "iss": minor_id,
+        "iss": org_id,
         "sub": device_name,
-        "aud": "https://medicareaustralia.gov.au/MCOL",
-        "exp": now + 300,  # 5 minutes
+        "aud": "https://proda.humanservices.gov.au",
+        "token.aud": access_token_audience,
+        "exp": now + 600,  # 10 minutes
         "iat": now,
         "jti": str(uuid4()),
     }
-    return jwt.encode(claims, private_key, algorithm="RS256")
+    headers = {"kid": device_name}
+    return jwt.encode(claims, private_key, algorithm="RS256", headers=headers)
 ```
 
 ### Step 2: Exchange for Access Token
 
 **Token Endpoint:**
-- **Vendor**: https://proda.humanservices.gov.au/piaweb/api/b2b/v1/token
-- **Production**: https://proda.humanservices.gov.au/piaweb/api/b2b/v1/token
+- **Vendor**: https://vnd.proda.humanservices.gov.au/mga/sps/oauth/oauth20/token
+- **Production**: https://proda.humanservices.gov.au/mga/sps/oauth/oauth20/token
 
 **Request:**
 ```http
-POST /piaweb/api/b2b/v1/token
+POST /mga/sps/oauth/oauth20/token
 Content-Type: application/x-www-form-urlencoded
 
-grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion={signed_jwt}
+grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion={signed_jwt}&client_id=soape-testing-client-v2
 ```
 
 **Response:**
@@ -211,14 +214,16 @@ grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion={signed_jwt}
 ```python
 import httpx
 
-async def acquire_token(assertion: str, token_endpoint: str) -> dict:
+async def acquire_token(assertion: str, token_endpoint: str, client_id: str) -> dict:
     async with httpx.AsyncClient() as client:
         response = await client.post(
             token_endpoint,
             data={
                 "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
                 "assertion": assertion,
+                "client_id": client_id,
             },
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
             timeout=30.0,
         )
         response.raise_for_status()

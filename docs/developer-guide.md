@@ -76,16 +76,23 @@ LOG_FORMAT=console                  # json | console
 ### PRODA Authentication
 
 ```env
-PRODA_MINOR_ID=                     # Your Minor ID (e.g., MMS00001)
-PRODA_DEVICE_NAME=                  # Device name registered with PRODA
-PRODA_AUDIENCE=https://medicareaustralia.gov.au/MCOL
+PRODA_ORG_ID=2330016739              # Your PRODA Organisation ID
+PRODA_DEVICE_NAME=DavidTestLaptop2   # Device name registered with PRODA
+PRODA_MINOR_ID=WRR00000             # Your Minor ID (Location ID)
+PRODA_JWT_AUDIENCE=https://proda.humanservices.gov.au
+PRODA_CLIENT_ID=soape-testing-client-v2
+PRODA_ACCESS_TOKEN_AUDIENCE=https://proda.humanservices.gov.au
+PRODA_TOKEN_ENDPOINT_VENDOR=https://vnd.proda.humanservices.gov.au/mga/sps/oauth/oauth20/token
+PRODA_TOKEN_ENDPOINT_PROD=https://proda.humanservices.gov.au/mga/sps/oauth/oauth20/token
 ```
 
 For PRODA JKS keystore:
 
 ```env
-JKS_BASE64=                         # Base64-encoded JKS keystore file
-JKS_PASSWORD=                       # JKS keystore password
+PRODA_JKS_FILE_PATH=               # Local file path to JKS (alternative to base64)
+PRODA_JKS_BASE64=                   # Base64-encoded JKS keystore file
+PRODA_JKS_PASSWORD=Pass-123         # SoapUI default
+PRODA_KEY_ALIAS=proda-alias         # SoapUI default
 ```
 
 ### AIR API Configuration
@@ -541,9 +548,10 @@ npm install
 
 ### PRODA Authentication Failures
 
-- Verify JKS keystore is Base64-encoded correctly
-- Check PRODA_MINOR_ID matches registration
-- Ensure PRODA_AUDIENCE is exactly `https://medicareaustralia.gov.au/MCOL`
+- Verify JKS keystore is Base64-encoded correctly or file path is valid
+- Check PRODA_ORG_ID matches your PRODA organisation registration
+- Ensure PRODA_JWT_AUDIENCE is exactly `https://proda.humanservices.gov.au`
+- Ensure PRODA_CLIENT_ID is set (e.g., `soape-testing-client-v2` for vendor)
 - Token expires after 60 minutes - check auto-refresh logic
 
 ### AIR API Errors
