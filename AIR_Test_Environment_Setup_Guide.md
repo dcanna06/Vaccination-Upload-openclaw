@@ -129,33 +129,37 @@ After completing the above, you will have:
 | `minorId` | Minor ID linked in PRODA | `ABC00000` | Backend env config + `dhs-auditId` header |
 | `X-IBM-Client-Id` | API Key from Developer Portal | `5211a7aca10953b85a19846608e956d7` | Backend env config |
 | `dhs-productId` | Your software name + version | `AIRBulkUploadV1.0` | Backend env config |
-| `audience` | PRODA token audience string | `https://medicareaustralia.gov.au/MCOL` | Hardcoded in auth module |
+| `audience` | PRODA JWT audience string | `https://proda.humanservices.gov.au` | Backend env config |
+| `client_id` | PRODA client identifier | `soape-testing-client-v2` | Backend env config |
 
-### 3.3 — Token Acquisition Flow
+### 3.3 — Token Acquisition Flow (Proven 2026-02-08)
 
 Your FastAPI backend must implement this flow:
 
 ```
-1. Load JKS → extract private key
+1. Load JKS → extract private key (alias: proda-alias, password: Pass-123)
 2. Create JWT assertion:
-   - sub: prodaOrgId
-   - aud: "PRODA.UNATTENDED.B2B"  
-   - proda.swinst: deviceName
-   - proda.org: prodaOrgId
+   - header: alg=RS256, kid=deviceName
    - iss: prodaOrgId
-   - exp: current_time + 300 (5 minutes)
+   - sub: deviceName
+   - aud: "https://proda.humanservices.gov.au"
+   - token.aud: "https://proda.humanservices.gov.au"
+   - exp: current_time + 600 (10 minutes)
    - iat: current_time
-3. Sign JWT with RSA-256 using device private key
+   - jti: UUID
+3. Sign JWT with RS256 using device private key
 4. POST to PRODA token endpoint with:
    - grant_type: urn:ietf:params:oauth:grant-type:jwt-bearer
    - assertion: <signed_JWT>
-   - accesstokenAudience: https://medicareaustralia.gov.au/MCOL
+   - client_id: soape-testing-client-v2
+   - Content-Type: application/x-www-form-urlencoded
 5. Receive access_token (JWT), expires_in (3600 = 60 mins)
 6. Use access_token as Bearer token in Authorization header
 7. Track expiry — refresh BEFORE expiration
 ```
 
-**PRODA Token Endpoint (Vendor):** Provided in the PRODA development package from Developer Liaison.
+**PRODA Token Endpoint (Vendor):** `https://vnd.proda.humanservices.gov.au/mga/sps/oauth/oauth20/token`
+**PRODA Token Endpoint (Prod):** `https://proda.humanservices.gov.au/mga/sps/oauth/oauth20/token`
 
 ### 3.4 — Key & Device Expiry Management
 
@@ -243,13 +247,17 @@ AIR_RECORD_ENCOUNTER_PATH=/air/immunisation/v1.4/encounters/record
 AIR_IDENTIFY_INDIVIDUAL_PATH=/air/immunisation/v1.1/individual/details
 AIR_REFERENCE_DATA_PATH=/air/immunisation/v1/refdata
 
-# ===== PRODA B2B Authentication =====
-PRODA_TOKEN_URL=<provided_in_proda_dev_package>
-PRODA_JKS_PATH=./certs/your_device_vnd.jks
-PRODA_JKS_PASSWORD=<your_jks_password>
+# ===== PRODA B2B Authentication (proven 2026-02-08) =====
+PRODA_TOKEN_ENDPOINT_VENDOR=https://vnd.proda.humanservices.gov.au/mga/sps/oauth/oauth20/token
+PRODA_TOKEN_ENDPOINT_PROD=https://proda.humanservices.gov.au/mga/sps/oauth/oauth20/token
+PRODA_JKS_FILE_PATH=./certs/your_device_vnd.jks
+PRODA_JKS_PASSWORD=Pass-123
+PRODA_KEY_ALIAS=proda-alias
 PRODA_DEVICE_NAME=<your_device_name>
 PRODA_ORG_ID=<your_proda_ra_number>
-PRODA_AUDIENCE=https://medicareaustralia.gov.au/MCOL
+PRODA_JWT_AUDIENCE=https://proda.humanservices.gov.au
+PRODA_CLIENT_ID=soape-testing-client-v2
+PRODA_ACCESS_TOKEN_AUDIENCE=https://proda.humanservices.gov.au
 
 # ===== AIR Headers =====
 AIR_CLIENT_ID=<your_32_char_x_ibm_client_id>
@@ -429,7 +437,7 @@ In the SoapUI project, set these properties in the `vendor` test suite:
 ### 7.3 — Test Token Acquisition
 
 1. Run the **"run me first (get token for AIR)"** test step
-2. This calls PRODA with audience `https://medicareaustralia.gov.au/MCOL`
+2. This calls PRODA with audience `https://proda.humanservices.gov.au`
 3. The `Authorization` property auto-populates with the Bearer JWT
 4. Verify `expires_in: 3600` in the response
 

@@ -1,8 +1,8 @@
 // AIR API Types — mirrors TECH.SIS.AIR.02 data structures
 
-export type Gender = 'F' | 'M' | 'I' | 'U';
+export type Gender = 'F' | 'M' | 'I' | 'U' | 'X';
 export type VaccineType = 'NIP' | 'AEN' | 'OTH';
-export type RouteOfAdministration = 'IM' | 'SC' | 'ID' | 'OR' | 'IN' | 'NAS';
+export type RouteOfAdministration = 'IM' | 'SC' | 'ID' | 'OR' | 'IN' | 'NAS' | 'NS';
 export type AcceptAndConfirm = 'Y' | 'N';
 
 export interface PersonalDetailsType {

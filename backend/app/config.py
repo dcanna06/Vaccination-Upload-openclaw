@@ -30,16 +30,21 @@ class Settings(BaseSettings):
     PRODA_ORG_ID: str = ""
     PRODA_DEVICE_NAME: str = ""
     PRODA_MINOR_ID: str = ""
-    PRODA_JKS_BASE64: str = ""
-    PRODA_JKS_PASSWORD: str = ""
-    PRODA_KEY_ALIAS: str = ""
-    PRODA_AUDIENCE: str = "https://medicareaustralia.gov.au/MCOL"
-    PRODA_TOKEN_ENDPOINT: str = "https://proda.humanservices.gov.au/piaweb/api/b2b/v1/token"
+    PRODA_JKS_FILE_PATH: str = ""  # Local file path to JKS
+    PRODA_JKS_BASE64: str = ""  # Base64-encoded JKS (alternative to file path)
+    PRODA_JKS_PASSWORD: str = "Pass-123"  # SoapUI default
+    PRODA_KEY_ALIAS: str = "proda-alias"  # SoapUI default
+    PRODA_JWT_AUDIENCE: str = "https://proda.humanservices.gov.au"
+    PRODA_CLIENT_ID: str = "soape-testing-client-v2"  # Vendor environment
+    PRODA_ACCESS_TOKEN_AUDIENCE: str = "https://proda.humanservices.gov.au"
+    PRODA_TOKEN_ENDPOINT_VENDOR: str = "https://vnd.proda.humanservices.gov.au/mga/sps/oauth/oauth20/token"
+    PRODA_TOKEN_ENDPOINT_PROD: str = "https://proda.humanservices.gov.au/mga/sps/oauth/oauth20/token"
 
     # === AIR API ===
     AIR_CLIENT_ID: str = ""  # X-IBM-Client-Id
     AIR_PRODUCT_ID: str = "AIRBulkVax 1.0"  # dhs-productId
-    AIR_VENDOR_BASE_URL: str = ""
+    AIR_API_BASE_URL_VENDOR: str = "https://test.healthclaiming.api.humanservices.gov.au/claiming/ext-vnd"
+    AIR_VENDOR_BASE_URL: str = ""  # Deprecated, use AIR_API_BASE_URL_VENDOR
     AIR_PROD_BASE_URL: str = ""
     AIR_PROVIDER_NUMBER: str = ""  # Default information provider
 

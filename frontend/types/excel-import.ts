@@ -68,7 +68,7 @@ export const COLUMN_MAPPINGS: ExcelColumnMapping[] = [
   { excelColumn: 'Vaccine Dose', fieldKey: 'vaccineDose', required: true },
   { excelColumn: 'Vaccine Batch', fieldKey: 'vaccineBatch', required: false, conditional: 'Mandatory for COVID/Flu/Yellow Fever vaccines' },
   { excelColumn: 'Vaccine Type', fieldKey: 'vaccineType', required: false, conditional: 'NIP/AEN/OTH' },
-  { excelColumn: 'Route of Administration', fieldKey: 'routeOfAdministration', required: false, conditional: 'IM/SC/ID/OR/IN/NAS' },
+  { excelColumn: 'Route of Administration', fieldKey: 'routeOfAdministration', required: false, conditional: 'IM/SC/ID/OR/IN/NAS/NS' },
   { excelColumn: 'Administered Overseas', fieldKey: 'administeredOverseas', required: false },
   { excelColumn: 'Country Code', fieldKey: 'countryCode', required: false, conditional: 'Required when administered overseas' },
   { excelColumn: 'Immunising Provider Number', fieldKey: 'immunisingProviderNumber', required: true },

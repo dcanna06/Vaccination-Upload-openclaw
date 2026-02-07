@@ -115,6 +115,7 @@ class TestGenderNormalization:
         ("F", "F"), ("Female", "F"),
         ("I", "I"), ("Intersex", "I"),
         ("U", "U"), ("Unknown", "U"),
+        ("X", "X"), ("Not Stated", "X"),
     ])
     def test_valid_genders(self, parser, input_val, expected):
         excel = _make_excel(
@@ -127,7 +128,7 @@ class TestGenderNormalization:
     def test_invalid_gender_produces_error(self, parser):
         excel = _make_excel(
             ["Gender", "Vaccine Code"],
-            [["X", "FLU"]],
+            [["Z", "FLU"]],
         )
         result = parser.parse(excel)
         assert len(result["errors"]) == 1

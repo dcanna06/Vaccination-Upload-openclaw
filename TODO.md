@@ -23,6 +23,29 @@ This project implements a web application that allows non-technical users to upl
 
 ---
 
+## Phase P0: Critical PRODA Auth Fix
+
+### [x] TICKET-P0: Fix PRODA B2B Authentication (CRITICAL)
+
+**Branch**: `feature/TICKET-P0-proda-auth-fix`
+**Priority**: P0 — Blocker
+**Scope**: Backend `proda_auth.py` service, env config, gender/route enums, all PRODA-related code
+**Reason**: PRODA JWT claims proven wrong via SoapUI on 2026-02-08. iss was Minor ID (should be Org ID), aud was MCOL (should be proda URL), kid header missing, token.aud missing, client_id missing.
+
+**Tasks**:
+- [x] 1. Update config.py / environment variables
+- [x] 2. Rewrite JWT assertion builder in proda_auth.py
+- [x] 3. Fix token request POST body
+- [x] 4. Fix token endpoint URL selection
+- [x] 5. Update JKS loading with correct alias/password
+- [x] 6. Update .env.example
+- [x] 7. Update gender validation everywhere (add X)
+- [x] 8. Update route of administration everywhere (add NS)
+- [x] 9. Write integration test for vendor environment
+- [x] 10. Update all unit tests for PRODA auth
+
+---
+
 ## Phase 1: Project Setup & Infrastructure
 
 ### [x] TICKET-001: Initialize Project Repository Structure

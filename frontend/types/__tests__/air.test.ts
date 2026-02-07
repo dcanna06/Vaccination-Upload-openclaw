@@ -29,8 +29,8 @@ import type {
 
 describe('AIR API Types', () => {
   it('should allow valid Gender values', () => {
-    const genders: Gender[] = ['F', 'M', 'I', 'U'];
-    expect(genders).toHaveLength(4);
+    const genders: Gender[] = ['F', 'M', 'I', 'U', 'X'];
+    expect(genders).toHaveLength(5);
   });
 
   it('should allow valid VaccineType values', () => {
@@ -39,8 +39,8 @@ describe('AIR API Types', () => {
   });
 
   it('should allow valid RouteOfAdministration values', () => {
-    const routes: RouteOfAdministration[] = ['IM', 'SC', 'ID', 'OR', 'IN', 'NAS'];
-    expect(routes).toHaveLength(6);
+    const routes: RouteOfAdministration[] = ['IM', 'SC', 'ID', 'OR', 'IN', 'NAS', 'NS'];
+    expect(routes).toHaveLength(7);
   });
 
   it('should allow valid AcceptAndConfirm values', () => {

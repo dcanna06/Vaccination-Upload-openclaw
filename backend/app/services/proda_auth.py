@@ -38,27 +38,38 @@ class ProdaAuthService:
         return time.time() < (self._token_expires_at - TOKEN_REFRESH_BUFFER_SECONDS)
 
     def _build_assertion(self) -> str:
-        """Build a signed JWT assertion for PRODA token request."""
-        if not self._config.PRODA_JKS_BASE64:
+        """Build a signed JWT assertion for PRODA token request.
+
+        JWT structure proven against vendor environment 2026-02-08:
+        - header: alg=RS256, kid=PRODA_DEVICE_NAME
+        - payload: iss=ORG_ID, sub=DEVICE_NAME, aud=proda URL,
+          token.aud=ACCESS_TOKEN_AUDIENCE, exp=10min
+        """
+        if not self._config.PRODA_JKS_BASE64 and not self._config.PRODA_JKS_FILE_PATH:
             raise AuthenticationError("PRODA JKS keystore not configured")
 
         now = int(time.time())
         claims = {
-            "iss": self._config.PRODA_MINOR_ID,
+            "iss": self._config.PRODA_ORG_ID,
             "sub": self._config.PRODA_DEVICE_NAME,
-            "aud": self._config.PRODA_AUDIENCE,
-            "exp": now + 300,  # 5 minutes
+            "aud": self._config.PRODA_JWT_AUDIENCE,
+            "token.aud": self._config.PRODA_ACCESS_TOKEN_AUDIENCE,
+            "exp": now + 600,  # 10 minutes
             "iat": now,
             "jti": str(uuid4()),
         }
 
-        # Load private key from JKS (base64 encoded)
+        headers = {
+            "kid": self._config.PRODA_DEVICE_NAME,
+        }
+
+        # Load private key from JKS
         private_key = self._load_private_key()
 
-        return jwt.encode(claims, private_key, algorithm="RS256")
+        return jwt.encode(claims, private_key, algorithm="RS256", headers=headers)
 
     def _load_private_key(self) -> bytes:
-        """Load private key from base64-encoded JKS keystore.
+        """Load private key from JKS keystore (file path or base64-encoded).
 
         Uses pyjks to extract the private key. Key is loaded into memory
         only — never written to disk.
@@ -66,7 +77,12 @@ class ProdaAuthService:
         try:
             import jks
 
-            jks_bytes = base64.b64decode(self._config.PRODA_JKS_BASE64)
+            if self._config.PRODA_JKS_FILE_PATH:
+                with open(self._config.PRODA_JKS_FILE_PATH, "rb") as f:
+                    jks_bytes = f.read()
+            else:
+                jks_bytes = base64.b64decode(self._config.PRODA_JKS_BASE64)
+
             keystore = jks.KeyStore.load(
                 io.BytesIO(jks_bytes).read(),
                 self._config.PRODA_JKS_PASSWORD,
@@ -98,18 +114,27 @@ class ProdaAuthService:
 
         return await self._acquire_token()
 
+    def _get_token_endpoint(self) -> str:
+        """Return the correct PRODA token endpoint for the current environment."""
+        if self._config.APP_ENV == "production":
+            return self._config.PRODA_TOKEN_ENDPOINT_PROD
+        return self._config.PRODA_TOKEN_ENDPOINT_VENDOR
+
     async def _acquire_token(self) -> str:
         """Acquire a new token from the PRODA token endpoint."""
         assertion = self._build_assertion()
+        endpoint = self._get_token_endpoint()
 
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.post(
-                    self._config.PRODA_TOKEN_ENDPOINT,
+                    endpoint,
                     data={
                         "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
                         "assertion": assertion,
+                        "client_id": self._config.PRODA_CLIENT_ID,
                     },
+                    headers={"Content-Type": "application/x-www-form-urlencoded"},
                     timeout=30.0,
                 )
                 response.raise_for_status()
