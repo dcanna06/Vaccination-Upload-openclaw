@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ValidationResults } from '@/components/ValidationResults';
 import { useUploadStore } from '@/stores/uploadStore';
 import { env } from '@/lib/env';
@@ -21,6 +22,7 @@ interface ValidationResult {
 }
 
 export default function ValidatePage() {
+  const router = useRouter();
   const { parsedRows } = useUploadStore();
   const [result, setResult] = useState<ValidationResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -52,8 +54,8 @@ export default function ValidatePage() {
   }, [parsedRows]);
 
   const handleProceed = useCallback(() => {
-    window.location.href = '/submit';
-  }, []);
+    router.push('/submit');
+  }, [router]);
 
   if (parsedRows.length === 0) {
     return (

@@ -1,5 +1,6 @@
 """Submission, progress, confirmation, and results endpoints."""
 
+from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
 
@@ -40,6 +41,7 @@ async def start_submission(request: SubmitRequest) -> SubmitResponse:
 
     _submissions[submission_id] = {
         "status": "running",
+        "createdAt": datetime.now(timezone.utc).isoformat(),
         "batches": request.batches,
         "informationProvider": request.informationProvider,
         "dryRun": request.dryRun,
@@ -55,19 +57,35 @@ async def start_submission(request: SubmitRequest) -> SubmitResponse:
         "results": None,
     }
 
-    if not request.dryRun:
+    if request.dryRun:
+        # Populate mock results so the user sees meaningful feedback
+        total_records = sum(len(b.get("encounters", [])) for b in request.batches)
+        result = {
+            "status": "completed",
+            "completedBatches": len(request.batches),
+            "successful": total_records,
+            "failed": 0,
+            "pendingConfirmation": 0,
+            "results": [
+                {"batchIndex": i, "status": "success_dry_run", "message": "Dry run — not submitted to AIR"}
+                for i in range(len(request.batches))
+            ],
+        }
+    else:
         client = AIRClient()
         service = BatchSubmissionService(client)
         result = await service.submit_batches(
             request.batches, request.informationProvider
         )
-        _submissions[submission_id]["results"] = result
-        _submissions[submission_id]["status"] = result.get("status", "completed")
-        _submissions[submission_id]["progress"]["status"] = result.get("status", "completed")
-        _submissions[submission_id]["progress"]["completedBatches"] = result.get("completedBatches", 0)
-        _submissions[submission_id]["progress"]["successfulRecords"] = result.get("successful", 0)
-        _submissions[submission_id]["progress"]["failedRecords"] = result.get("failed", 0)
-        _submissions[submission_id]["progress"]["pendingConfirmation"] = result.get("pendingConfirmation", 0)
+
+    _submissions[submission_id]["results"] = result
+    _submissions[submission_id]["completedAt"] = datetime.now(timezone.utc).isoformat()
+    _submissions[submission_id]["status"] = result.get("status", "completed")
+    _submissions[submission_id]["progress"]["status"] = result.get("status", "completed")
+    _submissions[submission_id]["progress"]["completedBatches"] = result.get("completedBatches", 0)
+    _submissions[submission_id]["progress"]["successfulRecords"] = result.get("successful", 0)
+    _submissions[submission_id]["progress"]["failedRecords"] = result.get("failed", 0)
+    _submissions[submission_id]["progress"]["pendingConfirmation"] = result.get("pendingConfirmation", 0)
 
     logger.info(
         "submission_started",
@@ -126,13 +144,32 @@ async def get_results(submission_id: str) -> dict[str, Any]:
     results = sub.get("results") or {}
     return {
         "submissionId": submission_id,
-        "completedAt": "",
+        "completedAt": sub.get("completedAt", ""),
         "totalRecords": results.get("successful", 0) + results.get("failed", 0),
         "successful": results.get("successful", 0),
         "failed": results.get("failed", 0),
         "confirmed": results.get("pendingConfirmation", 0),
         "results": results.get("results", []),
     }
+
+
+@router.get("/submissions")
+async def list_submissions() -> dict[str, Any]:
+    """List all submissions with summary info."""
+    submissions = []
+    for sid, sub in _submissions.items():
+        results = sub.get("results") or {}
+        submissions.append({
+            "submissionId": sid,
+            "status": sub["status"],
+            "createdAt": sub.get("createdAt", ""),
+            "completedAt": sub.get("completedAt", ""),
+            "totalBatches": sub["progress"]["totalBatches"],
+            "successfulRecords": results.get("successful", 0),
+            "failedRecords": results.get("failed", 0),
+            "dryRun": sub.get("dryRun", False),
+        })
+    return {"submissions": submissions}
 
 
 @router.post("/submit/{submission_id}/pause")

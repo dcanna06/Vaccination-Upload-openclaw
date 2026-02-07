@@ -1,0 +1,764 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project id="e22a4aca-30d9-4244-93a2-151ea9945c8e" activeEnvironment="Default" name="Proda-Device-Management-Vendor-V5" resourceRoot="" soapui-version="5.7.2" abortOnError="false" runType="SEQUENTIAL" xmlns:con="http://eviware.com/soapui/config"><con:description>SoapUI v5.7</con:description><con:settings/><con:interface xsi:type="con:RestService" id="30338c8e-6e62-4c80-940c-903ec9944a9a" wadlVersion="http://wadl.dev.java.net/2009/02" name="https://vnd.proda.humanservices.gov.au" type="rest" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart=""/><con:endpoints><con:endpoint>https://vnd.proda.humanservices.gov.au</con:endpoint></con:endpoints><con:resource name="Token" path="/mga/sps/oauth/oauth20/token" id="d0f87dc6-0961-45b7-963c-4fda670a5f80"><con:settings/><con:parameters><con:parameter><con:name>client_id</con:name><con:value/><con:style>QUERY</con:style><con:default/><con:description xsi:nil="true"/></con:parameter><con:parameter><con:name>grant_type</con:name><con:value/><con:style>QUERY</con:style><con:default/><con:description xsi:nil="true"/></con:parameter><con:parameter><con:name>assertion</con:name><con:value/><con:style>QUERY</con:style><con:default/><con:description xsi:nil="true"/></con:parameter></con:parameters><con:method name="Token" id="4c46a955-f4b8-40b8-b1a4-fdae3ea90713" method="POST"><con:settings/><con:parameters/><con:representation type="FAULT"><con:mediaType>application/json;charset=UTF-8</con:mediaType><con:status>400</con:status><con:params/><con:element xmlns:tok="https://vnd.proda.humanservices.gov.au/mga/sps/oauth/oauth20/token">tok:Fault</con:element></con:representation><con:representation type="REQUEST"><con:mediaType>application/x-www-form-urlencoded</con:mediaType><con:params/></con:representation><con:representation type="RESPONSE"><con:mediaType>application/json;charset=UTF-8</con:mediaType><con:status>200</con:status><con:params/><con:element xmlns:tok="https://vnd.proda.humanservices.gov.au/mga/sps/oauth/oauth20/token">tok:Response</con:element></con:representation><con:representation type="REQUEST"><con:mediaType>application/json</con:mediaType><con:params/></con:representation><con:representation type="RESPONSE"><con:mediaType xsi:nil="true"/><con:status>0</con:status><con:params/><con:element>data</con:element></con:representation><con:request name="Request 1" id="365e193b-2747-4656-8887-2a8d21597622" mediaType="application/json" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>https://vnd.proda.humanservices.gov.au</con:endpoint><con:request/><con:originalUri>https://vnd.proda.humanservices.gov.au/mga/sps/oauth/oauth20/token</con:originalUri><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters><entry key="grant_type" value="urn:ietf:params:oauth:grant-type:jwt-bearer" xmlns="http://eviware.com/soapui/config"/></con:parameters><con:parameterOrder><con:entry>client_id</con:entry><con:entry>grant_type</con:entry><con:entry>assertion</con:entry></con:parameterOrder></con:request></con:method></con:resource></con:interface><con:interface xsi:type="con:RestService" id="7202ac48-8e06-42e0-a727-ce721fd2aa5b" wadlVersion="http://wadl.dev.java.net/2009/02" name="https://test.5.rsp.humanservices.gov.au" type="rest" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart=""/><con:endpoints><con:endpoint>https://test.5.rsp.humanservices.gov.au</con:endpoint></con:endpoints><con:resource name="refreshDevice" path="/piaweb/api/b2b/v1/orgs/${#Project#prodaOrgId}/devices/${#Project#deviceName}/jwk" id="7f0be64a-2394-44ab-bd1c-bfc417c2d5e9"><con:settings/><con:parameters/><con:method name="Jwk" id="3918d54b-43dc-4985-baf3-96a4e6767e21" method="PUT"><con:settings/><con:parameters/><con:representation type="REQUEST"><con:mediaType>application/json</con:mediaType><con:params/></con:representation><con:representation type="FAULT"><con:mediaType>application/json</con:mediaType><con:status>500 400</con:status><con:params/><con:element xmlns:jwk="https://test.5.rsp.humanservices.gov.au/piaweb/api/b2b/v1/orgs/8144409044/devices/SoapeDevice/jwk">jwk:Fault</con:element></con:representation><con:representation type="RESPONSE"><con:mediaType>application/json</con:mediaType><con:status>200</con:status><con:params/><con:element xmlns:jwk="https://test.5.rsp.humanservices.gov.au/piaweb/api/b2b/v1/orgs/8144409044/devices/SoapeDevice/jwk">jwk:Response</con:element></con:representation><con:request name="Request 1" id="84f06225-b3ce-4f84-8429-f9ee54dd89e0" mediaType="application/json" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>https://test.5.rsp.humanservices.gov.au</con:endpoint><con:request/><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method></con:resource></con:interface><con:interface xsi:type="con:RestService" id="a407a68e-2321-41f9-b60a-b09d6c19d40e" wadlVersion="http://wadl.dev.java.net/2009/02" name="https://test.5.rsp.humanservices.gov.au" type="rest" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart=""/><con:endpoints><con:endpoint>https://test.5.rsp.humanservices.gov.au</con:endpoint></con:endpoints><con:resource name="activateDevice" path="/piaweb/api/b2b/v1/devices/${#Project#deviceName}/jwk" id="da5022d4-4b4d-4dec-b4a0-56474fb62bed"><con:settings/><con:parameters/><con:method name="Jwk" id="222ca72f-457a-4e28-98c1-3633e15b6a83" method="PUT"><con:settings/><con:parameters/><con:representation type="REQUEST"><con:mediaType>application/json</con:mediaType><con:params/></con:representation><con:representation type="FAULT"><con:mediaType>application/json</con:mediaType><con:status>500 400</con:status><con:params/><con:element xmlns:jwk="https://test.5.rsp.humanservices.gov.au/piaweb/api/b2b/v1/devices/SoapeDevice/jwk">jwk:Fault</con:element></con:representation><con:representation type="RESPONSE"><con:mediaType>application/json</con:mediaType><con:status>200</con:status><con:params/><con:element xmlns:jwk="https://test.5.rsp.humanservices.gov.au/piaweb/api/b2b/v1/devices/SoapeDevice/jwk">jwk:Response</con:element></con:representation><con:representation type="FAULT"><con:mediaType>text/html</con:mediaType><con:status>404</con:status><con:params/><con:element>html</con:element></con:representation><con:request name="Request 1" id="02b70423-7dde-47a6-8ada-a362ea09cdd8" mediaType="application/json" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>https://test.5.rsp.humanservices.gov.au</con:endpoint><con:request/><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:request></con:method></con:resource></con:interface><con:testSuite id="d989b6a4-1a3b-4f3e-9943-b97f02a6a435" name="PRODADevices"><con:description>TestSuite generated for REST Service [https://proda.dev.csda.gov.au]</con:description><con:settings/><con:runType>SEQUENTIAL</con:runType><con:testCase id="a9b2e834-c60d-468f-8ceb-b41e5ad03e92" failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="vnd.0.DeviceManagement.ActivateDevice Test Suite" searchProperties="true"><con:settings/><con:testStep type="groovy" name="SetRestHeaders" id="6276531f-7e66-406e-aa89-a34294ebc921"><con:settings/><con:config><script>import com.eviware.soapui.support.types.StringToStringMap 
+
+tcName = testRunner.testCase.getName();
+tsName = testRunner.testCase.testSuite.getName();
+
+//Get proberty values for vendor
+String dhsAuditID = context.testCase.testSuite.project.getPropertyValue("prodaOrgId")
+String dhsSubjectID = context.testCase.testSuite.project.getPropertyValue("deviceName")
+String dhsMessageID = context.expand( 'urn:uuid:${=UUID.randomUUID().toString()}')
+String dhsAuditType = "http://ns.humanservices.gov.au/audit/type/proda/organisation"
+String dhsCorrelationID = context.expand( 'uuid:${=UUID.randomUUID().toString()}')
+String dhsProductID = context.testCase.testSuite.project.getPropertyValue("productId")
+String dhsSubjectIDType = "http://ns.humanservices.gov.au/audit/type/proda/device"
+
+def headers = new StringToStringMap()
+headers.put("accept","application/json");
+headers.put("dhs-auditId",dhsAuditID);
+headers.put("dhs-subjectId",dhsSubjectID);
+headers.put("dhs-messageId",dhsMessageID);
+headers.put("dhs-auditIdType",dhsAuditType);
+headers.put("dhs-correlationId",dhsCorrelationID);
+headers.put("dhs-productId",dhsProductID);
+headers.put("dhs-subjectIdType",dhsSubjectIDType);
+
+for (testStep in testRunner.testCase.testSuite.project.getTestSuiteByName(tsName).testCases[tcName].getTestStepList()){
+	log.info("test step name: " + testStep.getName());
+	switch(testStep.getName())
+	{
+		case ['SetRestHeaders','CreateSignedOrgJsonWebToken','vendor.to.dhs.getAccessToken','createKeyPair', 'Copy.jks.on.success']:
+			log.info("skip: " + testStep.getName());
+			break		
+		default:
+		     log.info("set header: " + testStep.getName());			
+			testRunner.testCase.testSuite.project.getTestSuiteByName(tsName).testCases[tcName].getTestStepByName(testStep.getName()).testRequest.setRequestHeaders(headers)
+			break
+	}
+}
+	
+
+
+
+</script></con:config></con:testStep><con:testStep type="groovy" name="createKeyPair" id="457ff6d6-d462-4575-9ea3-1a155bd289a2"><con:settings/><con:config><script>import java.security.*;
+import java.util.*;
+import org.jose4j.jwk.*;
+import java.security.cert.*;
+import java.security.*;
+import java.math.BigInteger;
+import java.security.cert.Certificate;
+import java.util.Date;
+import java.io.IOException;
+import sun.security.x509.*;
+
+String deviceName = context.testCase.testSuite.project.getPropertyValue("deviceName");
+String certLocation = context.testCase.testSuite.project.getPropertyValue("certLocation");
+String environment = "vnd";
+
+JKS_LOCATION = certLocation + "\\" + deviceName + "_" + environment + ".jks";
+JKS_LOCATION_TMP = certLocation + "\\" + deviceName + "_" + environment + "_preactivate.jks";
+log.info("JKS to be saved at: " + JKS_LOCATION);
+log.info("Temp JKS to be saved at: " + JKS_LOCATION_TMP);
+context.testCase.setPropertyValue("tmp_jks", JKS_LOCATION_TMP);
+context.testCase.setPropertyValue("final_jks", JKS_LOCATION);
+JKS_DEFAULT_PASS = "Pass-123"
+JKS_KEY_ALIAS = "proda-alias"
+
+log.info ("-----BEGIN JWK-----");
+final RsaJsonWebKey rsaJsonWebKey = RsaJwkGenerator.generateJwk(2048);
+rsaJsonWebKey.setKeyId(deviceName);
+rsaJsonWebKey.setUse("sig");
+rsaJsonWebKey.setAlgorithm("RS256");
+final String publicKey = rsaJsonWebKey.toJson();
+log.info ("-----PUBLIC KEY-----");
+log.info (publicKey);
+context.testCase.setPropertyValue("publicKey", publicKey);
+log.info ("-----END JWK-----");
+
+
+// Generate an X509 using the JWK as a basis
+KeyPair  pair = new KeyPair(rsaJsonWebKey.getPublicKey(), rsaJsonWebKey.getRsaPrivateKey());  
+PrivateKey privkey = pair.getPrivate();
+X509CertInfo info = new X509CertInfo();
+Date from = new Date();
+Date to = new Date(from.getTime() + 365 * 86400000l); // 365 days expiry
+CertificateValidity interval = new CertificateValidity(from, to);
+BigInteger sn = new BigInteger(64, new SecureRandom());
+X500Name owner = new X500Name("CN=" + deviceName + ",O=SOAPE,L=Tuggeranong,C=AU");
+info.set(X509CertInfo.VALIDITY, interval);
+info.set(X509CertInfo.SERIAL_NUMBER, new CertificateSerialNumber(sn));
+try {
+	// java >= 1.8 does not need *Name wrapper object.
+	info.set(X509CertInfo.SUBJECT, new CertificateSubjectName(owner));
+	info.set(X509CertInfo.ISSUER, new CertificateIssuerName(owner));
+} catch (java.security.cert.CertificateException ex) {
+	info.set(X509CertInfo.SUBJECT, owner);
+	info.set(X509CertInfo.ISSUER, owner);
+}
+info.set(X509CertInfo.KEY, new CertificateX509Key(pair.getPublic()));
+info.set(X509CertInfo.VERSION, new CertificateVersion(CertificateVersion.V3));
+//AlgorithmId algo = new AlgorithmId(AlgorithmId.md5WithRSAEncryption_oid); // for java version &lt; 15
+AlgorithmId algo = AlgorithmId.get("MD5withRSA"); // for java version >= 15
+info.set(X509CertInfo.ALGORITHM_ID, new CertificateAlgorithmId(algo));
+
+// Sign the cert to identify the algorithm that's used.
+X509CertImpl cert = new X509CertImpl(info);
+cert.sign(privkey, "SHA256WITHRSA");
+
+algo = (AlgorithmId)cert.get(X509CertImpl.SIG_ALG);
+info.set(CertificateAlgorithmId.NAME + "." + CertificateAlgorithmId.ALGORITHM, algo);
+cert = new X509CertImpl(info);
+cert.sign(privkey, "SHA256WITHRSA");
+
+// Store to JKS
+log.info ("-----BEGIN CREATE JKS-----");
+KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+char[] password = JKS_DEFAULT_PASS.toCharArray();
+ks.load(null, password);
+ks.setKeyEntry(JKS_KEY_ALIAS, privkey, password, cert);
+FileOutputStream fos = new FileOutputStream(JKS_LOCATION_TMP);
+ks.store(fos, password);
+fos.close();
+log.info ("-----END CREATE JKS-----");
+</script></con:config></con:testStep><con:testStep type="restrequest" name="vendor.to.dhs.activate.device" id="be92e80d-c19d-4bce-8ae6-5471cd66dfe1"><con:settings/><con:config service="https://test.5.rsp.humanservices.gov.au" resourcePath="/piaweb/api/b2b/v1/devices/${#Project#deviceName}/jwk" methodName="Jwk" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="vendor.to.dhs.activate.device" id="02b70423-7dde-47a6-8ada-a362ea09cdd8" mediaType="application/json" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers"><![CDATA[<xml-fragment xmlns:con="http://eviware.com/soapui/config">
+  <con:entry key="dhs-auditIdType" value="http://ns.humanservices.gov.au/audit/type/proda/organisation"/>
+  <con:entry key="dhs-subjectId" value="Bovers01"/>
+  <con:entry key="dhs-productId" value="Bovers Device Name v0.1"/>
+  <con:entry key="dhs-auditId" value="1471004934"/>
+  <con:entry key="dhs-messageId" value="urn:uuid:f6aab7a7-a3fc-4617-826c-d6a391b1a445"/>
+  <con:entry key="dhs-correlationId" value="uuid:3a352ca0-3f73-41de-9234-8d3ea395487b"/>
+  <con:entry key="dhs-subjectIdType" value="http://ns.humanservices.gov.au/audit/type/proda/device"/>
+  <con:entry key="accept" value="application/json"/>
+</xml-fragment>]]></con:setting></con:settings><con:endpoint>https://test.5.rsp.humanservices.gov.au</con:endpoint><con:request>{
+	"orgId": "${#Project#prodaOrgId}",
+	"otac": "${#Project#deviceActivationCode}",
+	"key": ${#TestCase#publicKey}
+}</con:request><con:originalUri>https://test.5.rsp.humanservices.gov.au/piaweb/api/b2b/v1/devices/SoapeDevice/jwk</con:originalUri><con:assertion type="Simple Contains" id="c490ebd4-27c6-49d8-818c-810911a1a4e5" name="Contains"><con:configuration><token>ACTIVE</token><ignoreCase>false</ignoreCase><useRegEx>false</useRegEx></con:configuration></con:assertion><con:assertion type="Valid HTTP Status Codes" id="d536ff36-1dbf-4531-9e19-9a2dbfd6b6b6" name="Valid HTTP Status Codes"><con:configuration><codes>200</codes></con:configuration></con:assertion><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:restRequest></con:config></con:testStep><con:testStep type="groovy" name="Copy.jks.on.success" id="93e4e275-72c2-46c3-a9f7-089295661a50"><con:settings/><con:config><script>// If it gets to this step then the activate didnt fail
+// so we now save the "temp" jks as the "current" one.
+
+
+String TMP_JKS = context.testCase.getPropertyValue("tmp_jks");
+String OLD_JKS = context.testCase.getPropertyValue("final_jks");
+
+log.info("old jks: " + OLD_JKS);
+log.info("tmp jks: " + TMP_JKS);
+
+// define some files
+def tmpFile = new File(TMP_JKS);
+def oldFile = new File(OLD_JKS);
+
+// define some I/O objects
+def FileInputStream fis = null;
+def FileOutputStream fos = null;
+
+// instantiate the I/O objects
+fis = new FileInputStream(tmpFile);
+fos = new FileOutputStream(oldFile);
+
+// copy the temp jks to the "current" jks file
+byte[] buffer = new byte[4096];
+int bytesRead;
+while ((bytesRead = fis.read(buffer)) != -1) {
+    fos.write(buffer, 0, bytesRead);
+}
+fis.close();
+fos.close();
+
+// delete the temp jks
+tmpFile.delete();
+
+
+</script></con:config></con:testStep><con:testStep type="groovy" name="CreateSignedOrgJsonWebToken" id="f94ede53-2df0-40e0-94ac-4258486cc7ab"><con:settings/><con:config><script>import com.eviware.soapui.support.types.StringToStringMap;
+import java.io.File;
+import java.io.FileInputStream;
+import java.security.Key;
+import java.security.KeyStore;
+import org.jose4j.jws.AlgorithmIdentifiers;
+import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.jwt.JwtClaims;
+
+// How to get properties 
+//def signingKeyLocation = testRunner.testCase.testSteps['local'].getPropertyValue("jwt.signingkey.location");
+
+// Get the JKS keypair for signing the JWT
+
+String prodaOrgId = context.testCase.testSuite.project.getPropertyValue("prodaOrgId");
+String deviceName = context.testCase.testSuite.project.getPropertyValue("deviceName");
+
+String certLocation = context.testCase.testSuite.project.getPropertyValue("certLocation");
+String environment = "vnd";
+
+JKS_LOCATION = certLocation + "\\" + deviceName + "_" + environment + ".jks";
+log.info(prodaOrgId);
+log.info(deviceName);
+log.info(JKS_LOCATION);
+
+def key
+def containerPassword = "Pass-123";
+def aliasPassword = "Pass-123";
+def alias = "proda-alias";
+def file = new File(JKS_LOCATION);
+def is = new FileInputStream(file);
+def keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+keystore.load(is, containerPassword.toCharArray());
+key = keystore.getKey(alias, aliasPassword.toCharArray());  
+is.close();  
+
+// Get JWT claims
+
+def alg = "RS256";
+def aud = "https://proda.humanservices.gov.au";
+
+// Setup the JWT
+def claims = new JwtClaims();
+
+claims.setIssuer(prodaOrgId);
+claims.setSubject(deviceName);
+claims.setAudience(aud);
+claims.setClaim("token.aud", aud);
+claims.setExpirationTimeMinutesInTheFuture(10);
+claims.setIssuedAtToNow();
+
+// Generate the signature
+def jws = new JsonWebSignature();
+jws.setKey(key);
+jws.setPayload(claims.toJson());
+jws.setKeyIdHeaderValue(deviceName);
+jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
+
+// Get JWT as a string
+def jwt = jws.getCompactSerialization();
+
+context.testCase.setPropertyValue("orgSignedJwt", jwt);
+
+// Log the JWT content
+log.info(jwt);
+</script></con:config></con:testStep><con:testStep type="restrequest" name="vendor.to.dhs.getAccessToken" id="a77278de-0478-4bf4-aac5-15860219d37d"><con:settings/><con:config service="https://vnd.proda.humanservices.gov.au" resourcePath="/mga/sps/oauth/oauth20/token" methodName="Token" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="vendor.to.dhs.getAccessToken" id="365e193b-2747-4656-8887-2a8d21597622" mediaType="application/x-www-form-urlencoded" postQueryString="true"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers"><![CDATA[<xml-fragment xmlns:con="http://eviware.com/soapui/config">
+  <con:entry key="dhs-processMode" value="T"/>
+  <con:entry key="dhs-auditId" value="8144409044"/>
+  <con:entry key="dhs-messageId" value="urn:uuid:53d26d12-9eda-4a8f-a1f4-bab1b4af3084"/>
+  <con:entry key="dhs-subjectId" value="SoapeDevice"/>
+  <con:entry key="dhs-auditIdType" value="http://ns.humanservices.gov.au/audit/type/provider"/>
+  <con:entry key="dhs-productId" value="DHS Product v1.0"/>
+  <con:entry key="dhs-correlationId" value="uuid:ebf45630-cd83-41c6-ac74-62eee1078f04"/>
+  <con:entry key="accept" value="application/json"/>
+  <con:entry key="dhs-subjectIdType" value="http://ns.humanservices.gov.au/audit/type/proda"/>
+</xml-fragment>]]></con:setting></con:settings><con:endpoint>https://vnd.proda.humanservices.gov.au</con:endpoint><con:request/><con:originalUri>https://vnd.proda.humanservices.gov.au/mga/sps/oauth/oauth20/token</con:originalUri><con:assertion type="Valid HTTP Status Codes" id="697e5356-a277-422e-b7a3-5c54df548850" name="Valid HTTP Status Codes"><con:configuration><codes>200</codes></con:configuration></con:assertion><con:assertion type="Simple Contains" id="f2a2ecdb-7f07-4dfe-9f02-debc0d78a8f7" name="Contains"><con:configuration><token>access_token</token><ignoreCase>false</ignoreCase><useRegEx>false</useRegEx></con:configuration></con:assertion><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters>
+  <con:entry key="grant_type" value="urn:ietf:params:oauth:grant-type:jwt-bearer"/>
+  <con:entry key="client_id" value="${#Project#clientId}"/>
+  <con:entry key="assertion" value="${#TestCase#orgSignedJwt}"/>
+</con:parameters><con:parameterOrder><con:entry>client_id</con:entry><con:entry>grant_type</con:entry><con:entry>assertion</con:entry></con:parameterOrder></con:restRequest></con:config></con:testStep><con:tearDownScript>// delete temp jks if this test fails...
+String TMP_JKS = context.testCase.getPropertyValue("tmp_jks");
+def tmpFile = new File(TMP_JKS);
+tmpFile.delete();
+</con:tearDownScript><con:properties><con:property><con:name>publicKey</con:name><con:value>{"kty":"RSA","kid":"Bovers01","use":"sig","alg":"RS256","n":"1Le728X-Ae61vrXhp4l512jO-i9NyCw3ggIT5uSV73OgDFNRzX0IigHEYrDLPhB0NgafkIMDcjyBXCZyoPpPr3yyURffi6pUicUb_aZkIGjWRAZqZcCQSlfk_XCpm-ZI1qT72u4NyXNa0WFCAg0ajD4rHZW3yEDAdzymTPkafAaIm_Q22B0EinEynCHP1Rv6fb4-VVmN0bQakIyspAKb8o25tuDkXsGQFgBUf3t9qa9qOrmBjfONwv2njrVB48hY35O2O9Xuro_CkN0Sgs-bG6mxDsjGYsS9O1fr95TYvXH8vHxEd8DpvVVHgzAWQLZ_xZUELm_jDvk9F97kW6O6FQ","e":"AQAB"}</con:value></con:property><con:property><con:name>orgSignedJwt</con:name><con:value>eyJraWQiOiJCb3ZlcnMwMSIsImFsZyI6IlJTMjU2In0.eyJpc3MiOiIxNDcxMDA0OTM0Iiwic3ViIjoiQm92ZXJzMDEiLCJhdWQiOiJodHRwczovL3Byb2RhLmh1bWFuc2VydmljZXMuZ292LmF1IiwidG9rZW4uYXVkIjoiaHR0cHM6Ly9wcm9kYS5odW1hbnNlcnZpY2VzLmdvdi5hdSIsImV4cCI6MTcyNDI4NzQyNSwiaWF0IjoxNzI0Mjg2ODI1fQ.g4os_B2TiEmnUQw20JdXllX0BAFb9d6Xrh715w3N45il3wa0-xkxWqReGJJMrpvsVQ4yWNiJW0pPtAHp81hfnOy0zssBwZ2MvD-5BcpYjcv9WfQ6J7GD1vcbmkNh2b595cHYG89vtZowYjm-qcoi-J26J-fpMXfoHfbMeSW9M16Rn5yJcINcOEa9nmdNDlwaMMQ6Llnf8ZVeDxfiDIQr0ea5lzxuUoUZZmdy2dBrskskBuWdC1iGaqPxyE8nyer1pNsBnYllb7Mj3zOHmyU3ozhKYORiCI9RMYtcOFywz8s3P3r0mLuzSbuG6pwWQ6TGszaTzRijPxobonZhnA7rVg</con:value></con:property><con:property><con:name>tmp_jks</con:name><con:value>C:\certs\Bovers01_vnd_preactivate.jks</con:value></con:property><con:property><con:name>final_jks</con:name><con:value>C:\certs\Bovers01_vnd.jks</con:value></con:property></con:properties></con:testCase><con:testCase id="eda62547-1b59-4364-a0d7-9a799f1d46c6" failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="vnd.0.DeviceManagement.GetAccessToken Test Suite" searchProperties="true"><con:settings/><con:testStep type="groovy" name="CreateSignedOrgJsonWebToken" id="b03c20ac-3a1b-448a-b3f8-5097b1c312fa"><con:settings/><con:config><script>import com.eviware.soapui.support.types.StringToStringMap;
+import java.io.File;
+import java.io.FileInputStream;
+import java.security.Key;
+import java.security.KeyStore;
+import org.jose4j.jws.AlgorithmIdentifiers;
+import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.jwt.JwtClaims;
+
+// How to get properties 
+//def signingKeyLocation = testRunner.testCase.testSteps['local'].getPropertyValue("jwt.signingkey.location");
+
+// Get the JKS keypair for signing the JWT
+
+String prodaOrgId = context.testCase.testSuite.project.getPropertyValue("prodaOrgId");
+String deviceName = context.testCase.testSuite.project.getPropertyValue("deviceName");
+String tokenAudience =  context.testCase.testSuite.project.getPropertyValue("accessTokenAudience");
+String certLocation = context.testCase.testSuite.project.getPropertyValue("certLocation");
+String environment = "vnd";
+
+JKS_LOCATION = certLocation + "\\" + deviceName + "_" + environment + ".jks";
+log.info("org id: " + prodaOrgId);
+log.info("device name: " + deviceName);
+log.info("token audience: " + tokenAudience);
+log.info("JSK location: " + JKS_LOCATION);
+
+def key
+def containerPassword = "Pass-123";
+def aliasPassword = "Pass-123";
+def alias = "proda-alias";
+def file = new File(JKS_LOCATION);
+def is = new FileInputStream(file);
+def keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+keystore.load(is, containerPassword.toCharArray());
+key = keystore.getKey(alias, aliasPassword.toCharArray());  
+is.close();  
+
+// Get JWT claims
+
+def alg = "RS256";
+def aud = "https://proda.humanservices.gov.au";
+
+// Setup the JWT
+def claims = new JwtClaims();
+
+claims.setIssuer(prodaOrgId);
+claims.setSubject(deviceName);
+claims.setAudience(aud);
+claims.setClaim("token.aud", tokenAudience);
+claims.setExpirationTimeMinutesInTheFuture(10);
+claims.setIssuedAtToNow();
+
+// Generate the signature
+def jws = new JsonWebSignature();
+jws.setKey(key);
+jws.setPayload(claims.toJson());
+jws.setKeyIdHeaderValue(deviceName);
+jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
+
+// Get JWT as a string
+def jwt = jws.getCompactSerialization();
+
+context.testCase.setPropertyValue("orgSignedJwt", jwt);
+
+// Log the JWT content
+log.info(jwt);
+</script></con:config></con:testStep><con:testStep type="restrequest" name="vendor.to.dhs.getAccessToken" id="11953895-ddb2-43e0-a0c3-95779d5ed541"><con:settings/><con:config service="https://vnd.proda.humanservices.gov.au" resourcePath="/mga/sps/oauth/oauth20/token" methodName="Token" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="vendor.to.dhs.getAccessToken" id="365e193b-2747-4656-8887-2a8d21597622" mediaType="application/x-www-form-urlencoded" postQueryString="true"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>https://vnd.proda.humanservices.gov.au</con:endpoint><con:request/><con:originalUri>https://vnd.proda.humanservices.gov.au/mga/sps/oauth/oauth20/token</con:originalUri><con:assertion type="Valid HTTP Status Codes" id="681140e3-3610-40a1-bb87-1f2d7118b6b7" name="Valid HTTP Status Codes"><con:configuration><codes>200</codes></con:configuration></con:assertion><con:assertion type="Simple Contains" id="84da3557-7f81-4cfe-966b-107a05cb39b5" name="Contains"><con:configuration><token>access_token</token><ignoreCase>false</ignoreCase><useRegEx>false</useRegEx></con:configuration></con:assertion><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters>
+  <con:entry key="grant_type" value="urn:ietf:params:oauth:grant-type:jwt-bearer"/>
+  <con:entry key="client_id" value="${#Project#clientId}"/>
+  <con:entry key="assertion" value="${#TestCase#orgSignedJwt}"/>
+</con:parameters><con:parameterOrder><con:entry>client_id</con:entry><con:entry>grant_type</con:entry><con:entry>assertion</con:entry></con:parameterOrder></con:restRequest></con:config></con:testStep><con:properties><con:property><con:name>orgSignedJwt</con:name><con:value>eyJraWQiOiJCb3ZlcnMwMSIsImFsZyI6IlJTMjU2In0.eyJpc3MiOiIxNDcxMDA0OTM0Iiwic3ViIjoiQm92ZXJzMDEiLCJhdWQiOiJodHRwczovL3Byb2RhLmh1bWFuc2VydmljZXMuZ292LmF1IiwidG9rZW4uYXVkIjoiaHR0cHM6Ly9wcm9kYS5odW1hbnNlcnZpY2VzLmdvdi5hdSIsImV4cCI6MTcyNDI4NzQ0MCwiaWF0IjoxNzI0Mjg2ODQwfQ.b3lm_8SH6GkzXGZtJ2LohRN6WeZMqu8N4X0cE6v58S5m9z2FSM2F8iJpQnwES-SIreLreOHpLsz5sY5x4cwArOO01z_pKz70qItgneWS152vLP3dmThRwUonqxyRABuT8dF1hkdPUWzCl_NoVG_Ku5FduU-aq4_xZ6v1jaxDw5fEDK7tE5rKJQGrzBrV-jB1AXOJYquyGcC4Kaymy0D4RhTHCgWqpPY4UA83YO3HKxocdyMvw3mOsUp96YBCraAe8h6yY0efobGmh8in48bPodAkxCcv9cMaaJ7D13iwApOBncAryC-EkMU2-LDc-H215KGTkk9tvaBCqODanAPMLA</con:value></con:property></con:properties></con:testCase><con:testCase id="a4242673-622f-4d15-830a-77e450ad67b1" failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="vnd.0.DeviceManagement.GetOrg2OrgAccessToken Test Suite" searchProperties="true"><con:settings/><con:testStep type="groovy" name="CreateSignedOrg2OrgJsonWebToken" id="f2c10fbd-4297-44f3-b735-1b3ef53472ef"><con:settings/><con:config><script>import com.eviware.soapui.support.types.StringToStringMap;
+import java.io.File;
+import java.io.FileInputStream;
+import java.security.Key;
+import java.security.KeyStore;
+import org.jose4j.jws.AlgorithmIdentifiers;
+import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.jwt.JwtClaims;
+
+// How to get properties 
+//def signingKeyLocation = testRunner.testCase.testSteps['local'].getPropertyValue("jwt.signingkey.location");
+
+// Get the JKS keypair for signing the JWT
+
+String prodaOrgId = context.testCase.testSuite.project.getPropertyValue("prodaOrgId");
+String prodaDelegatorOrgId = context.testCase.testSuite.project.getPropertyValue("prodaDelegatorOrgId");
+String deviceName = context.testCase.testSuite.project.getPropertyValue("deviceName");
+String tokenAudience =  context.testCase.testSuite.project.getPropertyValue("accessTokenAudience");
+String certLocation = context.testCase.testSuite.project.getPropertyValue("certLocation");
+String environment = "vnd";
+
+JKS_LOCATION = certLocation + "\\" + deviceName + "_" + environment + ".jks";
+log.info("Delegate org id: " + prodaOrgId);
+log.info("Delegator org id: " + prodaDelegatorOrgId);
+log.info("device name: " + deviceName);
+log.info("token audience: " + tokenAudience);
+log.info("JSK location: " + JKS_LOCATION);
+
+def key
+def containerPassword = "Pass-123";
+def aliasPassword = "Pass-123";
+def alias = "proda-alias";
+def file = new File(JKS_LOCATION);
+def is = new FileInputStream(file);
+def keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+keystore.load(is, containerPassword.toCharArray());
+key = keystore.getKey(alias, aliasPassword.toCharArray());  
+is.close();  
+
+// Get JWT claims
+
+def alg = "RS256";
+def aud = "https://proda.humanservices.gov.au";
+
+// Setup the JWT
+def claims = new JwtClaims();
+
+claims.setIssuer(prodaOrgId);
+claims.setSubject(deviceName);
+claims.setAudience(aud);
+//claims.setAudience("blahblah");
+claims.setClaim("token.aud", tokenAudience);
+claims.setClaim("proda.del.org", prodaDelegatorOrgId);
+claims.setExpirationTimeMinutesInTheFuture(10);
+claims.setIssuedAtToNow();
+
+// Generate the signature
+def jws = new JsonWebSignature();
+jws.setKey(key);
+jws.setPayload(claims.toJson());
+jws.setKeyIdHeaderValue(deviceName);
+jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
+jws.setHeader("typ", "JWT");
+
+// Get JWT as a string
+def jwt = jws.getCompactSerialization();
+
+context.testCase.setPropertyValue("orgSignedJwt", jwt);
+
+// Log the JWT content
+log.info(jwt);
+</script></con:config></con:testStep><con:testStep type="restrequest" name="vendor.to.dhs.getAccessToken" id="8ce1abf1-7ecb-4c32-96bd-57b6a33ca6f3"><con:settings/><con:config service="https://vnd.proda.humanservices.gov.au" resourcePath="/mga/sps/oauth/oauth20/token" methodName="Token" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="vendor.to.dhs.getAccessToken" id="365e193b-2747-4656-8887-2a8d21597622" mediaType="application/x-www-form-urlencoded" postQueryString="true"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>https://vnd.proda.humanservices.gov.au</con:endpoint><con:request/><con:originalUri>https://vnd.proda.humanservices.gov.au/mga/sps/oauth/oauth20/token</con:originalUri><con:assertion type="Valid HTTP Status Codes" id="681140e3-3610-40a1-bb87-1f2d7118b6b7" name="Valid HTTP Status Codes"><con:configuration><codes>200</codes></con:configuration></con:assertion><con:assertion type="Simple Contains" id="84da3557-7f81-4cfe-966b-107a05cb39b5" name="Contains"><con:configuration><token>access_token</token><ignoreCase>false</ignoreCase><useRegEx>false</useRegEx></con:configuration></con:assertion><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters>
+  <con:entry key="grant_type" value="urn:ietf:params:oauth:grant-type:jwt-bearer"/>
+  <con:entry key="client_id" value="${#Project#clientId}"/>
+  <con:entry key="assertion" value="${#TestCase#orgSignedJwt}"/>
+</con:parameters><con:parameterOrder><con:entry>client_id</con:entry><con:entry>grant_type</con:entry><con:entry>assertion</con:entry></con:parameterOrder></con:restRequest></con:config></con:testStep><con:properties><con:property><con:name>orgSignedJwt</con:name><con:value/></con:property></con:properties></con:testCase><con:testCase id="a7c2bcaa-e10b-442f-bbce-61dd6714644c" failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="vnd.0.DeviceManagement.RefreshKeyDevice Test Suite" searchProperties="true"><con:settings/><con:testStep type="groovy" name="SetRestHeaders" id="9ff561bd-eab2-4011-8a39-7f8ef4af01cb"><con:settings/><con:config><script>import com.eviware.soapui.support.types.StringToStringMap 
+
+tcName = testRunner.testCase.getName();
+tsName = testRunner.testCase.testSuite.getName();
+
+//Get proberty values for vendor
+String dhsAuditID = context.testCase.testSuite.project.getPropertyValue("prodaOrgId")
+String dhsSubjectID = context.testCase.testSuite.project.getPropertyValue("deviceName")
+String dhsMessageID = context.expand( 'urn:uuid:${=UUID.randomUUID().toString()}')
+String dhsAuditType = "http://ns.humanservices.gov.au/audit/type/proda/organisation"
+String dhsCorrelationID = context.expand( 'uuid:${=UUID.randomUUID().toString()}')
+String dhsProductID = context.testCase.testSuite.project.getPropertyValue("productId")
+String dhsSubjectIDType = "http://ns.humanservices.gov.au/audit/type/proda/device"
+
+def headers = new StringToStringMap()
+headers.put("accept","application/json");
+headers.put("dhs-auditId",dhsAuditID);
+headers.put("dhs-subjectId",dhsSubjectID);
+headers.put("dhs-messageId",dhsMessageID);
+headers.put("dhs-auditIdType",dhsAuditType);
+headers.put("dhs-correlationId",dhsCorrelationID);
+headers.put("dhs-productId",dhsProductID);
+headers.put("dhs-subjectIdType",dhsSubjectIDType);
+
+for (testStep in testRunner.testCase.testSuite.project.getTestSuiteByName(tsName).testCases[tcName].getTestStepList()){
+	switch(testStep.getName())
+	{
+		case ['SetRestHeaders','CreateSignedOrgJsonWebToken','vendor.to.dhs.getAccessToken','ExtractAccessToken','SetAuthorizationHeader','createNewKeyPair','CreateSignedOrgJsonWebTokenNewKey','vendor.to.dhs.getAccessTokenNewKey','replaceOldKeyWithNewOne']:
+			//Don't add header info
+			break		
+		default:			
+			testRunner.testCase.testSuite.project.getTestSuiteByName(tsName).testCases[tcName].getTestStepByName(testStep.getName()).testRequest.setRequestHeaders(headers)
+			break
+	}
+}
+	
+
+
+
+</script></con:config></con:testStep><con:testStep type="groovy" name="CreateSignedOrgJsonWebToken" id="136a3de5-b0fb-4d32-b355-a5e2c5677e9c"><con:settings/><con:config><script>import com.eviware.soapui.support.types.StringToStringMap;
+import java.io.File;
+import java.io.FileInputStream;
+import java.security.Key;
+import java.security.KeyStore;
+import org.jose4j.jws.AlgorithmIdentifiers;
+import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.jwt.JwtClaims;
+
+// How to get properties 
+//def signingKeyLocation = testRunner.testCase.testSteps['local'].getPropertyValue("jwt.signingkey.location");
+
+// Get the JKS keypair for signing the JWT
+
+String prodaOrgId = context.testCase.testSuite.project.getPropertyValue("prodaOrgId");
+String deviceName = context.testCase.testSuite.project.getPropertyValue("deviceName");
+String certLocation = context.testCase.testSuite.project.getPropertyValue("certLocation");
+String environment = "vnd";
+
+JKS_LOCATION = certLocation + "\\" + deviceName + "_" + environment + ".jks";
+log.info("org id: " + prodaOrgId);
+log.info("device name: " + deviceName);
+log.info("token audience: https://proda.humanservices.gov.au"); // static, ALWAYS used to call PRODA API
+log.info("JSK location: " + JKS_LOCATION);
+
+def key
+def containerPassword = "Pass-123";
+def aliasPassword = "Pass-123";
+def alias = "proda-alias";
+def file = new File(JKS_LOCATION);
+def is = new FileInputStream(file);
+def keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+keystore.load(is, containerPassword.toCharArray());
+key = keystore.getKey(alias, aliasPassword.toCharArray());  
+is.close();  
+
+// Get JWT claims
+
+def alg = "RS256";
+def aud = "https://proda.humanservices.gov.au";
+
+// Setup the JWT
+def claims = new JwtClaims();
+
+claims.setIssuer(prodaOrgId);
+claims.setSubject(deviceName);
+claims.setAudience(aud);
+// NOTE: the audience for this access token is PRODA, as it is utilised in the "Refresh Key" API call.
+claims.setClaim("token.aud", aud);
+claims.setExpirationTimeMinutesInTheFuture(10);
+claims.setIssuedAtToNow();
+
+// Generate the signature
+def jws = new JsonWebSignature();
+jws.setKey(key);
+jws.setPayload(claims.toJson());
+jws.setKeyIdHeaderValue(deviceName);
+jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
+
+// Get JWT as a string
+def jwt = jws.getCompactSerialization();
+
+context.testCase.setPropertyValue("orgSignedJwt", jwt);
+
+// Log the JWT content
+log.info(jwt);
+</script></con:config></con:testStep><con:testStep type="restrequest" name="vendor.to.dhs.getAccessToken" id="c88fdf76-341c-457a-9190-d1fb8b20b049"><con:settings/><con:config service="https://vnd.proda.humanservices.gov.au" resourcePath="/mga/sps/oauth/oauth20/token" methodName="Token" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="vendor.to.dhs.getAccessToken" id="365e193b-2747-4656-8887-2a8d21597622" mediaType="application/x-www-form-urlencoded" postQueryString="true"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers"><![CDATA[<xml-fragment xmlns:con="http://eviware.com/soapui/config">
+  <con:entry key="dhs-processMode" value="T"/>
+  <con:entry key="dhs-auditId" value="8144409044"/>
+  <con:entry key="dhs-messageId" value="urn:uuid:53d26d12-9eda-4a8f-a1f4-bab1b4af3084"/>
+  <con:entry key="dhs-subjectId" value="SoapeDevice"/>
+  <con:entry key="dhs-auditIdType" value="http://ns.humanservices.gov.au/audit/type/provider"/>
+  <con:entry key="dhs-productId" value="DHS Product v1.0"/>
+  <con:entry key="dhs-correlationId" value="uuid:ebf45630-cd83-41c6-ac74-62eee1078f04"/>
+  <con:entry key="accept" value="application/json"/>
+  <con:entry key="dhs-subjectIdType" value="http://ns.humanservices.gov.au/audit/type/proda"/>
+</xml-fragment>]]></con:setting></con:settings><con:endpoint>https://vnd.proda.humanservices.gov.au</con:endpoint><con:request/><con:originalUri>https://vnd.proda.humanservices.gov.au/mga/sps/oauth/oauth20/token</con:originalUri><con:assertion type="Simple Contains" id="511e8dc6-a57b-49b2-b365-bb06233949e8" name="Contains"><con:configuration><token>access_token</token><ignoreCase>false</ignoreCase><useRegEx>false</useRegEx></con:configuration></con:assertion><con:assertion type="Valid HTTP Status Codes" id="cf0f1202-ab30-494c-a579-43c5e19a19bf" name="Valid HTTP Status Codes"><con:configuration><codes>200</codes></con:configuration></con:assertion><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters>
+  <con:entry key="grant_type" value="urn:ietf:params:oauth:grant-type:jwt-bearer"/>
+  <con:entry key="client_id" value="${#Project#clientId}"/>
+  <con:entry key="assertion" value="${#TestCase#orgSignedJwt}"/>
+</con:parameters><con:parameterOrder><con:entry>client_id</con:entry><con:entry>grant_type</con:entry><con:entry>assertion</con:entry></con:parameterOrder></con:restRequest></con:config></con:testStep><con:testStep type="transfer" name="ExtractAccessToken" id="d1c29322-bc45-474e-964d-9937f9e879fa"><con:settings/><con:config xsi:type="con:PropertyTransfersStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:transfers setNullOnMissingSource="true" transferTextContent="true" failOnError="true" ignoreEmpty="true" transferToAll="true" entitize="false" transferChildNodes="false"><con:name>accessToken</con:name><con:sourceType>Response</con:sourceType><con:sourceStep>vendor.to.dhs.getAccessToken</con:sourceStep><con:sourcePath>$.access_token</con:sourcePath><con:targetType>accessToken</con:targetType><con:targetStep>#TestCase#</con:targetStep><con:type>JSONPATH</con:type><con:targetTransferType>JSONPATH</con:targetTransferType><con:upgraded>true</con:upgraded></con:transfers></con:config></con:testStep><con:testStep type="groovy" name="SetAuthorizationHeader" id="b65da974-bc26-4146-9f76-9b7a71c939c5"><con:settings/><con:config><script>import com.eviware.soapui.support.types.StringToStringMap 
+
+tcName = testRunner.testCase.getName();
+tsName = testRunner.testCase.testSuite.getName();
+
+//Get proberty values for vendor
+String dhsAuditID = context.testCase.testSuite.project.getPropertyValue("prodaOrgId")
+String dhsSubjectID = context.testCase.testSuite.project.getPropertyValue("deviceName")
+String dhsMessageID = context.expand( 'urn:uuid:${=UUID.randomUUID().toString()}')
+String dhsAuditType = "http://ns.humanservices.gov.au/audit/type/proda/organisation"
+String dhsCorrelationID = context.expand( 'uuid:${=UUID.randomUUID().toString()}')
+String dhsProductID = context.testCase.testSuite.project.getPropertyValue("productId")
+String dhsSubjectIDType = "http://ns.humanservices.gov.au/audit/type/proda/device"
+
+def headers = new StringToStringMap()
+def validAccessToken = context.testCase.getPropertyValue( "accessToken" );
+log.info("validAccessToken : " + validAccessToken);
+headers.put("Authorization","Bearer " + validAccessToken);
+headers.put("accept","application/json");
+headers.put("dhs-auditId",dhsAuditID);
+headers.put("dhs-subjectId",dhsSubjectID);
+headers.put("dhs-messageId",dhsMessageID);
+headers.put("dhs-auditIdType",dhsAuditType);
+headers.put("dhs-correlationId",dhsCorrelationID);
+headers.put("dhs-productId",dhsProductID);
+headers.put("dhs-subjectIdType",dhsSubjectIDType);
+
+for (testStep in testRunner.testCase.testSuite.project.getTestSuiteByName(tsName).testCases[tcName].getTestStepList()){
+	switch(testStep.getName())
+	{
+		case ['SetRestHeaders','CreateSignedOrgJsonWebToken','vendor.to.dhs.getAccessToken','ExtractAccessToken','SetAuthorizationHeader','createNewKeyPair','CreateSignedOrgJsonWebTokenNewKey','vendor.to.dhs.getAccessTokenNewKey','replaceOldKeyWithNewOne']:
+			//Don't add header info
+			break		
+		default:			
+			testRunner.testCase.testSuite.project.getTestSuiteByName(tsName).testCases[tcName].getTestStepByName(testStep.getName()).testRequest.setRequestHeaders(headers)
+			break
+	}
+}
+	
+
+
+
+</script></con:config></con:testStep><con:testStep type="groovy" name="createNewKeyPair" id="123e3faf-2c28-4a46-817d-27e199f1cfda"><con:settings/><con:config><script>import java.security.*;
+import java.util.*;
+import org.jose4j.jwk.*;
+import java.security.cert.*;
+import java.security.*;
+import java.math.BigInteger;
+import java.security.cert.Certificate;
+import java.util.Date;
+import java.io.IOException;
+import sun.security.x509.*;
+
+String deviceName = context.testCase.testSuite.project.getPropertyValue("deviceName");
+String certLocation = context.testCase.testSuite.project.getPropertyValue("certLocation");
+String environment = "vnd";
+
+JKS_LOCATION = certLocation + "\\" + deviceName + "_New_" + environment + ".jks";
+log.info(JKS_LOCATION);
+JKS_DEFAULT_PASS = "Pass-123"
+JKS_KEY_ALIAS = "proda-alias"
+
+log.info ("-----BEGIN JWK-----");
+final RsaJsonWebKey rsaJsonWebKey = RsaJwkGenerator.generateJwk(2048);
+rsaJsonWebKey.setKeyId(deviceName);
+rsaJsonWebKey.setUse("sig");
+rsaJsonWebKey.setAlgorithm("RS256");
+final String publicKey = rsaJsonWebKey.toJson();
+log.info ("-----PUBLIC KEY-----");
+log.info (publicKey);
+context.testCase.setPropertyValue("newPublicKey", publicKey);
+log.info ("-----END JWK-----");
+
+
+// Generate an X509 using the JWK as a basis
+KeyPair  pair = new KeyPair(rsaJsonWebKey.getPublicKey(), rsaJsonWebKey.getRsaPrivateKey());  
+PrivateKey privkey = pair.getPrivate();
+X509CertInfo info = new X509CertInfo();
+Date from = new Date();
+Date to = new Date(from.getTime() + 365 * 86400000l); // 365 days expiry
+CertificateValidity interval = new CertificateValidity(from, to);
+BigInteger sn = new BigInteger(64, new SecureRandom());
+X500Name owner = new X500Name("CN=" + deviceName + ",O=SOAPE,L=Tuggeranong,C=AU");
+info.set(X509CertInfo.VALIDITY, interval);
+info.set(X509CertInfo.SERIAL_NUMBER, new CertificateSerialNumber(sn));
+try {
+	// java >= 1.8 does not need *Name wrapper object.
+	info.set(X509CertInfo.SUBJECT, new CertificateSubjectName(owner));
+	info.set(X509CertInfo.ISSUER, new CertificateIssuerName(owner));
+} catch (java.security.cert.CertificateException ex) {
+	info.set(X509CertInfo.SUBJECT, owner);
+	info.set(X509CertInfo.ISSUER, owner);
+}
+info.set(X509CertInfo.KEY, new CertificateX509Key(pair.getPublic()));
+info.set(X509CertInfo.VERSION, new CertificateVersion(CertificateVersion.V3));
+//AlgorithmId algo = new AlgorithmId(AlgorithmId.md5WithRSAEncryption_oid); // for java version &lt; 15
+AlgorithmId algo = AlgorithmId.get("MD5withRSA"); // for java version >= 15
+info.set(X509CertInfo.ALGORITHM_ID, new CertificateAlgorithmId(algo));
+
+// Sign the cert to identify the algorithm that's used.
+X509CertImpl cert = new X509CertImpl(info);
+cert.sign(privkey, "SHA256WITHRSA");
+
+algo = (AlgorithmId)cert.get(X509CertImpl.SIG_ALG);
+info.set(CertificateAlgorithmId.NAME + "." + CertificateAlgorithmId.ALGORITHM, algo);
+cert = new X509CertImpl(info);
+cert.sign(privkey, "SHA256WITHRSA");
+
+// Store to JKS
+log.info ("-----BEGIN CREATE JKS-----");
+KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+char[] password = JKS_DEFAULT_PASS.toCharArray();
+ks.load(null, password);
+ks.setKeyEntry(JKS_KEY_ALIAS, privkey, password, cert);
+FileOutputStream fos = new FileOutputStream(JKS_LOCATION);
+ks.store(fos, password);
+fos.close();
+log.info ("-----END CREATE JKS-----");
+</script></con:config></con:testStep><con:testStep type="restrequest" name="vendor.to.dhs.refresh.device" id="dd06aec4-796f-4e1d-b724-dab0c3676763"><con:settings/><con:config service="https://test.5.rsp.humanservices.gov.au" resourcePath="/piaweb/api/b2b/v1/orgs/${#Project#prodaOrgId}/devices/${#Project#deviceName}/jwk" methodName="Jwk" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="vendor.to.dhs.refresh.device" id="84f06225-b3ce-4f84-8429-f9ee54dd89e0" mediaType="application/json" postQueryString="false"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers"><![CDATA[<xml-fragment xmlns:con="http://eviware.com/soapui/config">
+  <con:entry key="Authorization" value="Bearer eyJraWQiOiJoNEVPZEM0UkF6SFRXQkxma2taYlVWOXNyRzRLZGhfMjR6SVZtSXhpVDR3IiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiI1ODYwNzkzODc0IiwiYXVkIjoiUFJPREEuVU5BVFRFTkRFRC5CMkIiLCJwcm9kYS5zd2luc3QiOiJEZWxlZ2F0aW9uRGV2aWNlIiwicHJvZGEudHlwZSI6IlVOQVRURU5ERUQuQjJCIiwicHJvZGEub3JnIjoiNTg2MDc5Mzg3NCIsInByb2RhLnJwIjoiUFJPREEiLCJwcm9kYS5zcCI6WyJQUk9EQSJdLCJwcm9kYS5hdWQiOiJodHRwczovL3Byb2RhLmh1bWFuc2VydmljZXMuZ292LmF1IiwiaXNzIjoiaHR0cHM6Ly9wcm9kYS5odW1hbnNlcnZpY2VzLmdvdi5hdSIsImlhdCI6MTY0NDM3NjU3MSwiZXhwIjoxNjQ0MzgwMTcxfQ.VIR1b0kLfAoxAp7tMXD8nxxjXmd6T635w3STsXh94bagIawtLIvhMqdohjaiE-WmlCudG9Mlr3QqLVl-3v_IZOMhW7rWOhW6QfwkiXL1lrEV_0fw34rLjm1P6y5-tiEgIHJTVUuiTZpT85fpjo-0Bw7VIY7c_iN9XGyZ5b2kdCZLNwrEPj-9L3bOC1cVk16kbDQTeN2ykkhxSEta9YkGLda5ZpQFr311GDExQUO2RjEWqFuHhl-l9bmeuolm4QsCcugeU99vW6LCbFQqDAHT00-MbOUOE_VRFOmxBDlvwqe23byzc2_OlbJ9ZPaP4wuO-C8RXblXKaoqkzU1Wm-iBw"/>
+  <con:entry key="dhs-auditIdType" value="http://ns.humanservices.gov.au/audit/type/proda/organisation"/>
+  <con:entry key="dhs-subjectId" value="DelegationDevice"/>
+  <con:entry key="dhs-productId" value="MagicMedicalSoftwareV1.0"/>
+  <con:entry key="dhs-auditId" value="5860793874"/>
+  <con:entry key="dhs-messageId" value="urn:uuid:f4e44fc5-dd36-4694-b6ef-287b399a9bbb"/>
+  <con:entry key="dhs-correlationId" value="uuid:0433e8c3-d6c4-4afd-b6ac-2894779e5adb"/>
+  <con:entry key="dhs-subjectIdType" value="http://ns.humanservices.gov.au/audit/type/proda/device"/>
+  <con:entry key="accept" value="application/json"/>
+</xml-fragment>]]></con:setting></con:settings><con:endpoint>https://test.5.rsp.humanservices.gov.au</con:endpoint><con:request>${#TestCase#newPublicKey}
+</con:request><con:originalUri>https://test.5.rsp.humanservices.gov.au/piaweb/api/b2b/v1/orgs/8144409044/devices/SoapeDevice/jwk</con:originalUri><con:assertion type="Simple Contains" id="6733ed36-7075-4024-9c56-b1dab475cd12" name="Contains"><con:configuration><token>ACTIVE</token><ignoreCase>false</ignoreCase><useRegEx>false</useRegEx></con:configuration></con:assertion><con:assertion type="Simple Contains" id="afafe6e2-8a87-4354-ac75-523a7842bb7a"><con:configuration/></con:assertion><con:assertion type="Simple Contains" id="cc9f2616-394f-475d-a748-56ec5de9bb87"><con:configuration/></con:assertion><con:assertion type="Valid HTTP Status Codes" id="048536eb-f995-448c-a47b-3fdcc5fc788b" name="Valid HTTP Status Codes"><con:configuration><codes>200</codes></con:configuration></con:assertion><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters/></con:restRequest></con:config></con:testStep><con:testStep type="groovy" name="replaceOldKeyWithNewOne" id="e5d3b368-c63e-4cfb-a709-b71a5f83fe9b"><con:settings/><con:config><script>import java.security.*;
+import java.util.*;
+import org.jose4j.jwk.*;
+import java.security.cert.*;
+import java.security.*;
+import java.math.BigInteger;
+import java.security.cert.Certificate;
+import java.util.Date;
+import java.io.IOException;
+import sun.security.x509.*;
+
+
+String prodaOrgId = context.testCase.testSuite.project.getPropertyValue("prodaOrgId");
+String deviceName = context.testCase.testSuite.project.getPropertyValue("deviceName");
+String certLocation = context.testCase.testSuite.project.getPropertyValue("certLocation");
+String environment = "vnd";
+
+NEW_JKS_LOCATION = certLocation + "\\" + deviceName + "_New_" + environment + ".jks";
+OLD_JKS_LOCATION = certLocation + "\\" + deviceName + "_" + environment + ".jks";
+log.info("NEW " + NEW_JKS_LOCATION);
+log.info("OLD " + OLD_JKS_LOCATION);
+def newFile = new File(NEW_JKS_LOCATION);
+def oldFile = new File(OLD_JKS_LOCATION);
+
+def FileInputStream fis = null;
+def FileOutputStream fos = null;
+
+fis = new FileInputStream(newFile);
+fos = new FileOutputStream(oldFile);
+byte[] buffer = new byte[4096];
+int bytesRead;
+while ((bytesRead = fis.read(buffer)) != -1) {
+    fos.write(buffer, 0, bytesRead);
+}
+fis.close();
+fos.close();
+newFile.delete();</script></con:config></con:testStep><con:testStep type="groovy" name="CreateSignedOrgJsonWebTokenNewKey" id="6b4a5d5d-8622-41f3-88e2-68045ce52f36"><con:settings/><con:config><script>import com.eviware.soapui.support.types.StringToStringMap;
+import java.io.File;
+import java.io.FileInputStream;
+import java.security.Key;
+import java.security.KeyStore;
+import org.jose4j.jws.AlgorithmIdentifiers;
+import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.jwt.JwtClaims;
+
+// How to get properties 
+//def signingKeyLocation = testRunner.testCase.testSteps['local'].getPropertyValue("jwt.signingkey.location");
+
+// Get the JKS keypair for signing the JWT
+
+String prodaOrgId = context.testCase.testSuite.project.getPropertyValue("prodaOrgId");
+String deviceName = context.testCase.testSuite.project.getPropertyValue("deviceName");
+String tokenAudience =  "https://proda.humanservices.gov.au";
+//String tokenAudience =  context.testCase.testSuite.project.getPropertyValue("accessTokenAudience");
+String certLocation = context.testCase.testSuite.project.getPropertyValue("certLocation");
+String environment = "vnd";
+
+JKS_LOCATION = certLocation + "\\" + deviceName + "_" + environment + ".jks";
+log.info("org id: " + prodaOrgId);
+log.info("device name: " + deviceName);
+log.info("token audience: " + tokenAudience);
+log.info("JSK location: " + JKS_LOCATION);
+
+def key
+def containerPassword = "Pass-123";
+def aliasPassword = "Pass-123";
+def alias = "proda-alias";
+def file = new File(JKS_LOCATION);
+def is = new FileInputStream(file);
+def keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+keystore.load(is, containerPassword.toCharArray());
+key = keystore.getKey(alias, aliasPassword.toCharArray());  
+is.close();  
+
+// Get JWT claims
+
+def alg = "RS256";
+def aud = "https://proda.humanservices.gov.au";
+
+// Setup the JWT
+def claims = new JwtClaims();
+
+claims.setIssuer(prodaOrgId);
+claims.setSubject(deviceName);
+claims.setAudience(aud);
+claims.setClaim("token.aud" , tokenAudience);
+claims.setExpirationTimeMinutesInTheFuture(10);
+claims.setIssuedAtToNow();
+
+// Generate the signature
+def jws = new JsonWebSignature();
+jws.setKey(key);
+jws.setPayload(claims.toJson());
+jws.setKeyIdHeaderValue(deviceName);
+jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
+
+// Get JWT as a string
+def jwt = jws.getCompactSerialization();
+
+context.testCase.setPropertyValue("orgSignedJwt", jwt);
+
+// Log the JWT content
+log.info(jwt);
+</script></con:config></con:testStep><con:testStep type="restrequest" name="vendor.to.dhs.getAccessTokenNewKey" id="32513c4d-b240-4385-a673-5f4826875fa7"><con:settings/><con:config service="https://vnd.proda.humanservices.gov.au" resourcePath="/mga/sps/oauth/oauth20/token" methodName="Token" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="vendor.to.dhs.getAccessTokenNewKey" id="365e193b-2747-4656-8887-2a8d21597622" mediaType="application/x-www-form-urlencoded" postQueryString="true"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers"><![CDATA[<xml-fragment xmlns:con="http://eviware.com/soapui/config">
+  <con:entry key="dhs-processMode" value="T"/>
+  <con:entry key="dhs-auditIdType" value="http://ns.humanservices.gov.au/audit/type/provider"/>
+  <con:entry key="dhs-subjectId" value="SoapeDevice"/>
+  <con:entry key="dhs-productId" value="DHS Product v1.0"/>
+  <con:entry key="dhs-auditId" value="8144409044"/>
+  <con:entry key="dhs-messageId" value="urn:uuid:53d26d12-9eda-4a8f-a1f4-bab1b4af3084"/>
+  <con:entry key="dhs-correlationId" value="uuid:ebf45630-cd83-41c6-ac74-62eee1078f04"/>
+  <con:entry key="dhs-subjectIdType" value="http://ns.humanservices.gov.au/audit/type/proda"/>
+  <con:entry key="accept" value="application/json"/>
+</xml-fragment>]]></con:setting></con:settings><con:endpoint>https://vnd.proda.humanservices.gov.au</con:endpoint><con:request/><con:originalUri>https://vnd.proda.humanservices.gov.au/mga/sps/oauth/oauth20/token</con:originalUri><con:assertion type="Simple Contains" id="ff67a289-cd52-45a8-aca3-361dd3b38133" name="Contains"><con:configuration><token>access_token</token><ignoreCase>false</ignoreCase><useRegEx>false</useRegEx></con:configuration></con:assertion><con:assertion type="Valid HTTP Status Codes" id="d777d04e-8f37-476c-9571-560c80deb3ab" name="Valid HTTP Status Codes"><con:configuration><codes>200</codes></con:configuration></con:assertion><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters>
+  <con:entry key="grant_type" value="urn:ietf:params:oauth:grant-type:jwt-bearer"/>
+  <con:entry key="client_id" value="${#Project#clientId}"/>
+  <con:entry key="assertion" value="${#TestCase#orgSignedJwt}"/>
+</con:parameters><con:parameterOrder><con:entry>client_id</con:entry><con:entry>grant_type</con:entry><con:entry>assertion</con:entry></con:parameterOrder></con:restRequest></con:config></con:testStep><con:properties><con:property><con:name>orgSignedJwt</con:name><con:value/></con:property><con:property><con:name>newPublicKey</con:name><con:value/></con:property><con:property><con:name>accessToken</con:name><con:value/></con:property><con:property><con:name>publicKey</con:name><con:value/></con:property></con:properties></con:testCase><con:properties><con:property><con:name>accessToken</con:name><con:value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/></con:property></con:properties></con:testSuite><con:properties><con:property><con:name>productId</con:name><con:value>[Enter your product name and version here.  eg. MagicMedicalSoftwareV1.0]</con:value></con:property><con:property><con:name>certLocation</con:name><con:value>[Enter the location you would like to store the generated certificates. eg. C:\MyCertificates]</con:value></con:property><con:property><con:name>prodaOrgId</con:name><con:value>[Enter the PRODA Org ID (RA) that will be authenticating the transmissions, which is software device that was registered for in the PRODA UI] </con:value></con:property><con:property><con:name>prodaDelegatorOrgId</con:name><con:value>[OPTIONAL for PBS Online Developers: Enter the PRODA Org ID (RA) that of the organisation that has delegated authority to this organisation who will be authenticating the transmissions, which is software device was registered for in PRODA]</con:value></con:property><con:property><con:name>deviceName</con:name><con:value>[Enter the name of your software device, which was entered when the device was registered in the PRODA UI]</con:value></con:property><con:property><con:name>deviceActivationCode</con:name><con:value>[Enter the Device Activaton Code (DAC) for your device which was provided when the device was registered in the PRODA UI]</con:value></con:property><con:property><con:name>clientId</con:name><con:value>[Enter the Software Vendor PRODA ClientID provided in your integration pack or use soape-testing-client-v2]</con:value></con:property><con:property><con:name>accessTokenAudience</con:name><con:value>[Enter the token audience string for the Relying Party the access token will be presented to]</con:value></con:property></con:properties><con:wssContainer><con:outgoing><con:name>PO_DEV</con:name><con:entry type="Username" username="WS_CCSTEST_PO" password="ufDHKCopYBj6UCzUaUh3"><con:configuration><addCreated>true</addCreated><addNonce>true</addNonce><passwordType>PasswordDigest</passwordType></con:configuration></con:entry></con:outgoing></con:wssContainer><con:oAuth2ProfileContainer/><con:oAuth1ProfileContainer/><con:sensitiveInformation/></con:soapui-project>

@@ -1,19 +1,25 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { SubmissionProgress } from '@/components/SubmissionProgress';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { ResultsSummary } from '@/components/ResultsSummary';
 import { useSubmissionStore } from '@/stores/submissionStore';
+import { useUploadStore } from '@/stores/uploadStore';
 import { env } from '@/lib/env';
 import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 
 type SubmitStatus = 'idle' | 'running' | 'paused' | 'confirming' | 'completed' | 'error';
 
 export default function SubmitPage() {
+  const router = useRouter();
   const { submissionId, setSubmissionId, progress, setProgress } = useSubmissionStore();
+  const { parsedRows } = useUploadStore();
   const [status, setStatus] = useState<SubmitStatus>('idle');
   const [error, setError] = useState<string | null>(null);
+  const hasStarted = useRef(false);
   const [confirmationRecords, setConfirmationRecords] = useState<
     Array<{
       recordId: string;
@@ -41,6 +47,45 @@ export default function SubmitPage() {
       errorMessage?: string;
     }>;
   } | null>(null);
+
+  // Auto-start submission when arriving with parsed rows
+  useEffect(() => {
+    if (hasStarted.current || parsedRows.length === 0 || submissionId) return;
+    hasStarted.current = true;
+
+    const startSubmission = async () => {
+      setStatus('running');
+      setError(null);
+      try {
+        const res = await fetch(`${env.apiUrl}/api/submit`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            batches: [{ encounters: parsedRows }],
+            informationProvider: {},
+            dryRun: true,
+          }),
+        });
+        if (!res.ok) throw new Error(`Submission failed: ${res.status}`);
+        const data = await res.json();
+        setSubmissionId(data.submissionId);
+        setProgress({
+          totalBatches: data.totalBatches,
+          completedBatches: 0,
+          successfulRecords: 0,
+          failedRecords: 0,
+          pendingConfirmation: 0,
+          currentBatch: 0,
+          status: 'running',
+        });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Submission failed');
+        setStatus('error');
+      }
+    };
+
+    startSubmission();
+  }, [parsedRows, submissionId, setSubmissionId, setProgress]);
 
   // Poll progress while running
   useEffect(() => {
@@ -123,8 +168,15 @@ export default function SubmitPage() {
         <h2 className="mb-4 text-2xl font-bold">Submission Progress</h2>
         <Card>
           <p className="text-slate-400">
-            No active submission. Please upload and validate records first.
+            {parsedRows.length === 0
+              ? 'No active submission. Please upload and validate records first.'
+              : `${parsedRows.length} record(s) ready. Starting submission...`}
           </p>
+          {parsedRows.length === 0 && (
+            <Button variant="secondary" size="sm" className="mt-3" onClick={() => router.push('/upload')}>
+              Go to Upload
+            </Button>
+          )}
         </Card>
       </div>
     );
@@ -155,7 +207,7 @@ export default function SubmitPage() {
           failed={results.failed}
           confirmed={results.confirmed}
           results={results.results}
-          onNewUpload={() => (window.location.href = '/upload')}
+          onNewUpload={() => router.push('/upload')}
         />
       </div>
     );

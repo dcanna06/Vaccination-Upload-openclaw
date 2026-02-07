@@ -96,7 +96,7 @@ class ExcelParserService:
 
         for row_idx, row in enumerate(rows[1:], start=2):
             record, row_errors = self._parse_row(row, column_mapping, row_idx)
-            if record:
+            if record and not row_errors:
                 records.append(record)
             errors.extend(row_errors)
 

@@ -34,8 +34,6 @@ Statuses that stay here: OPEN, FIXED (awaiting QA retest), REOPENED
 
 -->
 
-*(No open issues)*
-
 ---
 
 ## Closed Issues
@@ -43,6 +41,34 @@ Statuses that stay here: OPEN, FIXED (awaiting QA retest), REOPENED
 <!--
 Only VERIFIED items go here.
 -->
+
+### QA-FIX-012: upload.py invalidRows count uses wrong error key
+- **Source ticket**: TICKET-025 (Upload API Endpoint)
+- **Severity**: 🟢 MINOR
+- **Status**: VERIFIED ✅
+- **Verified by QA**: 2026-02-07
+- **Retest result**: E2E test: upload 3 rows (2 invalid + 1 valid) → `totalRows: 3, validRows: 1, invalidRows: 2, records: 1, errors: 2`. All counts now correct. `upload.py:40` uses `e.get("row", 0)` matching ParseError key. `totalRows` sourced from parser's own count. 274 tests still pass.
+
+### QA-FIX-011: History endpoint not implemented
+- **Source ticket**: Phase 7 (no specific ticket)
+- **Severity**: 🟡 MAJOR
+- **Status**: VERIFIED ✅
+- **Verified by QA**: 2026-02-07
+- **Retest result**: `GET /api/submissions` returns 200 with `{submissions: [...]}`. E2E test: upload 3 records → validate → submit dry run → `GET /api/submissions` returns 1 submission with `status: completed, dryRun: true, successfulRecords: 3, createdAt: <timestamp>, completedAt: <timestamp>`. Frontend `history/page.tsx` fetches and displays submissions with status badges, record counts, timestamps, and loading/error/empty states. Verified.
+
+### QA-FIX-010: Dry-run submission results are empty
+- **Source ticket**: TICKET-027/030 (Submit/Results API Endpoints)
+- **Severity**: 🟡 MAJOR
+- **Status**: VERIFIED ✅
+- **Verified by QA**: 2026-02-07
+- **Retest result**: E2E test: upload 3 valid records → validate → submit dry run → results returns `totalRecords: 3, successful: 3, failed: 0, completedAt: 2026-02-06T21:14:52+00:00, results: [{batchIndex: 0, status: "success_dry_run"}]`. Progress shows `completedBatches: 1, successfulRecords: 3, status: completed`. Verified.
+
+### QA-FIX-009: Upload endpoint includes parse-error records in records array
+- **Source ticket**: TICKET-025 (Upload API Endpoint)
+- **Severity**: 🟡 MAJOR
+- **Status**: VERIFIED ✅
+- **Verified by QA**: 2026-02-07
+- **Retest result**: E2E test: upload 3 rows (2 valid + 1 invalid gender "X") → response: `validRows: 2, records: 2, errors: 1`. Invalid row excluded from records array. Downstream validate on the 2 clean records: `isValid: true, validRecords: 2, invalidRecords: 0`. No double-reporting of errors. Verified.
 
 ### QA-FIX-008: Unused import in file_upload.py
 - **Source ticket**: TICKET-003

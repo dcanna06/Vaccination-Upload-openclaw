@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { FileUpload } from '@/components/FileUpload';
 import { useUploadStore } from '@/stores/uploadStore';
 import { env } from '@/lib/env';
@@ -8,7 +9,8 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 
 export default function UploadPage() {
-  const { setFile, setIsUploading, isUploading, setError, error, reset } = useUploadStore();
+  const router = useRouter();
+  const { setFile, setIsUploading, isUploading, setError, error, reset, setParsedRows } = useUploadStore();
   const [uploadResult, setUploadResult] = useState<{
     fileName: string;
     totalRows: number;
@@ -38,6 +40,7 @@ export default function UploadPage() {
         }
 
         const data = await res.json();
+        setParsedRows(data.records ?? []);
         setUploadResult({
           fileName: data.fileName,
           totalRows: data.totalRows ?? 0,
@@ -50,7 +53,7 @@ export default function UploadPage() {
         setIsUploading(false);
       }
     },
-    [setFile, setIsUploading, setError],
+    [setFile, setIsUploading, setError, setParsedRows],
   );
 
   const handleError = useCallback(
@@ -121,7 +124,7 @@ export default function UploadPage() {
               Upload Another
             </Button>
             {uploadResult.invalidRows === 0 && (
-              <Button size="sm" onClick={() => window.location.href = '/validate'}>
+              <Button size="sm" onClick={() => router.push('/validate')}>
                 Review & Validate
               </Button>
             )}

@@ -35,13 +35,14 @@ async def upload_file(file: UploadFile) -> UploadResponse:
 
     records = result.get("records", [])
     errors = result.get("errors", [])
+    total_rows = result.get("totalRows", 0)
     valid_count = len(records)
-    invalid_count = len(set(e.get("rowNumber", 0) for e in errors))
+    invalid_count = len(set(e.get("row", 0) for e in errors))
 
     logger.info(
         "upload_parsed",
         file_name=file.filename,
-        total_rows=valid_count + invalid_count,
+        total_rows=total_rows,
         valid=valid_count,
         invalid=invalid_count,
     )
@@ -50,7 +51,7 @@ async def upload_file(file: UploadFile) -> UploadResponse:
         fileName=file.filename or "",
         sizeBytes=len(content),
         status="parsed",
-        totalRows=valid_count + invalid_count,
+        totalRows=total_rows,
         validRows=valid_count,
         invalidRows=invalid_count,
         records=records,
