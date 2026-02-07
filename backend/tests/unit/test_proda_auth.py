@@ -1,4 +1,4 @@
-"""Tests for TICKET-006: PRODA authentication service."""
+"""Tests for TICKET-P0: PRODA authentication service (corrected JWT claims)."""
 
 import time
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -13,14 +13,18 @@ from app.services.proda_auth import ProdaAuthService, TOKEN_REFRESH_BUFFER_SECON
 @pytest.fixture
 def config():
     return Settings(
-        PRODA_MINOR_ID="MMS00001",
-        PRODA_DEVICE_NAME="test-device",
-        PRODA_ORG_ID="RA1234",
+        APP_ENV="vendor",
+        PRODA_ORG_ID="2330016739",
+        PRODA_DEVICE_NAME="DavidTestLaptop2",
+        PRODA_MINOR_ID="WRR00000",
         PRODA_JKS_BASE64="dGVzdA==",  # base64("test")
-        PRODA_JKS_PASSWORD="password",
-        PRODA_KEY_ALIAS="mykey",
-        PRODA_AUDIENCE="https://medicareaustralia.gov.au/MCOL",
-        PRODA_TOKEN_ENDPOINT="https://proda.example.com/token",
+        PRODA_JKS_PASSWORD="Pass-123",
+        PRODA_KEY_ALIAS="proda-alias",
+        PRODA_JWT_AUDIENCE="https://proda.humanservices.gov.au",
+        PRODA_CLIENT_ID="soape-testing-client-v2",
+        PRODA_ACCESS_TOKEN_AUDIENCE="https://proda.humanservices.gov.au",
+        PRODA_TOKEN_ENDPOINT_VENDOR="https://vnd.proda.humanservices.gov.au/mga/sps/oauth/oauth20/token",
+        PRODA_TOKEN_ENDPOINT_PROD="https://proda.humanservices.gov.au/mga/sps/oauth/oauth20/token",
         _env_file=None,
     )
 
@@ -91,10 +95,73 @@ class TestGetToken:
 
 class TestBuildAssertion:
     def test_raises_without_jks_config(self):
-        config = Settings(PRODA_JKS_BASE64="", _env_file=None)
+        config = Settings(PRODA_JKS_BASE64="", PRODA_JKS_FILE_PATH="", _env_file=None)
         service = ProdaAuthService(config=config)
         with pytest.raises(AuthenticationError, match="JKS keystore not configured"):
             service._build_assertion()
+
+    def test_jwt_claims_use_org_id_as_issuer(self, service):
+        """iss must be PRODA_ORG_ID, NOT Minor ID."""
+        with patch.object(service, "_load_private_key", return_value=b"fake-key"):
+            with patch("jwt.encode", return_value="mock-jwt") as mock_encode:
+                service._build_assertion()
+                call_args = mock_encode.call_args
+                claims = call_args[0][0]
+                assert claims["iss"] == "2330016739"  # ORG_ID, not Minor ID
+
+    def test_jwt_claims_use_correct_audience(self, service):
+        """aud must be https://proda.humanservices.gov.au, NOT MCOL."""
+        with patch.object(service, "_load_private_key", return_value=b"fake-key"):
+            with patch("jwt.encode", return_value="mock-jwt") as mock_encode:
+                service._build_assertion()
+                claims = mock_encode.call_args[0][0]
+                assert claims["aud"] == "https://proda.humanservices.gov.au"
+
+    def test_jwt_claims_include_token_aud(self, service):
+        """token.aud custom claim must be present."""
+        with patch.object(service, "_load_private_key", return_value=b"fake-key"):
+            with patch("jwt.encode", return_value="mock-jwt") as mock_encode:
+                service._build_assertion()
+                claims = mock_encode.call_args[0][0]
+                assert "token.aud" in claims
+                assert claims["token.aud"] == "https://proda.humanservices.gov.au"
+
+    def test_jwt_header_includes_kid(self, service):
+        """kid header must be set to PRODA_DEVICE_NAME."""
+        with patch.object(service, "_load_private_key", return_value=b"fake-key"):
+            with patch("jwt.encode", return_value="mock-jwt") as mock_encode:
+                service._build_assertion()
+                call_kwargs = mock_encode.call_args[1]
+                assert call_kwargs["headers"]["kid"] == "DavidTestLaptop2"
+
+    def test_jwt_expiry_is_10_minutes(self, service):
+        """exp must be now + 600 (10 minutes), not 5 minutes."""
+        with patch.object(service, "_load_private_key", return_value=b"fake-key"):
+            with patch("jwt.encode", return_value="mock-jwt") as mock_encode:
+                service._build_assertion()
+                claims = mock_encode.call_args[0][0]
+                # exp - iat should be 600 (10 min)
+                assert claims["exp"] - claims["iat"] == 600
+
+    def test_jwt_sub_is_device_name(self, service):
+        """sub must be PRODA_DEVICE_NAME."""
+        with patch.object(service, "_load_private_key", return_value=b"fake-key"):
+            with patch("jwt.encode", return_value="mock-jwt") as mock_encode:
+                service._build_assertion()
+                claims = mock_encode.call_args[0][0]
+                assert claims["sub"] == "DavidTestLaptop2"
+
+
+class TestTokenEndpointSelection:
+    def test_vendor_env_uses_vendor_endpoint(self, config):
+        config.APP_ENV = "vendor"
+        service = ProdaAuthService(config=config)
+        assert service._get_token_endpoint() == "https://vnd.proda.humanservices.gov.au/mga/sps/oauth/oauth20/token"
+
+    def test_production_env_uses_prod_endpoint(self, config):
+        config.APP_ENV = "production"
+        service = ProdaAuthService(config=config)
+        assert service._get_token_endpoint() == "https://proda.humanservices.gov.au/mga/sps/oauth/oauth20/token"
 
 
 class TestAcquireToken:
@@ -120,6 +187,52 @@ class TestAcquireToken:
                 assert token == "acquired-token"
                 assert service._access_token == "acquired-token"
                 assert service._token_expires_at > time.time()
+
+    @pytest.mark.asyncio
+    async def test_post_body_includes_client_id(self, service):
+        """POST body must include client_id parameter."""
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "access_token": "token",
+            "expires_in": 3600,
+        }
+        mock_response.raise_for_status = MagicMock()
+
+        with patch.object(service, "_build_assertion", return_value="mock-assertion"):
+            with patch("httpx.AsyncClient") as mock_client_class:
+                mock_client = AsyncMock()
+                mock_client.post.return_value = mock_response
+                mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+                mock_client.__aexit__ = AsyncMock(return_value=False)
+                mock_client_class.return_value = mock_client
+
+                await service._acquire_token()
+
+                post_call = mock_client.post.call_args
+                assert post_call[1]["data"]["client_id"] == "soape-testing-client-v2"
+
+    @pytest.mark.asyncio
+    async def test_post_uses_vendor_endpoint(self, service):
+        """Token request should use vendor endpoint when APP_ENV=vendor."""
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "access_token": "token",
+            "expires_in": 3600,
+        }
+        mock_response.raise_for_status = MagicMock()
+
+        with patch.object(service, "_build_assertion", return_value="mock-assertion"):
+            with patch("httpx.AsyncClient") as mock_client_class:
+                mock_client = AsyncMock()
+                mock_client.post.return_value = mock_response
+                mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+                mock_client.__aexit__ = AsyncMock(return_value=False)
+                mock_client_class.return_value = mock_client
+
+                await service._acquire_token()
+
+                post_call = mock_client.post.call_args
+                assert post_call[0][0] == "https://vnd.proda.humanservices.gov.au/mga/sps/oauth/oauth20/token"
 
     @pytest.mark.asyncio
     async def test_token_is_cached_after_acquisition(self, service):

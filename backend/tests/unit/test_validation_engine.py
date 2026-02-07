@@ -152,11 +152,11 @@ class TestIndividualValidator:
         assert any(e.code == "AIR-E-1016" for e in errors)
 
     def test_invalid_gender_fails(self, validator: IndividualValidator) -> None:
-        errors = validator.validate(_base_record(gender="X"), 2)
+        errors = validator.validate(_base_record(gender="Z"), 2)
         assert any(e.code == "AIR-E-1017" for e in errors)
 
     def test_valid_genders_pass(self, validator: IndividualValidator) -> None:
-        for g in ["M", "F", "I", "U"]:
+        for g in ["M", "F", "I", "U", "X"]:
             errors = validator.validate(_base_record(gender=g), 2)
             gender_errors = [e for e in errors if e.field == "gender"]
             assert len(gender_errors) == 0, f"Gender '{g}' should be valid"
@@ -344,7 +344,7 @@ class TestEpisodeValidator:
         assert any(e.code == "AIR-E-1085" for e in errors)
 
     def test_valid_routes(self, validator: EpisodeValidator) -> None:
-        for route in ["IM", "SC", "ID", "OR", "IN", "NAS"]:
+        for route in ["IM", "SC", "ID", "OR", "IN", "NAS", "NS"]:
             errors = validator.validate(_base_record(routeOfAdministration=route), 2)
             route_errors = [e for e in errors if e.field == "routeOfAdministration"]
             assert len(route_errors) == 0, f"Route '{route}' should be valid"

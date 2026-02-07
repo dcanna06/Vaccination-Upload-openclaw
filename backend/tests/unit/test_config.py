@@ -56,9 +56,21 @@ class TestSettings:
         s = Settings(_env_file=None)
         assert s.AIR_PRODUCT_ID == "AIRBulkVax 1.0"
 
-    def test_default_proda_audience(self):
+    def test_default_proda_jwt_audience(self):
         s = Settings(_env_file=None)
-        assert s.PRODA_AUDIENCE == "https://medicareaustralia.gov.au/MCOL"
+        assert s.PRODA_JWT_AUDIENCE == "https://proda.humanservices.gov.au"
+
+    def test_default_proda_client_id(self):
+        s = Settings(_env_file=None)
+        assert s.PRODA_CLIENT_ID == "soape-testing-client-v2"
+
+    def test_default_proda_key_alias(self):
+        s = Settings(_env_file=None)
+        assert s.PRODA_KEY_ALIAS == "proda-alias"
+
+    def test_default_proda_jks_password(self):
+        s = Settings(_env_file=None)
+        assert s.PRODA_JKS_PASSWORD == "Pass-123"
 
     def test_jwt_defaults(self):
         s = Settings(_env_file=None)

@@ -14,10 +14,10 @@
 
 ## Current State
 
-**Last updated**: 2026-02-07 01:15
-**Current ticket**: ALL COMPLETE (TICKET-001 through TICKET-046)
-**Phase**: ALL PHASES COMPLETE (1-12)
-**Branch**: main
+**Last updated**: 2026-02-08 12:00
+**Current ticket**: PHASE 5 — Codebase sweep
+**Phase**: Post-P0 cleanup
+**Branch**: feature/TICKET-P0-proda-auth-fix
 
 ---
 
@@ -267,3 +267,27 @@
   - `backend/tests/unit/test_security.py` — NEW: 9 tests (7 security header checks, 2 error safety)
 - **Tests**: 274 passed (all), 0 failed
 - **Notes**: Security headers: X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy, Cache-Control, Permissions-Policy, CSP. Rate limiting returns 429 with Retry-After header.
+
+### TICKET-P0: Fix PRODA B2B Authentication (CRITICAL)
+- **Status**: ✅ Done
+- **Branch**: `feature/TICKET-P0-proda-auth-fix`
+- **Date**: 2026-02-08 12:00
+- **Files created/modified**:
+  - `backend/app/config.py` — Replaced PRODA env vars: PRODA_AUDIENCE→PRODA_JWT_AUDIENCE, added PRODA_CLIENT_ID, PRODA_ACCESS_TOKEN_AUDIENCE, split PRODA_TOKEN_ENDPOINT into VENDOR/PROD, added PRODA_JKS_FILE_PATH
+  - `backend/app/services/proda_auth.py` — Rewrote JWT assertion builder (iss=ORG_ID, aud=proda URL, kid header, token.aud claim, exp=10min), fixed POST body (added client_id), added endpoint selection (vendor/prod), JKS file path support
+  - `backend/app/services/validation_engine.py` — Added gender X and route NS to valid sets
+  - `backend/app/services/excel_parser.py` — Added X/NotStated gender mappings
+  - `backend/app/services/excel_template.py` — Added X to gender dropdown, NS to route dropdown
+  - `backend/app/schemas/air_request.py` — Added X to gender Literal, NS to route Literal
+  - `.env.example` — Complete rewrite of PRODA section with proven values
+  - `frontend/types/air.ts` — Added X to Gender type, NS to RouteOfAdministration type
+  - `frontend/types/excel-import.ts` — Added NS to route conditional description
+  - `frontend/types/__tests__/air.test.ts` — Updated gender/route arrays to include X/NS
+  - `backend/tests/unit/test_proda_auth.py` — Complete rewrite: tests assert correct JWT claims (iss=ORG_ID, aud=proda URL, kid header, token.aud, exp=10min, client_id in POST body, endpoint selection)
+  - `backend/tests/unit/test_validation_engine.py` — X is valid gender, NS is valid route
+  - `backend/tests/unit/test_excel_parser.py` — X/Not Stated normalizes to X
+  - `backend/tests/unit/test_excel_template.py` — Updated dropdown assertions for X and NS
+  - `backend/tests/unit/test_config.py` — Updated for new PRODA config vars
+  - `backend/tests/integration/test_proda_vendor.py` — NEW: vendor env integration test (skips if no creds)
+- **Tests**: 288 passed (all), 0 failed
+- **Notes**: All 10 tasks complete. JWT claims proven correct via SoapUI on 2026-02-08. Old MCOL references removed from code. Gender X (Not Stated, June 2025) and route NS (Nasal V6.0.7+, October 2025) added throughout stack.

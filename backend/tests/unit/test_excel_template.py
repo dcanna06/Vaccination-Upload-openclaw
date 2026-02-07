@@ -127,21 +127,14 @@ class TestDataValidations:
         return validations
 
     def test_gender_dropdown_values(self, workbook) -> None:
-        """Gender dropdown must have M, F, I, U per claude.md (NOT X)."""
+        """Gender dropdown must have M, F, I, U, X per updated spec."""
         ws = workbook["Vaccination Records"]
         gender_dv = None
         for dv in ws.data_validations.dataValidation:
-            if dv.formula1 and "M,F,I,U" in dv.formula1:
+            if dv.formula1 and "M,F,I,U,X" in dv.formula1:
                 gender_dv = dv
                 break
-        assert gender_dv is not None, "Gender validation with M,F,I,U not found"
-
-    def test_gender_dropdown_does_not_have_x(self, workbook) -> None:
-        """Gender dropdown must NOT include X (TODO.md is wrong, claude.md says I and U)."""
-        ws = workbook["Vaccination Records"]
-        for dv in ws.data_validations.dataValidation:
-            if dv.formula1 and ",X" in dv.formula1:
-                pytest.fail("Gender validation should not include X")
+        assert gender_dv is not None, "Gender validation with M,F,I,U,X not found"
 
     def test_vaccine_type_dropdown_includes_aen(self, workbook) -> None:
         """Vaccine Type must include NIP, AEN, OTH per claude.md."""
@@ -154,22 +147,21 @@ class TestDataValidations:
         assert vtype_dv is not None, "Vaccine Type validation with NIP,AEN,OTH not found"
 
     def test_route_dropdown_values(self, workbook) -> None:
-        """Route must have IM, SC, ID, OR, IN, NAS per claude.md (NOT PO/NS)."""
+        """Route must have IM, SC, ID, OR, IN, NAS, NS per updated spec."""
         ws = workbook["Vaccination Records"]
         route_dv = None
         for dv in ws.data_validations.dataValidation:
-            if dv.formula1 and "IM,SC,ID,OR,IN,NAS" in dv.formula1:
+            if dv.formula1 and "IM,SC,ID,OR,IN,NAS,NS" in dv.formula1:
                 route_dv = dv
                 break
-        assert route_dv is not None, "Route validation with IM,SC,ID,OR,IN,NAS not found"
+        assert route_dv is not None, "Route validation with IM,SC,ID,OR,IN,NAS,NS not found"
 
-    def test_route_dropdown_does_not_have_po_or_ns(self, workbook) -> None:
-        """Route dropdown must NOT include PO or NS (TODO.md is wrong)."""
+    def test_route_dropdown_does_not_have_po(self, workbook) -> None:
+        """Route dropdown must NOT include PO."""
         ws = workbook["Vaccination Records"]
         for dv in ws.data_validations.dataValidation:
-            if dv.formula1:
-                assert "PO" not in dv.formula1 or "PO" in dv.formula1 and "PO" not in dv.formula1.replace("OTH", "")
-                assert ",NS" not in dv.formula1.replace("NAS", "")
+            if dv.formula1 and "PO" in dv.formula1:
+                pytest.fail("Route validation should not include PO")
 
     def test_overseas_dropdown(self, workbook) -> None:
         ws = workbook["Vaccination Records"]
