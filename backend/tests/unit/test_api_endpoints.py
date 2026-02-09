@@ -130,7 +130,7 @@ class TestValidateEndpoint:
             {
                 "rowNumber": 2,
                 "dateOfBirth": "1990-01-15",
-                "gender": "X",  # Invalid
+                "gender": "X",  # Valid gender — record fails due to missing identification fields
                 "dateOfService": "2026-01-15",
                 "vaccineCode": "COMIRN",
                 "vaccineDose": "1",
@@ -237,8 +237,7 @@ class TestSubmitEndpoint:
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
             resp = await ac.get("/api/submit/nonexistent/progress")
-        data = resp.json()
-        assert data["status"] == "not_found"
+        assert resp.status_code == 404
 
     @pytest.mark.anyio
     async def test_results_endpoint(self) -> None:

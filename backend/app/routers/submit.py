@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
@@ -141,7 +141,7 @@ async def get_progress(submission_id: str) -> dict[str, Any]:
     """Get submission progress."""
     sub = _submissions.get(submission_id)
     if not sub:
-        return {"error": "Submission not found", "status": "not_found"}
+        raise HTTPException(status_code=404, detail="Submission not found")
     return {
         "submissionId": submission_id,
         "status": sub["status"],
@@ -154,7 +154,7 @@ async def confirm_records(submission_id: str, request: ConfirmRequest) -> dict[s
     """Submit confirmations for records requiring confirmation."""
     sub = _submissions.get(submission_id)
     if not sub:
-        return {"error": "Submission not found", "status": "not_found"}
+        raise HTTPException(status_code=404, detail="Submission not found")
 
     logger.info(
         "confirmation_submitted",
@@ -217,7 +217,7 @@ async def get_results(submission_id: str) -> dict[str, Any]:
     """Get final submission results."""
     sub = _submissions.get(submission_id)
     if not sub:
-        return {"error": "Submission not found", "status": "not_found"}
+        raise HTTPException(status_code=404, detail="Submission not found")
 
     records = _build_result_records(sub)
     results = sub.get("results") or {}
@@ -315,7 +315,7 @@ async def pause_submission(submission_id: str) -> dict[str, Any]:
     """Pause a running submission."""
     sub = _submissions.get(submission_id)
     if not sub:
-        return {"error": "Submission not found"}
+        raise HTTPException(status_code=404, detail="Submission not found")
     sub["status"] = "paused"
     sub["progress"]["status"] = "paused"
     _persist(submission_id)
@@ -327,7 +327,7 @@ async def resume_submission(submission_id: str) -> dict[str, Any]:
     """Resume a paused submission."""
     sub = _submissions.get(submission_id)
     if not sub:
-        return {"error": "Submission not found"}
+        raise HTTPException(status_code=404, detail="Submission not found")
     sub["status"] = "running"
     sub["progress"]["status"] = "running"
     _persist(submission_id)
