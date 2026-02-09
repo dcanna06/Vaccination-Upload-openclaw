@@ -343,8 +343,9 @@ class BatchSubmissionService:
             }
 
         # Build API encounters matching proven SoapUI format
+        # Re-number encounter IDs starting from 1 (AIR-E-1041 requires this)
         api_encounters = []
-        for enc in encounters:
+        for enc_idx, enc in enumerate(encounters, start=1):
             episodes = []
             for ep in enc.get("episodes", []):
                 episode: dict[str, Any] = {
@@ -362,7 +363,7 @@ class BatchSubmissionService:
                 episodes.append(episode)
 
             api_enc: dict[str, Any] = {
-                "id": int(enc.get("id", 1)),
+                "id": enc_idx,
                 "dateOfService": self._to_ddmmyyyy(enc["dateOfService"]),
                 "episodes": episodes,
             }
