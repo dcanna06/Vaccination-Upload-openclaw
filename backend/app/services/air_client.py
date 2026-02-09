@@ -266,7 +266,10 @@ class BatchSubmissionService:
 
             try:
                 # Wrap single encounter in a batch for _submit_single_batch
-                single_batch = {"encounters": [encounter]}
+                single_batch = {
+                    "encounters": [encounter],
+                    "sourceRows": encounter.get("sourceRows", []),
+                }
                 result = await self._submit_single_batch(
                     single_batch, dict(information_provider)
                 )
