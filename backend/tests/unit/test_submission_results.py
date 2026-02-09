@@ -267,3 +267,65 @@ async def test_get_results_with_stored_payloads(client, mock_submission_data, mo
     assert rec0["encounter"]["vaccineCode"] == "COVAST"
     assert rec0["episodes"][0]["vaccine"] == "COVAST"
     assert rec0["episodes"][0]["status"] == "VALID"
+
+
+@pytest.mark.anyio
+async def test_export_not_found(client):
+    """Should return 404 for non-existent submission."""
+    response = await client.get("/api/submissions/nonexistent-id/export")
+    assert response.status_code == 404
+
+
+@pytest.mark.anyio
+async def test_export_csv(client, mock_submission_data):
+    """Should return a CSV with headers and detail rows."""
+    with patch("app.routers.submission_results._store") as mock_store:
+        mock_store.load_metadata.return_value = mock_submission_data
+        mock_store._base = Path("/tmp/test")
+
+        with patch("app.routers.submission_results._load_payload", return_value=None):
+            response = await client.get("/api/submissions/test-id/export")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "text/csv; charset=utf-8"
+    assert "attachment" in response.headers.get("content-disposition", "")
+
+    content = response.text
+    assert "AIR Submission Results Report" in content
+    assert "test-id" in content
+    # Should have header row with expected columns
+    assert "Row,Status,AIR Code,AIR Message" in content
+    # Should have data rows
+    lines = content.strip().split("\n")
+    # Header section (6 lines) + summary (3 lines) + column header (1) + data rows (2)
+    assert len(lines) >= 10
+
+
+@pytest.mark.anyio
+async def test_export_csv_verbatim_message(client):
+    """CRITICAL: Exported CSV must contain verbatim AIR messages."""
+    verbatim_msg = "Exact message with special chars"
+    metadata = {
+        "status": "completed",
+        "completedAt": "2026-02-09T10:00:00+00:00",
+        "results": {
+            "results": [{
+                "status": "error",
+                "sourceRows": [1],
+                "rawResponse": {
+                    "statusCode": "AIR-E-1005",
+                    "message": verbatim_msg,
+                },
+            }],
+        },
+    }
+
+    with patch("app.routers.submission_results._store") as mock_store:
+        mock_store.load_metadata.return_value = metadata
+        mock_store._base = Path("/tmp/test")
+
+        with patch("app.routers.submission_results._load_payload", return_value=None):
+            response = await client.get("/api/submissions/test-id/export")
+
+    assert response.status_code == 200
+    assert verbatim_msg in response.text

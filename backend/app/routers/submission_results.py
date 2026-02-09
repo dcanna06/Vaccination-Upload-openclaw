@@ -10,11 +10,14 @@ DEV-006: Resubmit + Confirm endpoints
 
 from __future__ import annotations
 
+import csv
+import io
 from typing import Any
 from uuid import uuid4
 
 import structlog
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from app.config import settings
@@ -498,3 +501,130 @@ async def confirm_all_warnings(submission_id: str) -> dict[str, Any]:
         "failed": failed,
         "results": confirmation_results,
     }
+
+
+# --- DEV-010: Export results ---
+
+
+@router.get("/submissions/{submission_id}/export")
+async def export_results(
+    submission_id: str,
+    format: str = Query("csv", pattern="^(csv)$"),
+) -> StreamingResponse:
+    """Export detailed submission results as CSV.
+
+    Includes per-record individual data, encounter data, AIR status,
+    verbatim AIR messages, errors, and episode results.
+    """
+    metadata = _store.load_metadata(submission_id)
+    if not metadata:
+        raise HTTPException(status_code=404, detail="Submission not found")
+
+    results = metadata.get("results", {}) or {}
+    raw_results = results.get("results", [])
+
+    # Build detailed records
+    records: list[dict[str, Any]] = []
+    for idx, r in enumerate(raw_results):
+        source_rows = r.get("sourceRows", [])
+        row_num = source_rows[0] if source_rows else idx + 1
+
+        request_payload = _load_payload(submission_id, idx + 1, "request")
+        response_payload = _load_payload(submission_id, idx + 1, "response")
+
+        if response_payload:
+            parsed = parse_air_response(response_payload, request_payload)
+        else:
+            raw_response = r.get("rawResponse", {})
+            if raw_response:
+                parsed = parse_air_response(raw_response, request_payload)
+            else:
+                air_status = r.get("status", "unknown")
+                parsed = {
+                    "status": "SUCCESS" if air_status == "success" else "WARNING" if air_status == "warning" else "ERROR",
+                    "air_status_code": r.get("statusCode", ""),
+                    "air_message": r.get("message", ""),
+                    "air_errors": [],
+                    "air_episodes": [],
+                    "claim_id": r.get("claimId"),
+                    "claim_sequence_number": r.get("claimSequenceNumber"),
+                    "action_required": "NONE",
+                }
+
+        if not request_payload:
+            request_payload = {}
+
+        record = _build_record(row_num, request_payload, response_payload or {}, parsed)
+        records.append(record)
+
+    # Build CSV
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+
+    # Header section
+    writer.writerow(["AIR Submission Results Report"])
+    writer.writerow(["Submission ID", submission_id])
+    writer.writerow(["Completed", metadata.get("completedAt", "")])
+    writer.writerow(["Environment", metadata.get("environment", "VENDOR_TEST")])
+    writer.writerow([])
+
+    # Summary
+    success_count = sum(1 for r in records if r["status"] == "SUCCESS")
+    warning_count = sum(1 for r in records if r["status"] == "WARNING")
+    error_count = sum(1 for r in records if r["status"] == "ERROR")
+    writer.writerow(["Total", "Success", "Warning", "Error"])
+    writer.writerow([len(records), success_count, warning_count, error_count])
+    writer.writerow([])
+
+    # Detail rows
+    writer.writerow([
+        "Row", "Status", "AIR Code", "AIR Message",
+        "First Name", "Last Name", "DOB", "Gender",
+        "Medicare", "IRN",
+        "Date of Service", "Vaccine Code", "Vaccine Dose", "Vaccine Batch",
+        "Vaccine Type", "Route", "Provider",
+        "Claim ID", "Action Required",
+        "Errors", "Episodes",
+    ])
+
+    for rec in records:
+        ind = rec.get("individual", {})
+        enc = rec.get("encounter", {})
+        errors_str = "; ".join(
+            f"{e['code']}: {e['message']}" for e in rec.get("errors", [])
+        )
+        episodes_str = "; ".join(
+            f"{ep.get('vaccine', '')} ({ep['status']})" for ep in rec.get("episodes", [])
+        )
+        writer.writerow([
+            rec["rowNumber"],
+            rec["status"],
+            rec["airStatusCode"],
+            rec["airMessage"],  # VERBATIM
+            ind.get("firstName", ""),
+            ind.get("lastName", ""),
+            ind.get("dob", ""),
+            ind.get("gender", ""),
+            ind.get("medicare", ""),
+            ind.get("irn", ""),
+            enc.get("dateOfService", ""),
+            enc.get("vaccineCode", ""),
+            enc.get("vaccineDose", ""),
+            enc.get("vaccineBatch", ""),
+            enc.get("vaccineType", ""),
+            enc.get("routeOfAdministration", ""),
+            enc.get("providerNumber", ""),
+            rec.get("claimId", ""),
+            rec["actionRequired"],
+            errors_str,
+            episodes_str,
+        ])
+
+    buf.seek(0)
+    filename = f"air-results-{submission_id[:8]}.csv"
+
+    return StreamingResponse(
+        iter([buf.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )

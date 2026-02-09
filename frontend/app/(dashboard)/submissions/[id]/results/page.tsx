@@ -61,7 +61,7 @@ export default function SubmissionResultsPage() {
 
   // Handlers
   const handleExport = useCallback(async () => {
-    window.open(`${env.apiUrl}/api/submit/${submissionId}/download`, '_blank');
+    window.open(`${env.apiUrl}/api/submissions/${submissionId}/export`, '_blank');
   }, [submissionId]);
 
   const handleConfirmRecord = useCallback(
