@@ -207,6 +207,7 @@ export default function SubmitPage() {
           failed={results.failed}
           confirmed={results.confirmed}
           results={results.results}
+          onExport={() => window.open(`${env.apiUrl}/api/submit/${results.submissionId}/download`, '_blank')}
           onNewUpload={() => router.push('/upload')}
         />
       </div>

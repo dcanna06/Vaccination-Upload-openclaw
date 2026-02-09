@@ -81,5 +81,6 @@ yarn-error.log*
 # Uploaded files (never commit patient data)
 uploads/
 temp/
+backend/data/
 frontend/tsconfig.tsbuildinfo
 *:Zone.Identifier

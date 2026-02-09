@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { env } from '@/lib/env';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 
 interface Submission {
   submissionId: string;
@@ -105,6 +106,17 @@ export default function HistoryPage() {
                   <p className="text-slate-400">Created</p>
                 </div>
               </div>
+              {(sub.status === 'completed' || sub.status === 'error') && (
+                <div className="mt-3 flex justify-end">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => window.open(`${env.apiUrl}/api/submit/${sub.submissionId}/download`, '_blank')}
+                  >
+                    Download Report
+                  </Button>
+                </div>
+              )}
             </Card>
           ))}
         </div>

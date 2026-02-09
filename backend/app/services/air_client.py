@@ -226,10 +226,17 @@ class ConfirmationService:
 class BatchSubmissionService:
     """Orchestrates submission of multiple batches with progress tracking."""
 
-    def __init__(self, air_client: AIRClient) -> None:
+    def __init__(
+        self,
+        air_client: AIRClient,
+        submission_id: str | None = None,
+        store: Any | None = None,
+    ) -> None:
         self._client = air_client
         self._confirmation_service = ConfirmationService(air_client)
         self._paused = False
+        self._submission_id = submission_id
+        self._store = store
 
     async def submit_batches(
         self,
@@ -270,10 +277,22 @@ class BatchSubmissionService:
                     "encounters": [encounter],
                     "sourceRows": encounter.get("sourceRows", []),
                 }
-                result = await self._submit_single_batch(
+                result, payload = await self._submit_single_batch(
                     single_batch, dict(information_provider)
                 )
                 results.append(result)
+
+                # Persist request/response payloads
+                if self._store and self._submission_id:
+                    try:
+                        self._store.save_payload(
+                            self._submission_id,
+                            idx + 1,
+                            payload,
+                            result.get("rawResponse"),
+                        )
+                    except Exception:
+                        logger.warning("payload_save_failed", encounter_index=idx + 1)
 
                 if result["status"] == "success":
                     successful += 1
@@ -321,11 +340,11 @@ class BatchSubmissionService:
         self,
         batch: dict[str, Any],
         information_provider: dict[str, Any],
-    ) -> dict[str, Any]:
-        """Submit a single batch to AIR API."""
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        """Submit a single batch to AIR API. Returns (result, payload)."""
         encounters = batch.get("encounters", [])
         if not encounters:
-            return {"status": "error", "error": "Empty batch"}
+            return {"status": "error", "error": "Empty batch"}, {}
 
         # Build individual — only personalDetails and medicareCard (no address)
         raw_individual = encounters[0].get("individual", {})
@@ -393,7 +412,7 @@ class BatchSubmissionService:
         response["sourceRows"] = batch.get("sourceRows", [])
         response["encounterCount"] = len(api_encounters)
 
-        return response
+        return response, payload
 
     def pause(self) -> None:
         """Pause batch submission after current batch completes."""

@@ -1,23 +1,35 @@
-"""Submission, progress, confirmation, and results endpoints."""
+"""Submission, progress, confirmation, results, and download endpoints."""
 
 import asyncio
+import csv
+import io
 from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
 
 from fastapi import APIRouter
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 import structlog
 
 from app.services.air_client import AIRClient, BatchSubmissionService
 from app.services.proda_auth import ProdaAuthService
+from app.services.submission_store import SubmissionStore
 
 router = APIRouter(prefix="/api", tags=["submit"])
 logger = structlog.get_logger(__name__)
 
-# In-memory submission store (production would use DB)
-_submissions: dict[str, dict[str, Any]] = {}
+# Persistent JSON store — loads previous submissions on import
+_store = SubmissionStore()
+_submissions: dict[str, dict[str, Any]] = _store.load_all_metadata()
+
+
+def _persist(submission_id: str) -> None:
+    """Save current in-memory state to disk."""
+    sub = _submissions.get(submission_id)
+    if sub:
+        _store.save_metadata(submission_id, sub)
 
 
 class SubmitRequest(BaseModel):
@@ -57,7 +69,9 @@ async def _run_submission(submission_id: str) -> None:
             proda = ProdaAuthService()
             token = await proda.get_token()
             client = AIRClient(access_token=token)
-            service = BatchSubmissionService(client)
+            service = BatchSubmissionService(
+                client, submission_id=submission_id, store=_store
+            )
             result = await service.submit_batches(
                 sub["batches"], sub["informationProvider"]
             )
@@ -76,6 +90,8 @@ async def _run_submission(submission_id: str) -> None:
         sub["status"] = "error"
         sub["progress"]["status"] = "error"
         sub["results"] = {"status": "error", "error": str(e), "results": []}
+
+    _persist(submission_id)
 
 
 @router.post("/submit", response_model=SubmitResponse)
@@ -100,6 +116,8 @@ async def start_submission(request: SubmitRequest) -> SubmitResponse:
         },
         "results": None,
     }
+
+    _persist(submission_id)
 
     # Fire-and-forget: run submission in background so the HTTP response returns immediately
     asyncio.create_task(_run_submission(submission_id))
@@ -151,23 +169,16 @@ async def confirm_records(submission_id: str, request: ConfirmRequest) -> dict[s
     }
 
 
-@router.get("/submit/{submission_id}/results")
-async def get_results(submission_id: str) -> dict[str, Any]:
-    """Get final submission results."""
-    sub = _submissions.get(submission_id)
-    if not sub:
-        return {"error": "Submission not found", "status": "not_found"}
-
+def _build_result_records(sub: dict[str, Any]) -> list[dict[str, Any]]:
+    """Transform raw AIR results into ResultRecord format."""
     results = sub.get("results") or {}
     raw_results = results.get("results", [])
 
-    # Transform raw AIR results into ResultRecord format for frontend
     records: list[dict[str, Any]] = []
     for idx, r in enumerate(raw_results):
         source_rows = r.get("sourceRows", [])
         row_num = source_rows[0] if source_rows else idx + 1
 
-        # Map AIR status to frontend status
         air_status = r.get("status", "unknown")
         if air_status == "success":
             fe_status = "success"
@@ -176,14 +187,12 @@ async def get_results(submission_id: str) -> dict[str, Any]:
         else:
             fe_status = "failed"
 
-        # Extract error details from encounter-level results
         error_code = r.get("statusCode", "")
         error_message = r.get("message", "")
         raw_response = r.get("rawResponse", {})
         claim_details = raw_response.get("claimDetails") or {}
         claim_id = claim_details.get("claimId") or r.get("claimId")
 
-        # Get per-encounter detail if available
         enc_list = claim_details.get("encounters") or []
         if enc_list:
             enc_info = enc_list[0].get("information", {})
@@ -200,6 +209,19 @@ async def get_results(submission_id: str) -> dict[str, Any]:
             "errorMessage": error_message if fe_status == "failed" else None,
         })
 
+    return records
+
+
+@router.get("/submit/{submission_id}/results")
+async def get_results(submission_id: str) -> dict[str, Any]:
+    """Get final submission results."""
+    sub = _submissions.get(submission_id)
+    if not sub:
+        return {"error": "Submission not found", "status": "not_found"}
+
+    records = _build_result_records(sub)
+    results = sub.get("results") or {}
+
     successful = results.get("successful", 0)
     failed = results.get("failed", 0)
     confirmed = results.get("pendingConfirmation", 0)
@@ -213,6 +235,60 @@ async def get_results(submission_id: str) -> dict[str, Any]:
         "confirmed": confirmed,
         "results": records,
     }
+
+
+@router.get("/submit/{submission_id}/download")
+async def download_report(submission_id: str) -> StreamingResponse:
+    """Download a CSV report for a submission."""
+    sub = _submissions.get(submission_id)
+    if not sub:
+        return StreamingResponse(
+            iter(["Submission not found\n"]),
+            media_type="text/plain",
+            status_code=404,
+        )
+
+    records = _build_result_records(sub)
+    results = sub.get("results") or {}
+
+    successful = results.get("successful", 0)
+    failed = results.get("failed", 0)
+    confirmed = results.get("pendingConfirmation", 0)
+    total = successful + failed + confirmed
+
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+
+    # Header section
+    writer.writerow(["AIR Submission Report"])
+    writer.writerow(["Submission ID", submission_id])
+    writer.writerow(["Created", sub.get("createdAt", "")])
+    writer.writerow(["Completed", sub.get("completedAt", "")])
+    writer.writerow(["Dry Run", "Yes" if sub.get("dryRun") else "No"])
+    writer.writerow([])
+    writer.writerow(["Total", "Successful", "Failed", "Confirmed"])
+    writer.writerow([total, successful, failed, confirmed])
+    writer.writerow([])
+
+    # Detail rows
+    writer.writerow(["Row", "Status", "Status Code", "Message", "Claim ID"])
+    for rec in records:
+        writer.writerow([
+            rec["originalRow"],
+            rec["status"],
+            rec.get("errorCode") or "",
+            rec.get("errorMessage") or "",
+            rec.get("claimId") or "",
+        ])
+
+    buf.seek(0)
+
+    filename = f"air-submission-{submission_id[:8]}.csv"
+    return StreamingResponse(
+        iter([buf.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.get("/submissions")
@@ -242,6 +318,7 @@ async def pause_submission(submission_id: str) -> dict[str, Any]:
         return {"error": "Submission not found"}
     sub["status"] = "paused"
     sub["progress"]["status"] = "paused"
+    _persist(submission_id)
     return {"status": "paused"}
 
 
@@ -253,4 +330,5 @@ async def resume_submission(submission_id: str) -> dict[str, Any]:
         return {"error": "Submission not found"}
     sub["status"] = "running"
     sub["progress"]["status"] = "running"
+    _persist(submission_id)
     return {"status": "running"}
