@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { env } from '@/lib/env';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -17,6 +18,7 @@ interface Submission {
 }
 
 export default function HistoryPage() {
+  const router = useRouter();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -107,7 +109,13 @@ export default function HistoryPage() {
                 </div>
               </div>
               {(sub.status === 'completed' || sub.status === 'error') && (
-                <div className="mt-3 flex justify-end">
+                <div className="mt-3 flex justify-end gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => router.push(`/submissions/${sub.submissionId}/results`)}
+                  >
+                    View Results
+                  </Button>
                   <Button
                     variant="secondary"
                     size="sm"

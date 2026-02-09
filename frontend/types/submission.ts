@@ -32,3 +32,73 @@ export interface SubmissionBatch {
   createdAt: string;
   completedAt?: string;
 }
+
+// --- v1.1.0: Submission Results types ---
+
+export interface SubmissionResult {
+  id: string;
+  completedAt: string;
+  submittedBy: string;
+  batchName: string;
+  environment: 'VENDOR_TEST' | 'PRODUCTION';
+  counts: { total: number; success: number; warning: number; error: number };
+  records: SubmissionResultRecord[];
+  pagination?: {
+    page: number;
+    pageSize: number;
+    totalRecords: number;
+    totalPages: number;
+  };
+}
+
+export interface SubmissionResultRecord {
+  rowNumber: number;
+  individual: IndividualData;
+  encounter: EncounterData;
+  status: 'SUCCESS' | 'WARNING' | 'ERROR';
+  airStatusCode: string;
+  airMessage: string; // VERBATIM from AIR — never modify
+  errors: AirError[];
+  episodes: EpisodeResult[];
+  claimId?: string;
+  claimSequenceNumber?: string;
+  actionRequired: 'NONE' | 'CONFIRM_OR_CORRECT';
+  resubmitCount: number;
+}
+
+export interface AirError {
+  code: string;
+  field: string;
+  message: string; // VERBATIM from AIR
+}
+
+export interface EpisodeResult {
+  id: string;
+  vaccine: string;
+  status: 'VALID' | 'INVALID';
+  code: string;
+  message: string; // VERBATIM from AIR
+}
+
+export interface IndividualData {
+  firstName: string;
+  lastName: string;
+  dob: string;
+  gender: string;
+  medicare: string;
+  irn: string;
+  ihiNumber?: string;
+  postCode?: string;
+  addressLineOne?: string;
+  locality?: string;
+}
+
+export interface EncounterData {
+  dateOfService: string;
+  vaccineCode: string;
+  vaccineDose: string;
+  vaccineBatch: string;
+  vaccineType: string;
+  routeOfAdministration: string;
+  providerNumber: string;
+}

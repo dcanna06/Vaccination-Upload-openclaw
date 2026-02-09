@@ -14,10 +14,10 @@
 
 ## Current State
 
-**Last updated**: 2026-02-08 14:00
-**Current ticket**: All complete
-**Phase**: All phases complete (P0 through 12 + E2E infrastructure)
-**Branch**: main (merged from feature/TICKET-P0-proda-auth-fix)
+**Last updated**: 2026-02-09 23:45
+**Current ticket**: DEV-001 through DEV-010 all complete (v1.1.0 feature set)
+**Phase**: All phases complete (P0 through 12 + E2E infrastructure + v1.1.0 results/edit/resubmit)
+**Branch**: develop (ready for release/v1.1.0)
 
 ---
 
@@ -291,3 +291,73 @@
   - `backend/tests/integration/test_proda_vendor.py` — NEW: vendor env integration test (skips if no creds)
 - **Tests**: 288 passed (all), 0 failed
 - **Notes**: All 10 tasks complete. JWT claims proven correct via SoapUI on 2026-02-08. Old MCOL references removed from code. Gender X (Not Stated, June 2025) and route NS (Nasal V6.0.7+, October 2025) added throughout stack.
+
+---
+
+## v1.1.0 — Submission Results, Edit & Resubmit
+
+### DEV-001 + DEV-009: Backend Foundation (Phase 1)
+- **Status**: COMPLETE
+- **Branch**: `feature/submission-results-api`
+- **Date**: 2026-02-09 23:25
+- **Files created/modified**:
+  - `backend/app/services/air_response_parser.py` — NEW: Parse AIR AddEncounterResponseType into record fields
+  - `backend/app/routers/submission_results.py` — NEW: GET /api/submissions/{id}/results with pagination and filtering
+  - `backend/app/main.py` — Added submission_results router
+  - `backend/tests/unit/test_air_response_parser.py` — 16 tests
+  - `backend/tests/unit/test_submission_results.py` — 6 tests
+- **Tests**: 333 passed, 0 failed
+
+### DEV-002 + DEV-003 + DEV-004: Frontend Results Page (Phase 2)
+- **Status**: COMPLETE
+- **Branch**: `feature/submission-results-ui`
+- **Date**: 2026-02-09 23:33
+- **Files created/modified**:
+  - `frontend/types/submission.ts` — Added v1.1.0 types (SubmissionResult, SubmissionResultRecord, AirError, EpisodeResult, IndividualData, EncounterData)
+  - `frontend/lib/air-error-guidance.ts` — NEW: Error code to guidance map
+  - `frontend/components/submission/RecordCard.tsx` — NEW: Expandable card component
+  - `frontend/components/submission/EpisodePill.tsx` — NEW: Episode status badge
+  - `frontend/components/submission/ErrorDetail.tsx` — NEW: Error with guidance tip
+  - `frontend/components/submission/ResultsToolbar.tsx` — NEW: Filter tabs + actions
+  - `frontend/app/(dashboard)/submissions/[id]/results/page.tsx` — NEW: Results page
+  - `frontend/app/(dashboard)/history/page.tsx` — Added View Results button
+  - 4 test files — 28 component tests
+- **Tests**: 115 frontend passed, 0 failed
+
+### DEV-005 + DEV-007 + DEV-008: Edit & Resubmit Panel (Phase 3)
+- **Status**: COMPLETE
+- **Branch**: `feature/edit-resubmit-panel`
+- **Date**: 2026-02-09 23:37
+- **Files created/modified**:
+  - `frontend/components/submission/EditResubmitPanel.tsx` — NEW: Slide-over form with FIELD_MAP, validation, state management
+  - `frontend/components/submission/__tests__/EditResubmitPanel.test.tsx` — 11 tests
+- **Tests**: 126 frontend passed, 0 failed
+
+### DEV-006: Resubmit + Confirm API (Phase 4)
+- **Status**: COMPLETE
+- **Branch**: `feature/resubmit-confirm-api`
+- **Date**: 2026-02-09 23:40
+- **Files created/modified**:
+  - `backend/app/services/air_resubmit.py` — NEW: ResubmitService + ConfirmService
+  - `backend/app/routers/submission_results.py` — Added resubmit, confirm, confirm-all-warnings endpoints
+  - `backend/app/routers/submit.py` — Fixed HTTP status codes (BUG-005)
+  - `backend/tests/unit/test_air_resubmit.py` — 7 tests
+  - `backend/tests/unit/test_api_endpoints.py` — Fixed BUG-003 (gender comment) and BUG-005 (404 assertion)
+- **Tests**: 340 backend passed, 0 failed
+- **QA bugs fixed**: BUG-001 (confirm stub), BUG-003 (test comment), BUG-005 (HTTP status codes)
+
+### DEV-010: Export Results (Phase 5)
+- **Status**: COMPLETE
+- **Branch**: `feature/export-results`
+- **Date**: 2026-02-09 23:43
+- **Files created/modified**:
+  - `backend/app/routers/submission_results.py` — Added GET /api/submissions/{id}/export
+  - `backend/tests/unit/test_submission_results.py` — 3 export tests
+  - `frontend/app/(dashboard)/submissions/[id]/results/page.tsx` — Updated export URL
+- **Tests**: 343 backend + 126 frontend = 469 total, 0 failed
+
+### v1.1.0 Summary
+- **Total tests**: 469 (343 backend + 126 frontend)
+- **New files**: 15 source + 8 test files
+- **Compliance**: All AIR messages stored and displayed verbatim (TECH.SIS.AIR.02 section 5.2.2)
+- **QA bugs addressed**: BUG-001 (P0), BUG-002 (P0), BUG-003 (P1), BUG-004 (P1), BUG-005 (P2)
