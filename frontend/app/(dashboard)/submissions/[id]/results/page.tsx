@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { RecordCard } from '@/components/submission/RecordCard';
 import { ResultsToolbar } from '@/components/submission/ResultsToolbar';
+import { EditResubmitPanel } from '@/components/submission/EditResubmitPanel';
 import { env } from '@/lib/env';
 import type { SubmissionResult, SubmissionResultRecord } from '@/types/submission';
 
@@ -201,7 +202,7 @@ export default function SubmissionResultsPage() {
         )}
       </div>
 
-      {/* Edit & Resubmit panel will be rendered here (DEV-005) */}
+      {/* Edit & Resubmit panel — DEV-005 */}
       {editingRecord && (
         <EditResubmitPanel
           record={editingRecord}
@@ -215,20 +216,4 @@ export default function SubmissionResultsPage() {
       )}
     </div>
   );
-}
-
-// Placeholder for DEV-005 — will be replaced with real implementation
-function EditResubmitPanel({
-  record,
-  submissionId,
-  onClose,
-  onSuccess,
-}: {
-  record: SubmissionResultRecord;
-  submissionId: string;
-  onClose: () => void;
-  onSuccess: () => void;
-}) {
-  // DEV-005 will implement the full slide-over panel
-  return null;
 }
