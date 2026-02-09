@@ -16,7 +16,7 @@ from app.exceptions import AIRApiError
 
 logger = structlog.get_logger(__name__)
 
-RECORD_ENCOUNTER_PATH = "/air/immunisation/v1.3/encounters/record"
+RECORD_ENCOUNTER_PATH = "/air/immunisation/v1.4/encounters/record"
 
 MAX_RETRIES = 3
 BACKOFF_BASE = 2  # seconds
@@ -74,8 +74,6 @@ class AIRClient:
         headers = self._build_headers(dob_header)
         url = f"{settings.air_api_base_url}{RECORD_ENCOUNTER_PATH}"
 
-        import json as _json
-        logger.info("air_api_request", url=url, payload=_json.dumps(payload, default=str)[:3000])
         return await self._submit_with_retry(url, headers, payload)
 
     async def _submit_with_retry(
@@ -306,11 +304,15 @@ class BatchSubmissionService:
         }
 
     def _to_ddmmyyyy(self, iso_date: str) -> str:
-        """Convert yyyy-MM-dd to ddMMyyyy for AIR API wire format."""
+        """Convert yyyy-MM-dd to ddMMyyyy for AIR API body date format."""
         parts = iso_date.split("-")
         if len(parts) == 3:
             return f"{parts[2]}{parts[1]}{parts[0]}"
         return iso_date
+
+    def _to_yyyymmdd(self, iso_date: str) -> str:
+        """Convert yyyy-MM-dd to yyyyMMdd (ISO 8601 basic, no separators)."""
+        return iso_date.replace("-", "")
 
     async def _submit_single_batch(
         self,
@@ -349,10 +351,14 @@ class BatchSubmissionService:
                     "id": int(ep.get("id", 1)),
                     "vaccineCode": ep.get("vaccineCode", ""),
                     "vaccineDose": ep.get("vaccineDose", ""),
-                    "vaccineBatch": ep.get("vaccineBatch", ""),
-                    "vaccineType": ep.get("vaccineType", ""),
-                    "routeOfAdministration": ep.get("routeOfAdministration", ""),
                 }
+                # Only include optional fields when they have actual values
+                if ep.get("vaccineBatch"):
+                    episode["vaccineBatch"] = ep["vaccineBatch"]
+                if ep.get("vaccineType"):
+                    episode["vaccineType"] = ep["vaccineType"]
+                if ep.get("routeOfAdministration"):
+                    episode["routeOfAdministration"] = ep["routeOfAdministration"]
                 episodes.append(episode)
 
             api_enc: dict[str, Any] = {

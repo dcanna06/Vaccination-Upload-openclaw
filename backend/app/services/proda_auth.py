@@ -1,7 +1,13 @@
 """PRODA B2B authentication service for AIR API access.
 
-Implements JWT-based token acquisition per PRODA B2B Unattended Developers Guide.
+Implements JWT-based token acquisition per PRODA B2B Unattended Developers Guide v4.2.
 Tokens are held in-memory only — never persisted to database or disk.
+
+Key references:
+- token.aud for AIR = https://medicareaustralia.gov.au/MCOL (Section 5.4)
+- Access tokens must be reused while valid (B2B Best Practice Guide v1.3)
+- Key refresh required before key_expiry (150 days vendor, 150 days prod)
+- Device reactivation required before device_expiry (62 months vendor, 6 months prod)
 """
 
 import base64
@@ -18,17 +24,23 @@ from app.middleware.error_handler import AuthenticationError
 
 logger = structlog.get_logger(__name__)
 
-# Refresh at 50 minutes (before 60-min expiry)
+# Best practice: refresh token after 50% of lifespan (30 min of 60 min)
 TOKEN_REFRESH_BUFFER_SECONDS = 600
 
 
 class ProdaAuthService:
-    """Manages PRODA B2B token acquisition and in-memory caching."""
+    """Manages PRODA B2B token acquisition and in-memory caching.
+
+    Per B2B Best Practice Guide: reuse access tokens while valid,
+    track key_expiry and device_expiry from token responses.
+    """
 
     def __init__(self, config: Settings | None = None) -> None:
         self._config = config or settings
         self._access_token: str | None = None
         self._token_expires_at: float = 0.0
+        self._key_expiry: str | None = None
+        self._device_expiry: str | None = None
 
     @property
     def is_token_valid(self) -> bool:
@@ -40,10 +52,10 @@ class ProdaAuthService:
     def _build_assertion(self) -> str:
         """Build a signed JWT assertion for PRODA token request.
 
-        JWT structure proven against vendor environment 2026-02-08:
+        Per PRODA B2B Unattended Developers Guide v4.2 Section 4.3.4:
         - header: alg=RS256, kid=PRODA_DEVICE_NAME
         - payload: iss=ORG_ID, sub=DEVICE_NAME, aud=proda URL,
-          token.aud=ACCESS_TOKEN_AUDIENCE, exp=10min
+          token.aud=MCOL audience for AIR (Section 5.4), exp=10min
         """
         if not self._config.PRODA_JKS_BASE64 and not self._config.PRODA_JKS_FILE_PATH:
             raise AuthenticationError("PRODA JKS keystore not configured")
@@ -56,17 +68,21 @@ class ProdaAuthService:
             "token.aud": self._config.PRODA_ACCESS_TOKEN_AUDIENCE,
             "exp": now + 600,  # 10 minutes
             "iat": now,
-            "jti": str(uuid4()),
         }
 
+        # Match SoapUI/jose4j: kid + alg only, no "typ" header
         headers = {
             "kid": self._config.PRODA_DEVICE_NAME,
+            "typ": False,
         }
 
         # Load private key from JKS
         private_key = self._load_private_key()
 
-        return jwt.encode(claims, private_key, algorithm="RS256", headers=headers)
+        return jwt.encode(
+            claims, private_key, algorithm="RS256",
+            headers=headers,
+        )
 
     def _load_private_key(self) -> bytes:
         """Load private key from keystore (JKS or PKCS12) or base64-encoded.
@@ -158,12 +174,20 @@ class ProdaAuthService:
                 )
                 response.raise_for_status()
             except httpx.HTTPStatusError as e:
+                # Log the response body for diagnosis (contains error/error_description)
+                error_body = ""
+                try:
+                    error_body = e.response.text[:500]
+                except Exception:
+                    pass
                 logger.error(
                     "proda_token_failed",
                     status_code=e.response.status_code,
+                    response_body=error_body,
+                    token_aud=self._config.PRODA_ACCESS_TOKEN_AUDIENCE,
                 )
                 raise AuthenticationError(
-                    f"PRODA token request failed: HTTP {e.response.status_code}"
+                    f"PRODA token request failed: HTTP {e.response.status_code} — {error_body}"
                 )
             except httpx.RequestError as e:
                 logger.error("proda_token_request_error", error=str(e))
@@ -176,10 +200,16 @@ class ProdaAuthService:
         expires_in = token_data.get("expires_in", 3600)
         self._token_expires_at = time.time() + expires_in
 
+        # Track key and device expiry per B2B Best Practice Guide
+        self._key_expiry = token_data.get("key_expiry")
+        self._device_expiry = token_data.get("device_expiry")
+
         logger.info(
             "proda_token_acquired",
             expires_in=expires_in,
             token_type=token_data.get("token_type"),
+            key_expiry=self._key_expiry,
+            device_expiry=self._device_expiry,
         )
 
         return self._access_token  # type: ignore[return-value]
