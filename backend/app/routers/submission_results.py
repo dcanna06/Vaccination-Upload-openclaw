@@ -383,6 +383,22 @@ async def confirm_record(
         dob=dob_iso,
     )
 
+    # Persist the confirmation response to disk so results page reflects it
+    raw_confirm_response = result.pop("_raw_response", None)
+    if raw_confirm_response:
+        _store.save_payload(submission_id, encounter_index, request_payload, raw_confirm_response)
+
+    # Update metadata inline result
+    for r_item in raw_results:
+        src = r_item.get("sourceRows", [])
+        if (src and src[0] == row) or (not src and raw_results.index(r_item) + 1 == encounter_index):
+            r_item["statusCode"] = result["air_status_code"]
+            r_item["message"] = result["air_message"]
+            r_item["status"] = result["status"].lower()
+            r_item["requiresConfirmation"] = False
+            break
+    _store.save_metadata(submission_id, metadata)
+
     logger.info(
         "record_confirmed",
         submission_id=submission_id,
@@ -470,6 +486,11 @@ async def confirm_all_warnings(submission_id: str) -> dict[str, Any]:
                 claim_sequence_number=claim_seq,
                 dob=dob_iso,
             )
+            # Persist the confirmation response payload to disk
+            raw_confirm_response = result.pop("_raw_response", None)
+            if raw_confirm_response:
+                _store.save_payload(submission_id, encounter_index, request_payload, raw_confirm_response)
+
             confirmation_results.append({
                 "row": row_num,
                 "status": result["status"],
@@ -478,16 +499,13 @@ async def confirm_all_warnings(submission_id: str) -> dict[str, Any]:
             })
             if result["status"] in ("SUCCESS", "WARNING"):
                 confirmed += 1
-                # Update stored result to reflect confirmation
-                r["statusCode"] = result["air_status_code"]
-                r["message"] = result["air_message"]
-                r["status"] = "confirmed"
-                r["requiresConfirmation"] = False
-                raw_response = r.get("rawResponse", {})
-                raw_response["statusCode"] = result["air_status_code"]
-                raw_response["message"] = result["air_message"]
             else:
                 failed += 1
+            # Update metadata inline result to reflect confirmation
+            r["statusCode"] = result["air_status_code"]
+            r["message"] = result["air_message"]
+            r["status"] = result["status"].lower()
+            r["requiresConfirmation"] = False
         except Exception as e:
             logger.error("confirm_all_single_failed", row=row_num, error=str(e))
             confirmation_results.append({

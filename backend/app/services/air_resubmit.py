@@ -136,10 +136,8 @@ class ConfirmService:
             original_payload, claim_id, dob, claim_sequence_number
         )
 
-        parsed = parse_air_response(
-            raw_response.get("rawResponse", raw_response),
-            original_payload,
-        )
+        air_body = raw_response.get("rawResponse", raw_response)
+        parsed = parse_air_response(air_body, original_payload)
 
         logger.info(
             "confirm_completed",
@@ -148,4 +146,6 @@ class ConfirmService:
             claim_id=claim_id,
         )
 
+        # Include raw response so callers can persist it
+        parsed["_raw_response"] = air_body
         return parsed
