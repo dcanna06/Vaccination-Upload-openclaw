@@ -291,8 +291,6 @@ export function EditResubmitPanel({ record, submissionId, onClose, onSuccess }: 
                   options={[
                     { value: 'M', label: 'Male' },
                     { value: 'F', label: 'Female' },
-                    { value: 'I', label: 'Intersex' },
-                    { value: 'U', label: 'Unknown' },
                     { value: 'X', label: 'Not Stated' },
                   ]}
                 />
@@ -370,7 +368,6 @@ export function EditResubmitPanel({ record, submissionId, onClose, onSuccess }: 
                   type="select"
                   options={[
                     { value: 'NIP', label: 'NIP' },
-                    { value: 'AEN', label: 'AEN' },
                     { value: 'OTH', label: 'Other' },
                   ]}
                 />
@@ -384,10 +381,8 @@ export function EditResubmitPanel({ record, submissionId, onClose, onSuccess }: 
                     { value: 'IM', label: 'Intramuscular' },
                     { value: 'SC', label: 'Subcutaneous' },
                     { value: 'ID', label: 'Intradermal' },
-                    { value: 'OR', label: 'Oral' },
-                    { value: 'IN', label: 'Intranasal' },
-                    { value: 'NAS', label: 'Nasal' },
-                    { value: 'NS', label: 'Nasal (V6.0.7+)' },
+                    { value: 'PO', label: 'Oral' },
+                    { value: 'NS', label: 'Nasal' },
                   ]}
                 />
               </div>
