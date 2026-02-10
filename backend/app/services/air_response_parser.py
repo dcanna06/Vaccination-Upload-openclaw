@@ -22,7 +22,7 @@ def extract_episodes(encounters: list[dict[str, Any]]) -> list[dict[str, Any]]:
     episodes: list[dict[str, Any]] = []
     for enc in encounters:
         enc_id = enc.get("id", "")
-        for ep in enc.get("episodes", []):
+        for ep in enc.get("episodes") or []:
             info = ep.get("information", {})
             episodes.append({
                 "id": str(ep.get("id", "")),
