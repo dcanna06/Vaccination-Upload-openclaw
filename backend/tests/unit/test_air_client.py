@@ -14,6 +14,16 @@ from app.services.air_client import (
 
 @pytest.fixture
 def client() -> AIRClient:
+    return AIRClient(
+        access_token="test-token",
+        correlation_id="urn:uuid:test-corr",
+        location_minor_id="LOC-MINOR-001",
+    )
+
+
+@pytest.fixture
+def client_no_location() -> AIRClient:
+    """Client without a location minor_id — should fall back to settings."""
     return AIRClient(access_token="test-token", correlation_id="urn:uuid:test-corr")
 
 
@@ -87,6 +97,15 @@ class TestAIRClientHeaders:
         h1 = client._build_headers("15011990")
         h2 = client._build_headers("15011990")
         assert h1["dhs-messageId"] != h2["dhs-messageId"]
+
+    def test_audit_id_uses_location_minor_id(self, client: AIRClient) -> None:
+        headers = client._build_headers("15011990")
+        assert headers["dhs-auditId"] == "LOC-MINOR-001"
+
+    def test_audit_id_falls_back_to_settings(self, client_no_location: AIRClient) -> None:
+        from app.config import settings
+        headers = client_no_location._build_headers("15011990")
+        assert headers["dhs-auditId"] == settings.PRODA_MINOR_ID
 
 
 class TestDOBConversion:

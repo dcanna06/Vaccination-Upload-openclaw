@@ -25,9 +25,15 @@ BACKOFF_BASE = 2  # seconds
 class AIRClient:
     """HTTP client for AIR API with proper headers, retry, and response handling."""
 
-    def __init__(self, access_token: str = "", correlation_id: str | None = None) -> None:
+    def __init__(
+        self,
+        access_token: str = "",
+        correlation_id: str | None = None,
+        location_minor_id: str | None = None,
+    ) -> None:
         self._access_token = access_token
         self._correlation_id = correlation_id or f"urn:uuid:{uuid4()}"
+        self._location_minor_id = location_minor_id
 
     def set_access_token(self, token: str) -> None:
         self._access_token = token
@@ -41,7 +47,7 @@ class AIRClient:
             "Accept": "application/json",
             "dhs-messageId": f"urn:uuid:{uuid4()}",
             "dhs-correlationId": self._correlation_id,
-            "dhs-auditId": settings.PRODA_MINOR_ID,
+            "dhs-auditId": self._location_minor_id or settings.PRODA_MINOR_ID,
             "dhs-auditIdType": "Minor Id",
             "dhs-subjectId": subject_dob_ddmmyyyy,
             "dhs-subjectIdType": "Date of Birth",

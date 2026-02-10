@@ -36,6 +36,7 @@ class SubmitRequest(BaseModel):
     batches: list[dict[str, Any]]
     informationProvider: dict[str, Any]
     dryRun: bool = False
+    locationId: int | None = None
 
 
 class SubmitResponse(BaseModel):
@@ -46,6 +47,18 @@ class SubmitResponse(BaseModel):
 
 class ConfirmRequest(BaseModel):
     confirmations: list[dict[str, Any]]
+
+
+async def _resolve_location_minor_id(location_id: int | None) -> str | None:
+    """Resolve a locationId to its minor_id from the database. Returns None if not found or not provided."""
+    if location_id is None:
+        return None
+    from app.database import async_session_factory
+    from app.services.location_manager import LocationManager
+
+    async with async_session_factory() as session:
+        mgr = LocationManager(session)
+        return await mgr.get_minor_id(location_id)
 
 
 async def _run_submission(submission_id: str) -> None:
@@ -66,9 +79,12 @@ async def _run_submission(submission_id: str) -> None:
                 ],
             }
         else:
+            # Resolve per-location minor_id (falls back to config if None)
+            location_minor_id = await _resolve_location_minor_id(sub.get("locationId"))
+
             proda = ProdaAuthService()
             token = await proda.get_token()
-            client = AIRClient(access_token=token)
+            client = AIRClient(access_token=token, location_minor_id=location_minor_id)
             service = BatchSubmissionService(
                 client, submission_id=submission_id, store=_store
             )
@@ -121,6 +137,7 @@ async def start_submission(request: SubmitRequest) -> SubmitResponse:
         "batches": request.batches,
         "informationProvider": request.informationProvider,
         "dryRun": request.dryRun,
+        "locationId": request.locationId,
         "progress": {
             "totalBatches": len(request.batches),
             "completedBatches": 0,

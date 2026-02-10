@@ -14,6 +14,8 @@ const navItems: NavItem[] = [
   { href: '/validate', label: 'Validate' },
   { href: '/submit', label: 'Submit' },
   { href: '/history', label: 'History' },
+  { href: '/admin/locations', label: 'Locations' },
+  { href: '/admin/providers', label: 'Providers' },
   { href: '/settings', label: 'Settings' },
 ];
 
@@ -29,7 +31,7 @@ export function Sidebar() {
               href={item.href}
               className={clsx(
                 'block rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                pathname === item.href
+                pathname === item.href || pathname.startsWith(item.href + '/')
                   ? 'bg-emerald-600/20 text-emerald-400'
                   : 'text-slate-300 hover:bg-slate-700 hover:text-slate-100',
               )}
