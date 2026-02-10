@@ -9,9 +9,9 @@
 
 ## Current State
 
-**Last updated**: 2026-02-10 11:00
-**Current ticket**: V12-P08-002
-**Phase**: 8 — NOI Certification & Release (code complete; docs + release remain)
+**Last updated**: 2026-02-10 12:00
+**Current ticket**: COMPLETE
+**Phase**: RELEASED — v1.2.0 tagged on main
 **Branch**: `develop`
 
 ---
@@ -165,7 +165,22 @@
 - **Tests**: 473 backend total (23 new NOI integration), 142 frontend — all passing
 - **Notes**: All 16 APIs exercised against vendor environment. 5 Record Encounter workflows per TECH.SIS.AIR.02 §6. Tests handle vendor data state gracefully (errors logged, not failures).
 
-### Remaining: V12-P08-002, V12-P08-003, V12-P08-004
-- **V12-P08-002**: Application Details Form — manual documentation task (Developer Portal)
-- **V12-P08-003**: User Manual & Screenshots — manual documentation task
-- **V12-P08-004**: Release v1.2.0 — create release branch, QA, merge to main, tag
+### V12-P08-002: Application Details Form
+- **Status**: ✅ Done
+- **Date**: 2026-02-10 12:00
+- **Files created**: `docs/APPLICATION_DETAILS_FORM.md`
+- **Notes**: All 16 APIs documented with paths/versions. Architecture, security, test summary, validation rules.
+
+### V12-P08-003: User Manual & Documentation Updates
+- **Status**: ✅ Done
+- **Date**: 2026-02-10 12:00
+- **Files modified**: `docs/user-guide.md`, `docs/developer-guide.md`, `docs/air-integration.md`
+- **Notes**: Fixed gender (M,F,X), route (PO,SC,ID,IM,NS), vaccine type values. Added v1.2 feature sections (locations, individuals, indicators, catch-up). Updated dhs-productId references.
+
+### V12-P08-004: Release v1.2.0
+- **Status**: ✅ Done
+- **Date**: 2026-02-10 12:00
+- **Tag**: `v1.2.0` on `main`
+- **Files created**: `CHANGELOG.md`
+- **Files modified**: `backend/app/config.py` (product ID), `backend/app/main.py` (version), `frontend/package.json` (version), `backend/tests/unit/test_config.py`
+- **Notes**: release/v1.2.0 branch → merged to main → tagged v1.2.0 → back-merged to develop. 456 backend + 142 frontend tests passing. 79 files changed, 9,031 insertions.
