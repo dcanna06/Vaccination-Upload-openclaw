@@ -36,6 +36,7 @@ class SubmitRequest(BaseModel):
     batches: list[dict[str, Any]]
     informationProvider: dict[str, Any]
     dryRun: bool = False
+    locationId: int | None = None
 
 
 class SubmitResponse(BaseModel):
@@ -46,6 +47,46 @@ class SubmitResponse(BaseModel):
 
 class ConfirmRequest(BaseModel):
     confirmations: list[dict[str, Any]]
+
+
+async def _resolve_location_minor_id(location_id: int | None) -> str | None:
+    """Resolve a locationId to its minor_id from the database. Returns None if not found or not provided."""
+    if location_id is None:
+        return None
+    from app.database import async_session_factory
+    from app.services.location_manager import LocationManager
+
+    async with async_session_factory() as session:
+        mgr = LocationManager(session)
+        return await mgr.get_minor_id(location_id)
+
+
+async def _check_provider_location_links(
+    location_id: int | None, batches: list[dict[str, Any]]
+) -> list[str]:
+    """Check that all providers in the batches are linked to the location.
+
+    Returns list of unlinked provider numbers (empty if all linked or no location specified).
+    """
+    if location_id is None:
+        return []
+    from app.database import async_session_factory
+    from app.services.location_manager import LocationManager
+
+    provider_numbers: set[str] = set()
+    for batch in batches:
+        for encounter in batch.get("encounters", []):
+            prov = encounter.get("immunisationProvider", {})
+            pn = prov.get("providerNumber")
+            if pn:
+                provider_numbers.add(pn)
+
+    if not provider_numbers:
+        return []
+
+    async with async_session_factory() as session:
+        mgr = LocationManager(session)
+        return await mgr.get_unlinked_providers(location_id, list(provider_numbers))
 
 
 async def _run_submission(submission_id: str) -> None:
@@ -66,9 +107,28 @@ async def _run_submission(submission_id: str) -> None:
                 ],
             }
         else:
+            # Resolve per-location minor_id (falls back to config if None)
+            location_minor_id = await _resolve_location_minor_id(sub.get("locationId"))
+
+            # Warn if providers are not linked to the selected location
+            unlinked = await _check_provider_location_links(
+                sub.get("locationId"), sub["batches"]
+            )
+            if unlinked:
+                logger.warning(
+                    "unlinked_providers_in_submission",
+                    submission_id=submission_id,
+                    unlinked_providers=unlinked,
+                    location_id=sub.get("locationId"),
+                )
+                sub["warnings"] = sub.get("warnings", [])
+                sub["warnings"].append(
+                    f"Providers not linked to location: {', '.join(unlinked)}"
+                )
+
             proda = ProdaAuthService()
             token = await proda.get_token()
-            client = AIRClient(access_token=token)
+            client = AIRClient(access_token=token, location_minor_id=location_minor_id)
             service = BatchSubmissionService(
                 client, submission_id=submission_id, store=_store
             )
@@ -121,6 +181,7 @@ async def start_submission(request: SubmitRequest) -> SubmitResponse:
         "batches": request.batches,
         "informationProvider": request.informationProvider,
         "dryRun": request.dryRun,
+        "locationId": request.locationId,
         "progress": {
             "totalBatches": len(request.batches),
             "completedBatches": 0,

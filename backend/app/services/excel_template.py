@@ -112,8 +112,8 @@ COLUMNS: list[dict[str, Any]] = [
         "field": "vaccineDose",
         "width": 14,
         "required": "Yes",
-        "format": "1-20",
-        "description": "Dose number (1-20).",
+        "format": "1-20 or B",
+        "description": "Dose number (1-20) or B for booster.",
         "sample": "1",
     },
     {

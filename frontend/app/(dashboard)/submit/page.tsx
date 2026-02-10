@@ -7,6 +7,7 @@ import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { ResultsSummary } from '@/components/ResultsSummary';
 import { useSubmissionStore } from '@/stores/submissionStore';
 import { useUploadStore } from '@/stores/uploadStore';
+import { useLocationStore } from '@/stores/locationStore';
 import { env } from '@/lib/env';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -19,6 +20,7 @@ export default function SubmitPage() {
   const router = useRouter();
   const { submissionId, setSubmissionId, progress, setProgress } = useSubmissionStore();
   const { parsedRows, groupedBatches } = useUploadStore();
+  const { selectedLocationId } = useLocationStore();
   const [status, setStatus] = useState<SubmitStatus>('idle');
   const [error, setError] = useState<string | null>(null);
   const hasStarted = useRef(false);
@@ -67,6 +69,7 @@ export default function SubmitPage() {
             batches: groupedBatches,
             informationProvider: {},
             dryRun: false,
+            locationId: selectedLocationId,
           }),
         });
         if (!res.ok) throw new Error(`Submission failed: ${res.status}`);

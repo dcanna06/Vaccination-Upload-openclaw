@@ -12,7 +12,7 @@ from app.middleware.error_handler import (
 )
 from app.middleware.request_logger import RequestLoggerMiddleware
 from app.middleware.security import RateLimitMiddleware, SecurityHeadersMiddleware
-from app.routers import health, submit, submission_results, template, upload, validate
+from app.routers import encounters_update, exemptions, health, indicators, individuals, locations, providers, submit, submission_results, template, upload, validate
 
 
 def configure_structlog() -> None:
@@ -42,7 +42,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="AIR Bulk Vaccination Upload API",
         description="Backend API for uploading vaccination records to the Australian Immunisation Register",
-        version="0.1.0",
+        version="1.2.0",
     )
 
     # CORS
@@ -74,6 +74,12 @@ def create_app() -> FastAPI:
     app.include_router(validate.router)
     app.include_router(submit.router)
     app.include_router(submission_results.router)
+    app.include_router(locations.router)
+    app.include_router(providers.router)
+    app.include_router(individuals.router)
+    app.include_router(encounters_update.router)
+    app.include_router(exemptions.router)
+    app.include_router(indicators.router)
 
     return app
 
