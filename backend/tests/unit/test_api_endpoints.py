@@ -285,11 +285,14 @@ class TestSubmitEndpoint:
             })
             sub_id = submit_resp.json()["submissionId"]
 
+            # Confirm with invalid recordId format — no warning records exist in dry run
             resp = await ac.post(f"/api/submit/{sub_id}/confirm", json={
                 "confirmations": [
-                    {"recordId": "r1", "confirmType": "individual", "acceptAndConfirm": True}
+                    {"recordId": "r-1", "confirmType": "individual", "acceptAndConfirm": True}
                 ],
             })
         assert resp.status_code == 200
         data = resp.json()
-        assert data["confirmedCount"] == 1
+        # Dry run has no warning records, so nothing is confirmed
+        assert data["confirmedCount"] == 0
+        assert len(data["errors"]) == 1

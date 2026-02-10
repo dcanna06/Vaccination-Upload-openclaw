@@ -13,6 +13,8 @@ import { Button } from '@/components/ui/Button';
 
 type SubmitStatus = 'idle' | 'running' | 'paused' | 'confirming' | 'completed' | 'error';
 
+const MAX_POLL_FAILURES = 5;
+
 export default function SubmitPage() {
   const router = useRouter();
   const { submissionId, setSubmissionId, progress, setProgress } = useSubmissionStore();
@@ -20,6 +22,7 @@ export default function SubmitPage() {
   const [status, setStatus] = useState<SubmitStatus>('idle');
   const [error, setError] = useState<string | null>(null);
   const hasStarted = useRef(false);
+  const pollFailures = useRef(0);
   const [confirmationRecords, setConfirmationRecords] = useState<
     Array<{
       recordId: string;
@@ -94,7 +97,15 @@ export default function SubmitPage() {
     const interval = setInterval(async () => {
       try {
         const res = await fetch(`${env.apiUrl}/api/submit/${submissionId}/progress`);
-        if (!res.ok) return;
+        if (!res.ok) {
+          pollFailures.current += 1;
+          if (pollFailures.current >= MAX_POLL_FAILURES) {
+            setError(`Lost connection to server (${MAX_POLL_FAILURES} consecutive failures). Please check your connection and refresh.`);
+            setStatus('error');
+          }
+          return;
+        }
+        pollFailures.current = 0;
         const data = await res.json();
         setProgress(data.progress);
 
@@ -109,12 +120,17 @@ export default function SubmitPage() {
           setStatus('paused');
         }
 
-        if (data.pendingConfirmation?.length > 0) {
+        // BUG-002 fix: pendingConfirmation is now an array at top level of progress response
+        if (Array.isArray(data.pendingConfirmation) && data.pendingConfirmation.length > 0) {
           setConfirmationRecords(data.pendingConfirmation);
           setStatus('confirming');
         }
-      } catch {
-        // Ignore polling errors
+      } catch (err) {
+        pollFailures.current += 1;
+        if (pollFailures.current >= MAX_POLL_FAILURES) {
+          setError(`Lost connection to server (${MAX_POLL_FAILURES} consecutive failures). Please check your connection and refresh.`);
+          setStatus('error');
+        }
       }
     }, 2000);
 
