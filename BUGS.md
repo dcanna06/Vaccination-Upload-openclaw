@@ -239,17 +239,17 @@ Add a retry counter. After N consecutive failures (e.g., 5), show an error banne
 | ID | Check | Status | Notes |
 |----|--------|--------|-------|
 | COMP-01 | Verbatim AIR error display | **PASS** | `ResultsSummary.tsx:151` renders `errorMessage` unmodified, no CSS truncation |
-| COMP-02 | Verbatim AIR warning display | **FAIL** | Warning messages stripped in `submit.py:208-209`; no UI table for warnings (BUG-004) |
-| COMP-03 | Edit panel from error card | **N/A** | Edit panel not yet implemented |
-| COMP-04 | W-1004 → Confirm → SUCCESS | **FAIL** | Confirm endpoint is stub (BUG-001); records never sent to frontend (BUG-002) |
-| COMP-05 | W-1008 pended → Confirm | **FAIL** | Same root cause as COMP-04 |
-| COMP-06 | Recorded encounters excluded from confirm | **FAIL** | Not implemented — stub endpoint (BUG-001) |
+| COMP-02 | Verbatim AIR warning display | **PASS** | Fixed in v1.1.1 — warning messages preserved in results (BUG-004 fixed); RecordCard displays verbatim AIR messages |
+| COMP-03 | Edit panel from error card | **PASS** | `EditResubmitPanel.tsx` implemented in v1.1.0 (DEV-005/007/008); accessible from all record cards |
+| COMP-04 | W-1004 → Confirm → SUCCESS | **PASS** | Fixed in v1.1.1 — real AIR API confirm call via ConfirmService (BUG-001 fixed); pendingConfirmation array reaches frontend (BUG-002 fixed) |
+| COMP-05 | W-1008 pended → Confirm | **PASS** | Same fix as COMP-04; Confirm & Accept button on warning records, Confirm All Warnings in toolbar |
+| COMP-06 | Recorded encounters excluded from confirm | **PASS** | ConfirmService only sends encounters with WARNING status; SUCCESS encounters excluded |
 | COMP-07 | 15 records chunked into 10+5 | **PASS** | `batch_grouping.py:18` MAX_ENCOUNTERS=10, chunking logic correct |
 | COMP-08 | Episode IDs start at 1 | **PASS** | `batch_grouping.py` renumbers from 1 per batch |
-| COMP-09 | Confirm includes claimId | **FAIL** | Stub endpoint doesn't use claimId (BUG-001) |
-| COMP-10 | Audit log with user ID | **PARTIAL** | structlog logs `submission_id` but no `user_id` field |
-| COMP-11 | Screenshots for NOI | **BLOCKED** | Confirm flow broken — cannot reach confirmation success state |
-| COMP-12 | Edit panel field tooltips | **N/A** | Edit panel not yet implemented |
+| COMP-09 | Confirm includes claimId | **PASS** | Fixed in v1.1.1 — confirm endpoint extracts claimId from submission results, sends to AIR (BUG-001 fixed) |
+| COMP-10 | Audit log with user ID | **PARTIAL** | structlog logs `submission_id` but no `user_id` field (auth not yet implemented) |
+| COMP-11 | Screenshots for NOI | **PASS** | Confirm flow fully functional; 34 Playwright E2E tests cover all UI states |
+| COMP-12 | Edit panel field tooltips | **PASS** | `EditResubmitPanel.tsx` shows AIR error guidance tips via `air-error-guidance.ts` |
 
 ---
 

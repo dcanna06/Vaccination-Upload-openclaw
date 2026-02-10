@@ -84,3 +84,10 @@ temp/
 backend/data/
 frontend/tsconfig.tsbuildinfo
 *:Zone.Identifier
+
+# Playwright
+frontend/test-results/
+frontend/playwright-report/
+
+# Screenshots (manual QA captures)
+screenshots/
