@@ -23,6 +23,7 @@ export default function SubmissionResultsPage() {
   const [activeFilter, setActiveFilter] = useState<StatusFilter>('ALL');
   const [editingRecord, setEditingRecord] = useState<SubmissionResultRecord | null>(null);
   const [confirmingAll, setConfirmingAll] = useState(false);
+  const [confirmBanner, setConfirmBanner] = useState<{ confirmed: number; failed: number } | null>(null);
 
   // Fetch results
   const fetchResults = useCallback(async () => {
@@ -84,14 +85,17 @@ export default function SubmissionResultsPage() {
   const handleConfirmAll = useCallback(async () => {
     try {
       setConfirmingAll(true);
+      setConfirmBanner(null);
       const res = await fetch(`${env.apiUrl}/api/submissions/${submissionId}/confirm-all-warnings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
       if (!res.ok) throw new Error('Confirm all failed');
+      const data = await res.json();
+      setConfirmBanner({ confirmed: data.confirmed, failed: data.failed });
       await fetchResults();
     } catch {
-      // Will be handled by DEV-007 state management
+      setConfirmBanner({ confirmed: 0, failed: -1 });
     } finally {
       setConfirmingAll(false);
     }
@@ -172,6 +176,36 @@ export default function SubmissionResultsPage() {
         </div>
       </div>
 
+      {/* Confirmation feedback banner */}
+      {confirmBanner && (
+        <div
+          className={`rounded border px-4 py-3 text-sm ${
+            confirmBanner.failed === -1
+              ? 'border-red-500/30 bg-red-500/10 text-red-400'
+              : confirmBanner.failed > 0
+                ? 'border-yellow-500/30 bg-yellow-500/10 text-yellow-400'
+                : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
+          }`}
+        >
+          {confirmBanner.failed === -1 ? (
+            'Failed to confirm warnings. Please try again.'
+          ) : (
+            <>
+              Confirmation complete: <strong>{confirmBanner.confirmed}</strong> confirmed
+              {confirmBanner.failed > 0 && (
+                <>, <strong>{confirmBanner.failed}</strong> failed</>
+              )}
+            </>
+          )}
+          <button
+            onClick={() => setConfirmBanner(null)}
+            className="ml-3 text-xs underline opacity-70 hover:opacity-100"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {/* Filter toolbar — DEV-004 */}
       <ResultsToolbar
         counts={result.counts}
@@ -180,6 +214,7 @@ export default function SubmissionResultsPage() {
         onExport={handleExport}
         onConfirmAll={hasConfirmable ? handleConfirmAll : undefined}
         hasConfirmable={hasConfirmable}
+        confirmingAll={confirmingAll}
       />
 
       {/* Record cards — DEV-003 */}

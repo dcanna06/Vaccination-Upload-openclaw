@@ -478,6 +478,14 @@ async def confirm_all_warnings(submission_id: str) -> dict[str, Any]:
             })
             if result["status"] in ("SUCCESS", "WARNING"):
                 confirmed += 1
+                # Update stored result to reflect confirmation
+                r["statusCode"] = result["air_status_code"]
+                r["message"] = result["air_message"]
+                r["status"] = "confirmed"
+                r["requiresConfirmation"] = False
+                raw_response = r.get("rawResponse", {})
+                raw_response["statusCode"] = result["air_status_code"]
+                raw_response["message"] = result["air_message"]
             else:
                 failed += 1
         except Exception as e:
@@ -488,6 +496,10 @@ async def confirm_all_warnings(submission_id: str) -> dict[str, Any]:
                 "message": str(e),
             })
             failed += 1
+
+    # Persist updated results back to disk
+    if confirmed > 0:
+        _store.save_metadata(submission_id, metadata)
 
     logger.info(
         "confirm_all_completed",

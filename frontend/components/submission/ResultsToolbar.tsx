@@ -7,6 +7,7 @@ interface ResultsToolbarProps {
   onExport?: () => void;
   onConfirmAll?: () => void;
   hasConfirmable: boolean;
+  confirmingAll?: boolean;
 }
 
 const FILTERS = [
@@ -23,6 +24,7 @@ export function ResultsToolbar({
   onExport,
   onConfirmAll,
   hasConfirmable,
+  confirmingAll = false,
 }: ResultsToolbarProps) {
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -59,12 +61,17 @@ export function ResultsToolbar({
           <button
             type="button"
             onClick={onConfirmAll}
-            className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700 transition-colors"
+            disabled={confirmingAll}
+            className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700 transition-colors disabled:opacity-50"
           >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Confirm All Warnings
+            {confirmingAll ? (
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            ) : (
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            )}
+            {confirmingAll ? 'Confirming...' : 'Confirm All Warnings'}
           </button>
         )}
         {onExport && (
