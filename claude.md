@@ -252,7 +252,7 @@ headers = {
     "dhs-auditIdType": "Minor Id",                     # Literal string
     "dhs-subjectId": dob_ddmmyyyy,                     # Individual's DOB as ddMMyyyy
     "dhs-subjectIdType": "Date of Birth",              # Literal string
-    "dhs-productId": config.AIR_PRODUCT_ID,            # e.g., "AIRBulkVax 1.0"
+    "dhs-productId": config.AIR_PRODUCT_ID,            # "EM Bulk Vaccination Upload V1.2"
 }
 ```
 
@@ -282,7 +282,7 @@ POST /air/immunisation/v1.4/encounters/record
   "individual": {
     "personalDetails": {
       "dateOfBirth": "1990-01-15",       // yyyy-MM-dd
-      "gender": "F",                      // M, F, I, U, X
+      "gender": "F",                      // M, F, X
       "firstName": "Jane",               // String(40), conditional
       "lastName": "Smith"                 // String(40), conditional
     },
@@ -306,7 +306,7 @@ POST /air/immunisation/v1.4/encounters/record
           "vaccineDose": "1",             // 1-20
           "vaccineBatch": "FL1234",       // Mandatory for COVID/Flu/YellowFever
           "vaccineType": "NIP",           // NIP, AEN, OTH
-          "routeOfAdministration": "IM"   // IM, SC, ID, OR, IN, NAS, NS
+          "routeOfAdministration": "IM"   // PO, SC, ID, IM, NS
         }
       ],
       "immunisationProvider": {
@@ -546,9 +546,9 @@ check_digit_index = weighted % 11
 
 ### Gender Values
 
-- `M` = Male, `F` = Female, `I` = Intersex/Indeterminate, `U` = Unknown, `X` = Not Stated/Inadequately Described
-- **Note**: Gender value `X` added in AIR Record Encounter V6.0.7 (June 2025)
-- **In Excel template**: accept M/F/I/U/X or Male/Female/Intersex/Unknown/NotStated and map accordingly
+- `M` = Male, `F` = Female, `X` = Indeterminate/Intersex/Unspecified
+- **Note**: Backend validation accepts M, F, X only. I and U are NOT in the codebase.
+- **In Excel template**: accept M/F/X or Male/Female and map accordingly
 
 ### Vaccine Batch Mandatory Rule
 
@@ -572,16 +572,14 @@ The Excel template MUST have these columns in this exact order:
 | D   | First Name                 | individual.personalDetails.firstName    | Cond     | Text, max 40        |
 | E   | Last Name                  | individual.personalDetails.lastName     | Cond     | Text, max 40        |
 | F   | Date of Birth              | individual.personalDetails.dateOfBirth  | Yes      | DD/MM/YYYY          |
-| G   | Gender                     | individual.personalDetails.gender       | Yes      | M/F/I/U/X           |
+| G   | Gender                     | individual.personalDetails.gender       | Yes      | M/F/X               |
 | H   | Postcode                   | individual.address.postCode             | Cond     | 4 digits            |
 | I   | Date of Service            | encounters[].dateOfService              | Yes      | DD/MM/YYYY          |
 | J   | Vaccine Code               | episodes[].vaccineCode                  | Yes      | 1-6 chars           |
-| K   | Vaccine Dose               | episodes[].vaccineDose                  | Yes      | 1-20                |
+| K   | Vaccine Dose               | episodes[].vaccineDose                  | Yes      | 1-20 or B           |
 | L   | Vaccine Batch              | episodes[].vaccineBatch                 | Cond     | 1-15 chars          |
-| M   | Vaccine Type               | episodes[].vaccineType                  | Cond     | NIP/AEN/OTH         |
-| N   | Route of Administration    | episodes[].routeOfAdministration        | Cond     | IM/SC/ID/OR/IN/NAS/NS |
-
-**Note**: Route value `NS` (Nasal) added in AIR Record Encounter V6.0.7 (October 2025). Distinct from `NAS` (also Nasal, legacy code).
+| M   | Vaccine Type               | episodes[].vaccineType                  | Cond     | NIP/OTH             |
+| N   | Route of Administration    | episodes[].routeOfAdministration        | Cond     | PO/SC/ID/IM/NS      |
 | O   | Administered Overseas      | encounters[].administeredOverseas       | No       | TRUE/FALSE          |
 | P   | Country Code               | encounters[].countryCode                | Cond     | 3-char ISO 3166-1   |
 | Q   | Immunising Provider Number | encounters[].immunisationProvider.providerNumber | Yes | 6-8 chars     |
@@ -706,7 +704,7 @@ Catch these BEFORE submitting to the backend:
 - Missing required fields (red highlight on cell)
 - Invalid Medicare check digit
 - Invalid date formats or future dates
-- Gender not in M/F/I/U/X
+- Gender not in M/F/X
 - Vaccine code not in cached reference data
 - Dose number out of range (1-20)
 - Batch missing for vaccines that require it
@@ -966,7 +964,8 @@ This project uses **Semantic Versioning** (semver). Version numbers live on **Gi
 | --------- | --------------------------------------------------------------------------------------------- | ------------------------------------ |
 | `v1.0.0`  | Auth, PRODA B2B, bulk upload, core AIR Record Encounter                                       | ✅ RELEASED — tagged on `main`       |
 | `v1.1.0`  | Submission results, edit/resubmit, confirm flow, export                                       | ✅ RELEASED — tagged on `main`       |
-| `v1.2.0`  | PRODA JWT fixes, 14 missing AIR APIs, Location/Minor ID, full NOI-ready architecture          | 🔄 IN DEVELOPMENT — on `develop`     |
+| `v1.2.0`  | PRODA JWT fixes, 14 missing AIR APIs, Location/Minor ID, full NOI-ready architecture          | ✅ RELEASED — tagged on `main`       |
+| `v1.3.0`  | User auth, RBAC, DB migrations (users/submission_batches), E2E tests, BUG-008 cleanup         | 🔄 IN DEVELOPMENT — on `develop`     |
 
 ### Branch Structure
 
@@ -1377,3 +1376,58 @@ frontend/app/(dashboard)/
 22. **All optional fields MUST be developed** — mandatory for developers per TECH.SIS
 23. **Read the TECH.SIS spec** before implementing each API
 24. **`dhs-productId` must match NOI** — version in header = version on NOI certificate
+
+---
+
+## V1.3 — Post-Release Work Items
+
+> v1.2.0 is RELEASED and tagged. The items below are outstanding work for the next release.
+> All work on `develop` branch via feature branches.
+
+### Open Bugs
+
+| Bug | Priority | Description | Status |
+|-----|----------|-------------|--------|
+| BUG-008 | P2 | ResultsSummary has no warning table — dead code (submit page redirects to detailed results) | OPEN |
+
+### User Authentication & RBAC
+
+The login page exists as a shell but auth is not wired. The compliance audit noted "no user_id in logs" (PARTIAL). Required:
+
+- **User model + Alembic migration** — users table with organisation_id FK, Argon2id password hash, role enum, lockout fields
+- **Auth router** — POST /api/auth/login, POST /api/auth/logout, POST /api/auth/register
+- **JWT middleware** — HS256 tokens in HttpOnly cookies, 30min inactivity timeout, 8hr max session
+- **Password hashing** — Argon2id (NOT bcrypt), min 12 chars, complexity requirements
+- **Account lockout** — 5 failed attempts → 30min lockout
+- **RBAC middleware** — role-based access per the RBAC table in V1.1 and V1.2 sections
+- **Frontend auth context** — AuthProvider, useAuth hook, protected route wrapper
+- **Wire login page** — connect to auth API, redirect on success
+- **Audit logging** — add user_id to structlog context for all authenticated requests
+
+### Database Migrations (Deferred from Phase 2)
+
+- `users` table — full schema per V1.1 Database Schema section
+- `submission_batches` table — with location_id FK
+- `submission_records` table — for per-record tracking
+- `audit_log` table — for audit trail
+- ALTER existing tables: `users.default_location_id`, `submission_batches.location_id`
+
+### Playwright E2E Tests
+
+34 Playwright E2E tests are defined in `backend/tests/integration/` but need running frontend + backend to execute. Requires:
+- Playwright test runner configuration
+- Dev server startup script for test environment
+- CI pipeline integration
+
+### NOI Certification (Manual — Not Code)
+
+- Submit `docs/APPLICATION_DETAILS_FORM.md` to Services Australia OTS portal (itest@servicesaustralia.gov.au)
+- Provide screenshots of all key screens
+- Complete OTS review process (2-4 weeks turnaround)
+- Address any feedback from OTS team
+
+### Remote Repository
+
+- Push `main` branch and `v1.2.0` tag to remote
+- Push `develop` branch to remote
+- Delete `release/v1.2.0` branch (local + remote)
