@@ -22,16 +22,24 @@ const mockResults = [
     errorCode: 'AIR-E-1023',
     errorMessage: 'Invalid vaccine code',
   },
+  {
+    recordId: 'r4',
+    originalRow: 6,
+    status: 'warning' as const,
+    errorCode: 'AIR-W-1004',
+    errorMessage: 'Individual details provided do not match an individual registered on the AIR.',
+  },
 ];
 
 describe('ResultsSummary', () => {
   const baseProps = {
     submissionId: 'sub-123',
     completedAt: '2026-02-07 11:00',
-    totalRecords: 3,
+    totalRecords: 4,
     successful: 1,
     failed: 1,
     confirmed: 1,
+    warnings: 1,
     results: mockResults,
   };
 
@@ -79,5 +87,17 @@ describe('ResultsSummary', () => {
   it('shows completed time', () => {
     render(<ResultsSummary {...baseProps} />);
     expect(screen.getByText(/2026-02-07/)).toBeTruthy();
+  });
+
+  it('renders warning records table', () => {
+    render(<ResultsSummary {...baseProps} />);
+    expect(screen.getByTestId('warning-table')).toBeTruthy();
+    expect(screen.getByText('AIR-W-1004')).toBeTruthy();
+    expect(screen.getByText(/Individual details provided/)).toBeTruthy();
+  });
+
+  it('shows warnings count in summary', () => {
+    render(<ResultsSummary {...baseProps} />);
+    expect(screen.getByText('Warnings')).toBeTruthy();
   });
 });
