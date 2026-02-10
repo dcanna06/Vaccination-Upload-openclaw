@@ -60,6 +60,10 @@ frontend/build/
 .DS_Store
 Thumbs.db
 *.Zone.Identifier
+~$*
+
+# Large reference PDFs
+Must Read Docs/
 
 # Logs
 *.log
