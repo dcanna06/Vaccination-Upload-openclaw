@@ -29,7 +29,12 @@ export default function HistoryPage() {
         const res = await fetch(`${env.apiUrl}/api/submissions`);
         if (!res.ok) throw new Error(`Failed to load: ${res.status}`);
         const data = await res.json();
-        setSubmissions(data.submissions ?? []);
+        const all: Submission[] = data.submissions ?? [];
+        // Filter out dry runs and sort most recent first
+        const real = all
+          .filter((s) => !s.dryRun)
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        setSubmissions(real);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load history');
       } finally {
@@ -82,7 +87,7 @@ export default function HistoryPage() {
                     sub.status === 'paused' ? 'bg-yellow-500/20 text-yellow-400' :
                     'bg-slate-500/20 text-slate-400'
                   }`}>
-                    {sub.dryRun ? 'Dry Run' : sub.status}
+                    {sub.status}
                   </span>
                 </CardTitle>
               </CardHeader>
