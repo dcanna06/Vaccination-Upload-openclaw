@@ -85,6 +85,22 @@ async def _run_submission(submission_id: str) -> None:
         sub["progress"]["failedRecords"] = result.get("failed", 0)
         sub["progress"]["pendingConfirmation"] = result.get("pendingConfirmation", 0)
 
+        # Build confirmation records array from results with warning status
+        pending_records = []
+        for idx, r in enumerate(result.get("results", [])):
+            if r.get("status") == "warning":
+                raw_resp = r.get("rawResponse", {})
+                claim = raw_resp.get("claimDetails", {})
+                pending_records.append({
+                    "recordId": f"r-{idx + 1}",
+                    "rowNumber": r.get("sourceRows", [idx + 1])[0] if r.get("sourceRows") else idx + 1,
+                    "reason": r.get("statusCode", ""),
+                    "airMessage": r.get("message", raw_resp.get("message", "")),
+                    "claimId": claim.get("claimId", ""),
+                    "claimSequenceNumber": claim.get("claimSequenceNumber"),
+                })
+        sub["pendingConfirmationRecords"] = pending_records
+
     except Exception as e:
         logger.error("submission_background_error", submission_id=submission_id, error=str(e))
         sub["status"] = "error"
@@ -146,26 +162,112 @@ async def get_progress(submission_id: str) -> dict[str, Any]:
         "submissionId": submission_id,
         "status": sub["status"],
         "progress": sub["progress"],
+        "pendingConfirmation": sub.get("pendingConfirmationRecords", []),
     }
 
 
 @router.post("/submit/{submission_id}/confirm")
 async def confirm_records(submission_id: str, request: ConfirmRequest) -> dict[str, Any]:
-    """Submit confirmations for records requiring confirmation."""
+    """Submit confirmations for records requiring confirmation.
+
+    Delegates to the real confirmation service in submission_results router.
+    Each confirmation must include recordId (matching a row with pending confirmation).
+    """
     sub = _submissions.get(submission_id)
     if not sub:
         raise HTTPException(status_code=404, detail="Submission not found")
 
+    from app.routers.submission_results import _store as results_store, _load_payload
+    from app.services.air_resubmit import ConfirmService
+    from app.services.air_client import AIRClient
+    from app.services.proda_auth import ProdaAuthService
+
+    results_data = sub.get("results", {})
+    raw_results = results_data.get("results", [])
+    confirmed_count = 0
+    errors: list[dict[str, Any]] = []
+
+    for conf in request.confirmations:
+        record_id = conf.get("recordId", "")
+        # Extract index from recordId format "r-N"
+        try:
+            idx = int(record_id.split("-")[1]) - 1
+        except (IndexError, ValueError):
+            errors.append({"recordId": record_id, "error": "Invalid recordId format"})
+            continue
+
+        if idx < 0 or idx >= len(raw_results):
+            errors.append({"recordId": record_id, "error": "Record not found"})
+            continue
+
+        r = raw_results[idx]
+        if r.get("status") != "warning":
+            errors.append({"recordId": record_id, "error": "Record does not require confirmation"})
+            continue
+
+        raw_response = r.get("rawResponse", {})
+        claim_details = raw_response.get("claimDetails", {})
+        claim_id = claim_details.get("claimId")
+        claim_seq = claim_details.get("claimSequenceNumber")
+
+        if not claim_id:
+            errors.append({"recordId": record_id, "error": "No claimId available for confirmation"})
+            continue
+
+        # Load original request payload
+        original_payload = _load_payload(submission_id, idx + 1, "request")
+        if not original_payload:
+            errors.append({"recordId": record_id, "error": "Original payload not found"})
+            continue
+
+        # Extract DOB for header
+        personal = original_payload.get("individual", {}).get("personalDetails", {})
+        dob_raw = personal.get("dateOfBirth", "")
+        if len(dob_raw) == 8 and dob_raw.isdigit():
+            dob_iso = f"{dob_raw[4:8]}-{dob_raw[2:4]}-{dob_raw[0:2]}"
+        else:
+            dob_iso = dob_raw
+
+        try:
+            proda = ProdaAuthService()
+            token = await proda.get_token()
+            air_client = AIRClient(access_token=token)
+            confirm_service = ConfirmService(air_client)
+            result = await confirm_service.confirm_record(
+                original_payload, claim_id, claim_seq, dob_iso
+            )
+
+            if result.get("status") == "SUCCESS":
+                r["status"] = "success"
+                confirmed_count += 1
+            else:
+                errors.append({
+                    "recordId": record_id,
+                    "error": result.get("air_message", "Confirmation failed"),
+                })
+        except Exception as e:
+            logger.error("confirm_record_error", record_id=record_id, error=str(e))
+            errors.append({"recordId": record_id, "error": str(e)})
+
+    # Update pending confirmation records
+    sub["pendingConfirmationRecords"] = [
+        rec for rec in sub.get("pendingConfirmationRecords", [])
+        if rec["recordId"] not in [c.get("recordId") for c in request.confirmations if c.get("recordId") not in [e["recordId"] for e in errors]]
+    ]
+    _persist(submission_id)
+
     logger.info(
         "confirmation_submitted",
         submission_id=submission_id,
-        count=len(request.confirmations),
+        confirmed=confirmed_count,
+        errors=len(errors),
     )
 
     return {
         "submissionId": submission_id,
         "status": "confirmed",
-        "confirmedCount": len(request.confirmations),
+        "confirmedCount": confirmed_count,
+        "errors": errors,
     }
 
 
@@ -205,8 +307,8 @@ def _build_result_records(sub: dict[str, Any]) -> list[dict[str, Any]]:
             "originalRow": row_num,
             "status": fe_status,
             "claimId": claim_id,
-            "errorCode": error_code if fe_status == "failed" else None,
-            "errorMessage": error_message if fe_status == "failed" else None,
+            "errorCode": error_code or None,
+            "errorMessage": error_message or None,
         })
 
     return records
