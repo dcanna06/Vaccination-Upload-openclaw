@@ -1384,6 +1384,74 @@ frontend/app/(dashboard)/
 > v1.2.0 is RELEASED and tagged. The items below are outstanding work for the next release.
 > All work on `develop` branch via feature branches.
 
+
+## Bulk Immunisation History Request Feature
+
+### Overview
+
+Allows users to upload an Excel file containing patient identification details, validate them,
+then bulk-fetch immunisation history from AIR for all patients. Results are displayed on-screen
+and downloadable as an Excel report with Summary, Immunisation History, Vaccines Due, and Errors sheets.
+
+### User Flow
+
+1. **Upload**: User uploads `.xlsx` file with patient identification columns (Medicare/IHI/demographics)
+2. **Validate & Edit**: System validates individual identification fields (DOB, gender, Medicare check digit, IHI format, demographics completeness). User can **Edit** invalid rows inline or **Skip** them.
+3. **Process**: System calls AIR API for each valid patient:
+   - Step 1: Identify Individual (API #2) → obtain `individualIdentifier`
+   - Step 2: Get Immunisation History Details (API #3) → retrieve full history
+   - Progress bar shows real-time status
+4. **Results**: Summary cards (total/success/failed), expandable per-patient detail showing vaccination history and vaccines due
+5. **Download**: Excel report with 4 sheets (Summary, Immunisation History, Vaccines Due, Errors)
+
+### Required Excel Columns (Patient Identification)
+
+| Column | Maps To | Required | Notes |
+|--------|---------|----------|-------|
+| Medicare Card Number | individual.medicareCard.medicareCardNumber | Conditional | 10 digits, check digit validated |
+| Medicare IRN | individual.medicareCard.medicareIRN | Conditional | 1-9, required if Medicare provided |
+| IHI Number | individual.ihiNumber | Conditional | 16 digits, no Luhn check |
+| First Name | individual.personalDetails.firstName | Conditional | Max 40 chars |
+| Last Name | individual.personalDetails.lastName | Conditional | Max 40 chars |
+| Date of Birth | individual.personalDetails.dateOfBirth | Yes | DD/MM/YYYY |
+| Gender | individual.personalDetails.gender | Yes | M/F/X |
+| Postcode | individual.address.postCode | Conditional | 4 digits |
+
+At least one identification scenario must be satisfied per AIR rules:
+1. Medicare + IRN + DOB + Gender
+2. IHI + DOB + Gender
+3. FirstName + LastName + DOB + Gender + Postcode
+
+### Backend Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/bulk-history/upload` | Upload and parse Excel file |
+| POST | `/api/bulk-history/validate` | Validate individual identification fields |
+| POST | `/api/bulk-history/process` | Start background processing (identify + fetch history) |
+| GET | `/api/bulk-history/{requestId}/progress` | Poll processing progress |
+| GET | `/api/bulk-history/{requestId}/results` | Get completed results |
+| GET | `/api/bulk-history/{requestId}/download` | Download Excel report |
+
+### Files
+
+| File | Purpose |
+|------|---------|
+| `backend/app/routers/bulk_history.py` | API endpoints |
+| `backend/app/schemas/bulk_history.py` | Pydantic request/response models |
+| `backend/tests/unit/test_bulk_history.py` | 37 unit tests |
+| `frontend/app/(dashboard)/bulk-history/page.tsx` | Multi-step wizard UI |
+| `frontend/e2e/bulk-history.spec.ts` | Playwright E2E tests |
+
+### AIR API Compliance
+
+- Uses Identify Individual (API #2: `POST /air/immunisation/v1.1/individual/details`)
+- Uses Get Immunisation History Details (API #3: `POST /air/immunisation/v1.3/individual/immunisation-history/details`)
+- All AIR error messages displayed verbatim per TECH.SIS.AIR.02 Section 5.2.2
+- PRODA authentication via existing ProdaAuthService
+- Headers built per TECH.SIS.AIR.01 (dhs-subjectId, dhs-auditId, etc.)
+- DOB format: `ddMMyyyy` in headers, `yyyy-MM-dd` internal
+
 ### Open Bugs
 
 | Bug | Priority | Description | Status |

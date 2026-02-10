@@ -287,19 +287,43 @@ class TestAIRIndividualClient:
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
-            "statusCode": "AIR-I-1001",
-            "message": "History details retrieved",
-            "vaccineDueDetails": [
-                {"antigenCode": "PERT", "dueDate": "2026-06-01", "doseNumber": "5"}
-            ],
-            "immunisationHistory": [
-                {
-                    "dateOfService": "2025-12-01",
-                    "vaccineCode": "COMIRN",
-                    "vaccineDose": "3",
-                    "editable": True,
-                }
-            ],
+            "statusCode": "AIR-I-1100",
+            "codeType": "AIRIBU",
+            "message": "Your request was successfully processed.",
+            "immunisationDetails": {
+                "dueList": [
+                    {"disease": "PERT", "vaccineDose": "5", "dueDate": "01062026"}
+                ],
+                "encounters": [
+                    {
+                        "claimId": "WB01_ZK$",
+                        "claimSeqNum": 1,
+                        "immEncSeqNum": 1,
+                        "dateOfService": "01122025",
+                        "dateSubmitted": "10022026",
+                        "editable": True,
+                        "administeredOverseas": False,
+                        "countryCode": "AUS",
+                        "episodes": [
+                            {
+                                "id": 1,
+                                "vaccineCode": "COMIRN",
+                                "vaccineDose": "3",
+                                "vaccineBatch": "",
+                                "routeOfAdministration": "IM",
+                                "vaccineType": "",
+                                "editable": True,
+                                "actionRequiredIndicator": False,
+                                "information": {
+                                    "status": "VALID",
+                                    "code": None,
+                                    "text": None,
+                                },
+                            }
+                        ],
+                    }
+                ],
+            },
         }
 
         with patch("app.services.air_individual.httpx.AsyncClient") as MockClient:
@@ -317,7 +341,13 @@ class TestAIRIndividualClient:
 
             assert result["status"] == "success"
             assert len(result["vaccineDueDetails"]) == 1
+            assert result["vaccineDueDetails"][0]["antigenCode"] == "PERT"
+            assert result["vaccineDueDetails"][0]["doseNumber"] == "5"
+            assert result["vaccineDueDetails"][0]["dueDate"] == "01062026"
             assert len(result["immunisationHistory"]) == 1
+            assert result["immunisationHistory"][0]["vaccineCode"] == "COMIRN"
+            assert result["immunisationHistory"][0]["status"] == "VALID"
+            assert result["immunisationHistory"][0]["dateOfService"] == "01122025"
 
     @pytest.mark.anyio
     async def test_get_history_statement_success(self):

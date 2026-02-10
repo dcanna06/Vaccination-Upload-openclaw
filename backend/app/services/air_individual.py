@@ -25,9 +25,9 @@ logger = structlog.get_logger(__name__)
 
 # API paths
 IDENTIFY_INDIVIDUAL_PATH = "/air/immunisation/v1.1/individual/details"
-HISTORY_DETAILS_PATH = "/air/immunisation/v1.3/individual/history/details"
-HISTORY_STATEMENT_PATH = "/air/immunisation/v1/individual/history/statement"
-VACCINE_TRIAL_HISTORY_PATH = "/air/immunisation/v1/individual/vaccinetrial/history"
+HISTORY_DETAILS_PATH = "/air/immunisation/v1.3/individual/immunisation-history/details"
+HISTORY_STATEMENT_PATH = "/air/immunisation/v1/individual/immunisation-history/statement"
+VACCINE_TRIAL_HISTORY_PATH = "/air/immunisation/v1/individual/vaccine-trial/history"
 
 # Redis key prefix and TTL
 INDIVIDUAL_CACHE_PREFIX = "air:individual:"
@@ -104,6 +104,7 @@ class AIRIndividualClient:
                     "air_individual_api_response",
                     path=path,
                     status_code=response.status_code,
+                    request_payload=payload,
                 )
 
                 if response.status_code >= 400:
@@ -111,7 +112,9 @@ class AIRIndividualClient:
                     if response.headers.get("content-type", "").startswith("application/json"):
                         body = response.json()
 
-                    air_status = body.get("statusCode", "")
+                    # AIR uses "statusCode" (e.g. AIR-E-1005);
+                    # DHS gateway uses "code" + "codeType" (e.g. DHSEIN)
+                    air_status = body.get("statusCode", "") or body.get("codeType", "")
                     air_message = body.get("message", "")
 
                     logger.error(
@@ -119,10 +122,12 @@ class AIRIndividualClient:
                         path=path,
                         http_status=response.status_code,
                         air_status=air_status,
+                        air_message=air_message,
+                        response_body=body,
                     )
 
-                    # Return AIR error responses as structured data instead of raising
-                    if air_status:
+                    # Return error responses as structured data instead of raising
+                    if air_status or air_message:
                         return {
                             "statusCode": air_status,
                             "message": air_message,
@@ -264,10 +269,44 @@ class AIRIndividualClient:
             "rawResponse": data,
         }
 
-        if status_code.startswith("AIR-I-"):
+        if status_code.startswith("AIR-I-") or status_code.startswith("AIR-W-"):
             result["status"] = "success"
-            result["vaccineDueDetails"] = data.get("vaccineDueDetails", [])
-            result["immunisationHistory"] = data.get("immunisationHistory", [])
+            imm_details = data.get("immunisationDetails", {})
+
+            # AIR returns "dueList" with fields: disease, vaccineDose, dueDate
+            # Map to our schema: antigenCode, doseNumber, dueDate
+            raw_due = imm_details.get("dueList", [])
+            result["vaccineDueDetails"] = [
+                {
+                    "antigenCode": d.get("disease", ""),
+                    "doseNumber": d.get("vaccineDose", ""),
+                    "dueDate": d.get("dueDate", ""),
+                }
+                for d in raw_due
+            ]
+
+            result["encounters"] = imm_details.get("encounters", [])
+
+            # Flatten encounters→episodes into a simple history list for the frontend
+            history: list[dict[str, Any]] = []
+            for enc in result["encounters"]:
+                for ep in enc.get("episodes", []):
+                    info = ep.get("information", {})
+                    history.append({
+                        "dateOfService": enc.get("dateOfService", ""),
+                        "vaccineCode": ep.get("vaccineCode", ""),
+                        "vaccineDescription": ep.get("vaccineDescription", ""),
+                        "vaccineDose": ep.get("vaccineDose", ""),
+                        "routeOfAdministration": ep.get("routeOfAdministration", ""),
+                        "providerNumber": "",
+                        "editable": enc.get("editable", False),
+                        "status": info.get("status", ""),
+                        "informationCode": info.get("code"),
+                        "informationText": info.get("text"),
+                        "claimId": enc.get("claimId", ""),
+                        "claimSeqNum": enc.get("claimSeqNum"),
+                    })
+            result["immunisationHistory"] = history
         else:
             result["status"] = "error"
 

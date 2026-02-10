@@ -12,7 +12,7 @@ from app.middleware.error_handler import (
 )
 from app.middleware.request_logger import RequestLoggerMiddleware
 from app.middleware.security import RateLimitMiddleware, SecurityHeadersMiddleware
-from app.routers import auth, encounters_update, exemptions, health, indicators, individuals, locations, providers, submit, submission_results, template, upload, validate
+from app.routers import auth, bulk_history, encounters_update, exemptions, health, indicators, individuals, locations, providers, submit, submission_results, template, upload, validate
 
 
 def configure_structlog() -> None:
@@ -81,6 +81,7 @@ def create_app() -> FastAPI:
     app.include_router(encounters_update.router)
     app.include_router(exemptions.router)
     app.include_router(indicators.router)
+    app.include_router(bulk_history.router)
 
     return app
 

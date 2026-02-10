@@ -67,6 +67,7 @@ class HistoryDetailsRequest(BaseModel):
     """Request body for Get Immunisation History Details API."""
     individualIdentifier: str = Field(..., max_length=128)
     informationProvider: InformationProvider
+    subjectDob: str | None = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
 
 
 class VaccineDueDetail(BaseModel):
@@ -81,10 +82,14 @@ class ImmunisationHistoryEntry(BaseModel):
     vaccineCode: str | None = None
     vaccineDescription: str | None = None
     vaccineDose: str | None = None
+    routeOfAdministration: str | None = None
     providerNumber: str | None = None
     editable: bool | None = None
-    encounterId: str | None = None
-    episodeId: str | None = None
+    status: str | None = None
+    informationCode: str | None = None
+    informationText: str | None = None
+    claimId: str | None = None
+    claimSeqNum: int | None = None
 
 
 class HistoryDetailsResponse(BaseModel):
@@ -105,6 +110,7 @@ class HistoryStatementRequest(BaseModel):
     """Request body for Get Immunisation History Statement API."""
     individualIdentifier: str = Field(..., max_length=128)
     informationProvider: InformationProvider
+    subjectDob: str | None = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
 
 
 class HistoryStatementResponse(BaseModel):
@@ -124,6 +130,7 @@ class VaccineTrialHistoryRequest(BaseModel):
     """Request body for Get Vaccine Trial History API."""
     individualIdentifier: str = Field(..., max_length=128)
     informationProvider: InformationProvider
+    subjectDob: str | None = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
 
 
 class VaccineTrialEntry(BaseModel):

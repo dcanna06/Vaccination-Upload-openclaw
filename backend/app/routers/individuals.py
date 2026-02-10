@@ -52,10 +52,12 @@ async def identify_individual(request: IdentifyIndividualRequest) -> dict[str, A
         result = await client.identify_individual(request.model_dump(exclude_none=True))
 
         if result.get("status") == "error":
+            raw = result.get("rawResponse", {})
             return {
                 "status": "error",
                 "statusCode": result.get("statusCode", ""),
                 "message": result.get("message", ""),
+                "errors": raw.get("errors"),
             }
 
         return {
@@ -83,6 +85,15 @@ async def get_history_details(request: HistoryDetailsRequest) -> dict[str, Any]:
         result = await client.get_history_details(
             individual_identifier=request.individualIdentifier,
             information_provider=request.informationProvider.model_dump(),
+            subject_dob=request.subjectDob,
+        )
+
+        logger.info(
+            "history_details_response",
+            status=result.get("status"),
+            status_code=result.get("statusCode"),
+            due_count=len(result.get("vaccineDueDetails", [])),
+            history_count=len(result.get("immunisationHistory", [])),
         )
 
         return result
@@ -104,6 +115,7 @@ async def get_history_statement(request: HistoryStatementRequest) -> dict[str, A
         result = await client.get_history_statement(
             individual_identifier=request.individualIdentifier,
             information_provider=request.informationProvider.model_dump(),
+            subject_dob=request.subjectDob,
         )
 
         return result
@@ -125,6 +137,7 @@ async def get_vaccine_trial_history(request: VaccineTrialHistoryRequest) -> dict
         result = await client.get_vaccine_trial_history(
             individual_identifier=request.individualIdentifier,
             information_provider=request.informationProvider.model_dump(),
+            subject_dob=request.subjectDob,
         )
 
         return result

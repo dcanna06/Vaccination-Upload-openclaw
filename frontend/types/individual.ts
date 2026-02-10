@@ -40,10 +40,14 @@ export interface ImmunisationHistoryEntry {
   vaccineCode?: string;
   vaccineDescription?: string;
   vaccineDose?: string;
+  routeOfAdministration?: string;
   providerNumber?: string;
   editable?: boolean;
-  encounterId?: string;
-  episodeId?: string;
+  status?: string;
+  informationCode?: string;
+  informationText?: string;
+  claimId?: string;
+  claimSeqNum?: number;
 }
 
 export interface HistoryDetailsResponse {

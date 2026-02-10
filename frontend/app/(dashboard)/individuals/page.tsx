@@ -57,18 +57,41 @@ export default function IndividualSearchPage() {
         body: JSON.stringify(body),
       });
 
-      const data: IdentifyIndividualResponse = await resp.json();
+      const data = await resp.json();
 
-      if (data.status === 'success' && data.individualIdentifier) {
+      if (!resp.ok) {
+        // Handle validation errors (422) or server errors (502)
+        if (data.detail) {
+          const msg = Array.isArray(data.detail)
+            ? data.detail.map((d: { msg: string; loc?: string[] }) =>
+                `${d.loc?.slice(-1)[0] || 'field'}: ${d.msg}`
+              ).join('; ')
+            : data.detail;
+          setError(msg);
+        } else {
+          setError(data.message || `Server error (${resp.status})`);
+        }
+        return;
+      }
+
+      const result = data as IdentifyIndividualResponse;
+
+      if (result.status === 'success' && result.individualIdentifier) {
         const params = new URLSearchParams({
-          identifier: data.individualIdentifier,
+          identifier: result.individualIdentifier,
           ...(dateOfBirth && { dob: dateOfBirth }),
           ...(providerNumber && { provider: providerNumber }),
         });
-        router.push(`/individuals/${encodeURIComponent(data.individualIdentifier)}?${params.toString()}`);
+        router.push(`/individuals/${encodeURIComponent(result.individualIdentifier)}?${params.toString()}`);
       } else {
         // Display verbatim AIR message per TECH.SIS.AIR.02 Section 5.2.2
-        setError(data.message || 'Individual not found');
+        const airErrors = (data.errors as { code?: string; field?: string; message?: string }[]) || [];
+        const details = airErrors.length > 0
+          ? airErrors.map((e) => `${e.code || ''}: ${e.message || ''}`).join('; ')
+          : '';
+        setError(
+          `${result.statusCode || ''} — ${result.message || 'Individual not found'}${details ? `\n${details}` : ''}`
+        );
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Search failed');
@@ -113,23 +136,19 @@ export default function IndividualSearchPage() {
           {searchMode === 'medicare' && (
             <>
               <li>Medicare Card Number + IRN</li>
-              <li>Date of Birth</li>
-              <li>Gender</li>
+              <li>Last Name + Date of Birth + Gender</li>
             </>
           )}
           {searchMode === 'ihi' && (
             <>
               <li>Individual Healthcare Identifier (16 digits)</li>
-              <li>Date of Birth</li>
-              <li>Gender</li>
+              <li>Last Name + Date of Birth + Gender</li>
             </>
           )}
           {searchMode === 'demographics' && (
             <>
               <li>First Name + Last Name</li>
-              <li>Date of Birth</li>
-              <li>Gender</li>
-              <li>Postcode</li>
+              <li>Date of Birth + Gender + Postcode</li>
             </>
           )}
         </ul>
@@ -182,33 +201,31 @@ export default function IndividualSearchPage() {
           </div>
         )}
 
-        {/* Demographics fields */}
-        {searchMode === 'demographics' && (
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>First Name</label>
-              <input
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                maxLength={40}
-                className={inputClass}
-                required
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Last Name</label>
-              <input
-                type="text"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                maxLength={40}
-                className={inputClass}
-                required
-              />
-            </div>
+        {/* Name fields — lastName required by AIR for all search modes */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className={labelClass}>First Name</label>
+            <input
+              type="text"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              maxLength={40}
+              className={inputClass}
+              required={searchMode === 'demographics'}
+            />
           </div>
-        )}
+          <div>
+            <label className={labelClass}>Last Name *</label>
+            <input
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              maxLength={40}
+              className={inputClass}
+              required
+            />
+          </div>
+        </div>
 
         {/* Common fields: DOB, Gender, Provider */}
         <div className="grid grid-cols-3 gap-4">
@@ -268,7 +285,7 @@ export default function IndividualSearchPage() {
         {/* Error display — verbatim AIR message */}
         {error && (
           <div className="rounded-md border border-red-500/50 bg-red-500/10 p-3">
-            <p className="text-sm text-red-400">{error}</p>
+            <p className="text-sm text-red-400 whitespace-pre-line">{error}</p>
           </div>
         )}
 

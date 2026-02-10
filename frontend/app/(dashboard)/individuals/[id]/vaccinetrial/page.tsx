@@ -9,8 +9,8 @@ export default function VaccineTrialHistoryPage() {
   const params = useParams();
   const searchParams = useSearchParams();
 
-  const individualId = params.id as string;
-  const identifier = searchParams.get('identifier') || individualId;
+  const individualId = decodeURIComponent(params.id as string);
+  const identifier = decodeURIComponent(searchParams.get('identifier') || individualId);
   const dob = searchParams.get('dob') || '';
   const provider = searchParams.get('provider') || '';
 
@@ -28,6 +28,7 @@ export default function VaccineTrialHistoryPage() {
           body: JSON.stringify({
             individualIdentifier: identifier,
             informationProvider: { providerNumber: provider },
+            ...(dob && { subjectDob: dob }),
           }),
         });
 

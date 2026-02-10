@@ -5,12 +5,18 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import type { HistoryDetailsResponse, VaccineDueDetail, ImmunisationHistoryEntry } from '@/types/individual';
 
+/** Convert AIR ddMMyyyy date to dd/MM/yyyy for display. */
+function formatDdMmYyyy(raw?: string): string {
+  if (!raw || raw.length !== 8) return raw || '-';
+  return `${raw.slice(0, 2)}/${raw.slice(2, 4)}/${raw.slice(4)}`;
+}
+
 export default function ImmunisationHistoryPage() {
   const params = useParams();
   const searchParams = useSearchParams();
 
-  const individualId = params.id as string;
-  const identifier = searchParams.get('identifier') || individualId;
+  const individualId = decodeURIComponent(params.id as string);
+  const identifier = decodeURIComponent(searchParams.get('identifier') || individualId);
   const dob = searchParams.get('dob') || '';
   const provider = searchParams.get('provider') || '';
 
@@ -29,6 +35,7 @@ export default function ImmunisationHistoryPage() {
           body: JSON.stringify({
             individualIdentifier: identifier,
             informationProvider: { providerNumber: provider },
+            ...(dob && { subjectDob: dob }),
           }),
         });
 
@@ -87,14 +94,16 @@ export default function ImmunisationHistoryPage() {
       )}
 
       {/* Vaccines Due */}
-      {dueDetails.length > 0 && (
-        <div className="space-y-2">
-          <h2 className="text-lg font-semibold text-slate-200">Vaccines Due</h2>
+      <div className="space-y-2">
+        <h2 className="text-lg font-semibold text-slate-200">Vaccines Due</h2>
+        {dueDetails.length === 0 ? (
+          <p className="text-sm text-slate-400">There are no vaccinations due for this individual.</p>
+        ) : (
           <div className="overflow-x-auto rounded-lg border border-slate-600">
             <table className="w-full text-sm">
               <thead className="bg-slate-700/50">
                 <tr>
-                  <th className="px-4 py-2 text-left text-slate-300">Antigen</th>
+                  <th className="px-4 py-2 text-left text-slate-300">Disease</th>
                   <th className="px-4 py-2 text-left text-slate-300">Due Date</th>
                   <th className="px-4 py-2 text-left text-slate-300">Dose</th>
                 </tr>
@@ -103,23 +112,23 @@ export default function ImmunisationHistoryPage() {
                 {dueDetails.map((item, idx) => (
                   <tr key={idx} className="hover:bg-slate-700/30">
                     <td className="px-4 py-2 text-slate-200">
-                      {item.antigenDescription || item.antigenCode || '-'}
+                      {item.antigenCode || '-'}
                     </td>
-                    <td className="px-4 py-2 text-slate-300">{item.dueDate || '-'}</td>
+                    <td className="px-4 py-2 text-slate-300">{formatDdMmYyyy(item.dueDate)}</td>
                     <td className="px-4 py-2 text-slate-300">{item.doseNumber || '-'}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Immunisation History */}
       <div className="space-y-2">
         <h2 className="text-lg font-semibold text-slate-200">Immunisation History</h2>
         {history.length === 0 ? (
-          <p className="text-sm text-slate-400">No immunisation history found.</p>
+          <p className="text-sm text-slate-400">No immunisation history is recorded for this individual.</p>
         ) : (
           <div className="overflow-x-auto rounded-lg border border-slate-600">
             <table className="w-full text-sm">
@@ -128,20 +137,28 @@ export default function ImmunisationHistoryPage() {
                   <th className="px-4 py-2 text-left text-slate-300">Date</th>
                   <th className="px-4 py-2 text-left text-slate-300">Vaccine</th>
                   <th className="px-4 py-2 text-left text-slate-300">Dose</th>
-                  <th className="px-4 py-2 text-left text-slate-300">Provider</th>
+                  <th className="px-4 py-2 text-left text-slate-300">Status</th>
                   <th className="px-4 py-2 text-left text-slate-300">Editable</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700">
                 {history.map((entry, idx) => (
                   <tr key={idx} className="hover:bg-slate-700/30">
-                    <td className="px-4 py-2 text-slate-200">{entry.dateOfService || '-'}</td>
+                    <td className="px-4 py-2 text-slate-200">{formatDdMmYyyy(entry.dateOfService)}</td>
                     <td className="px-4 py-2 text-slate-200">
                       {entry.vaccineDescription || entry.vaccineCode || '-'}
                     </td>
                     <td className="px-4 py-2 text-slate-300">{entry.vaccineDose || '-'}</td>
-                    <td className="px-4 py-2 text-slate-300 font-mono text-xs">
-                      {entry.providerNumber || '-'}
+                    <td className="px-4 py-2">
+                      {entry.status === 'VALID' ? (
+                        <span className="rounded bg-emerald-600/20 px-2 py-0.5 text-xs text-emerald-400">Valid</span>
+                      ) : entry.status === 'INVALID' ? (
+                        <span className="rounded bg-amber-600/20 px-2 py-0.5 text-xs text-amber-400" title={entry.informationText || ''}>
+                          Invalid{entry.informationCode ? ` (${entry.informationCode})` : ''}
+                        </span>
+                      ) : (
+                        <span className="text-slate-400">{entry.status || '-'}</span>
+                      )}
                     </td>
                     <td className="px-4 py-2">
                       {entry.editable ? (

@@ -253,10 +253,56 @@ Add a retry counter. After N consecutive failures (e.g., 5), show an error banne
 
 ---
 
+## BUG-007 (P2): EditResubmitPanel dropdown offers values backend rejects
+
+| Field | Value |
+|-------|-------|
+| **Severity** | P2 — Minor |
+| **File** | `frontend/components/submission/EditResubmitPanel.tsx:291-297, 383-391` |
+| **Status** | Open |
+| **Suggested branch** | `fix/edit-panel-dropdown-values` |
+
+### Description
+
+The edit panel gender dropdown includes `I` (Intersex) and `U` (Unknown), but backend `VALID_GENDERS = {"M", "F", "X"}` does not accept these values. Similarly, the route dropdown includes `OR` (Oral), `IN` (Intranasal), `NAS` (Nasal) but backend `VALID_ROUTES = {"PO", "SC", "ID", "IM", "NS"}` does not accept these.
+
+If a user selects one of these values and resubmits, the record will fail backend validation.
+
+### Suggested Fix
+
+Remove I, U from gender options. Remove OR, IN, NAS from route options. Add PO (Oral) to route options. Route dropdown should be: IM, SC, ID, PO, NS.
+
+---
+
+## BUG-008 (P2): ResultsSummary.tsx still has no warning table (dead code path)
+
+| Field | Value |
+|-------|-------|
+| **Severity** | P2 — Minor (effectively dead code) |
+| **File** | `frontend/components/ResultsSummary.tsx:136-165` |
+| **Status** | Open |
+| **Suggested branch** | `fix/results-summary-cleanup` |
+
+### Description
+
+The old `ResultsSummary` component still only shows a "Failed Records" detail table with no warning/confirmed records table. However, this code path is now effectively unreachable because `submit/page.tsx:114` redirects to the detailed results page (`/submissions/[id]/results`) on completion instead of rendering `ResultsSummary`.
+
+### Impact
+
+Minimal — the code is unreachable in normal flow. But if the redirect fails or a user accesses the old completed state directly, warnings would still be hidden. Consider removing the dead code branch or updating it.
+
+---
+
+## QA Re-Verification (2026-02-09)
+
+All 6 original bugs verified as fixed. 2 new P2 issues found (BUG-007, BUG-008).
+
 ## Test Suite Status
 
-**Backend:** 338 passed, 2 failed (integration-only: reference data endpoint tests expect 200 but get 400 — missing API parameters in E2E smoke tests, not related to this review scope)
-**Frontend:** 115 passed, 0 failed (15 test files)
+**Backend:** 343 unit tests passed (up from 338)
+**Frontend:** 126 tests passed, 16 test files (up from 115/15)
+**Integration:** 2 pre-existing failures in reference data smoke tests (unrelated)
+**Playwright E2E:** 34 tests defined in `e2e/submission-results.spec.ts`
 
 ---
 
@@ -266,7 +312,7 @@ Add a retry counter. After N consecutive failures (e.g., 5), show an error banne
 |----------|-------|---------|
 | P0 (Critical) | 2 | BUG-001, BUG-002 |
 | P1 (Major) | 2 | BUG-003, BUG-004 |
-| P2 (Minor) | 2 | BUG-005, BUG-006 |
+| P2 (Minor) | 4 | BUG-005, BUG-006, BUG-007, BUG-008 |
 
 ### Recommended Fix Order
 

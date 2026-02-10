@@ -15,6 +15,7 @@ const navItems: NavItem[] = [
   { href: '/submit', label: 'Submit' },
   { href: '/history', label: 'History' },
   { href: '/individuals', label: 'Individuals' },
+  { href: '/bulk-history', label: 'Bulk History' },
   { href: '/confirm', label: 'Confirm' },
   { href: '/indicators', label: 'Indicators' },
   { href: '/catchup', label: 'Catch-Up' },

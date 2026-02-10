@@ -17,7 +17,7 @@ export default function IndividualDetailHub() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  const individualId = params.id as string;
+  const individualId = decodeURIComponent(params.id as string);
   const dob = searchParams.get('dob') || '';
   const provider = searchParams.get('provider') || '';
 

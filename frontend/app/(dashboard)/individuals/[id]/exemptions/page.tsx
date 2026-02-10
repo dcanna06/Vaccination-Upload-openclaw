@@ -23,8 +23,8 @@ export default function ExemptionsPage() {
   const params = useParams();
   const searchParams = useSearchParams();
 
-  const individualId = params.id as string;
-  const identifier = searchParams.get('identifier') || individualId;
+  const individualId = decodeURIComponent(params.id as string);
+  const identifier = decodeURIComponent(searchParams.get('identifier') || individualId);
   const dob = searchParams.get('dob') || '';
   const provider = searchParams.get('provider') || '';
 
