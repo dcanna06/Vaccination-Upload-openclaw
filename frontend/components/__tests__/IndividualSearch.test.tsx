@@ -33,7 +33,7 @@ describe('IndividualSearchPage', () => {
     render(<IndividualSearchPage />);
     fireEvent.click(screen.getByText('Demographics'));
     expect(screen.getByText('First Name')).toBeInTheDocument();
-    expect(screen.getByText('Last Name')).toBeInTheDocument();
+    expect(screen.getByText('Last Name *')).toBeInTheDocument();
   });
 
   it('shows minimum ID requirements for Medicare', () => {

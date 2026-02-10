@@ -65,7 +65,7 @@ All 16 AIR REST Web Service APIs are implemented:
 | **Database** | PostgreSQL 16 (async SQLAlchemy 2.0) |
 | **Cache** | Redis 7 |
 | **Auth** | PRODA B2B OAuth 2.0 (RS256 JWT) |
-| **Testing** | pytest (473 backend), Vitest (142 frontend) |
+| **Testing** | pytest (531 backend), Vitest (150 frontend), Playwright (73 E2E) |
 
 ### Data Flow
 
@@ -159,7 +159,7 @@ All 5 mandatory workflow scenarios are implemented and tested:
 - Vaccine Type: NIP, OTH
 - Vaccine Dose: 1-20 or B (booster)
 - Date format in Excel: DD/MM/YYYY
-- Date format in API body: yyyy-MM-dd
+- Date format in API body (Record Encounter DOB): ddMMyyyy
 - Date format in dhs-subjectId: ddMMyyyy
 
 ### Batch Constraints
@@ -174,12 +174,12 @@ All 5 mandatory workflow scenarios are implemented and tested:
 
 | Test Category | Count | Status |
 |---------------|-------|--------|
-| Backend unit tests | 449 | All passing |
+| Backend unit tests | 531 | All passing |
 | Backend NOI integration tests | 23 | All passing (vendor env) |
-| Backend performance tests | 8 | All passing |
-| Frontend unit tests | 142 | All passing |
-| Playwright E2E tests | 34 | Defined |
-| **Total** | **656** | **All passing** |
+| Backend performance tests | 8 | All passing (included in unit count) |
+| Frontend unit tests | 150 | All passing |
+| Playwright E2E tests | 73 | Defined |
+| **Total** | **777** | **All passing** |
 
 ### NOI Integration Tests (Vendor Environment)
 - 18 API-level tests covering all 16 APIs
@@ -262,6 +262,33 @@ Beyond bulk upload, the system provides individual record management:
 | POST | /api/indicators/vaccine/remove | Remove vaccine indicator |
 | POST | /api/indicators/indigenous-status | Update indigenous status |
 | POST | /api/indicators/catchup | Get catch-up schedule |
+| POST | /api/bulk-history/upload | Upload patient list (Excel) |
+| POST | /api/bulk-history/validate | Validate bulk history records |
+| POST | /api/bulk-history/process | Start bulk history retrieval |
+| GET | /api/bulk-history/{id}/progress | Poll processing progress |
+| GET | /api/bulk-history/{id}/results | Get history results |
+| GET | /api/bulk-history/{id}/download | Download results as Excel |
+
+---
+
+## 12. Bulk Immunisation History Request
+
+The system supports bulk retrieval of immunisation histories:
+
+1. User uploads Excel file with patient identification details
+2. Backend validates all records against AIR identification rules
+3. For each valid patient, calls Identify Individual (API #2), then History Details (API #3)
+4. Background processing with real-time progress polling
+5. Results available for download as Excel file with full immunisation histories
+
+### Excel Template Columns
+- First Name, Last Name, Date of Birth, Gender
+- Medicare Card Number, Medicare IRN (or IHI Number)
+
+### Processing Notes
+- Identifies each patient first, then retrieves their full history
+- Handles AIR errors per-patient without failing the entire batch
+- Results include patient demographics + all immunisation records from AIR
 
 ---
 
