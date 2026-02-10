@@ -99,7 +99,7 @@ PRODA_KEY_ALIAS=proda-alias         # SoapUI default
 
 ```env
 AIR_CLIENT_ID=                      # X-IBM-Client-Id from Developer Portal
-AIR_PRODUCT_ID=AIRBulkVax 1.0      # Your product name and version
+AIR_PRODUCT_ID=EM Bulk Vaccination Upload V1.2  # dhs-productId header
 ```
 
 ### Database and Cache
@@ -463,10 +463,10 @@ The system implements AIR-specific validation rules:
 - **Medicare Card Number**: 10 digits with check digit validation
 - **IHI Number**: 16 digits (format only, NO Luhn check)
 - **Provider Number**: Medicare or AIR format with check digit
-- **Gender**: M, F, I, U (NOT X)
+- **Gender**: M, F, X
 - **Date Format**: yyyy-MM-dd in API, ddMMyyyy in headers
-- **Vaccine Type**: NIP, AEN, OTH
-- **Route of Administration**: IM, SC, ID, OR, IN, NAS
+- **Vaccine Type**: NIP, OTH
+- **Route of Administration**: PO, SC, ID, IM, NS
 
 ### Logging
 

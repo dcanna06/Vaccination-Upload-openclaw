@@ -54,7 +54,7 @@ class TestSettings:
 
     def test_default_product_id(self):
         s = Settings(_env_file=None)
-        assert s.AIR_PRODUCT_ID == "EM Bulk Vaccination Upload V1.0"
+        assert s.AIR_PRODUCT_ID == "EM Bulk Vaccination Upload V1.2"
 
     def test_default_proda_jwt_audience(self):
         s = Settings(_env_file=None)

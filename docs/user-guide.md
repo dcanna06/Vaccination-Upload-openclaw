@@ -22,6 +22,10 @@ The AIR Bulk Vaccination Upload System allows vaccination providers to submit mu
 - Clear error messages and guidance for corrections
 - Confirmation workflow for records requiring additional review
 - Complete submission history and reporting
+- Individual record management (search, history, statements)
+- Location management with per-location Minor IDs
+- Medical exemptions and natural immunity recording
+- Vaccine indicators and planned catch-up schedules
 
 **What You Need:**
 - Your PRODA credentials configured in the system
@@ -45,14 +49,14 @@ The system accepts Excel files (.xlsx) with the following 19 columns. All column
 | D | **First Name** | Patient's first name | Conditional* | Text, up to 40 characters |
 | E | **Last Name** | Patient's last name | Conditional* | Text, up to 40 characters |
 | F | **Date of Birth** | Patient's date of birth | **YES** | DD/MM/YYYY (e.g., 18/10/2005) |
-| G | **Gender** | Patient's gender | **YES** | M, F, I, or U |
+| G | **Gender** | Patient's gender | **YES** | M, F, or X |
 | H | **Postcode** | Patient's residential postcode | Conditional* | 4 digits (e.g., 2000) |
 | I | **Date of Service** | Date vaccination was administered | **YES** | DD/MM/YYYY (e.g., 01/02/2026) |
 | J | **Vaccine Code** | AIR vaccine code | **YES** | 1-6 characters (e.g., COMIRN, MMR) |
-| K | **Vaccine Dose** | Dose number in the series | **YES** | Number 1-20 |
+| K | **Vaccine Dose** | Dose number in the series | **YES** | Number 1-20, or B (booster) |
 | L | **Vaccine Batch** | Manufacturer's batch/lot number | Conditional** | 1-15 characters |
 | M | **Vaccine Type** | Type of vaccination program | Recommended | NIP, AEN, or OTH |
-| N | **Route of Administration** | How the vaccine was administered | Recommended | IM, SC, ID, OR, IN, or NAS |
+| N | **Route of Administration** | How the vaccine was administered | Recommended | IM, SC, ID, PO, or NS |
 | O | **Administered Overseas** | Was the vaccine given overseas? | No | TRUE or FALSE |
 | P | **Country Code** | Country where vaccine was administered | Conditional*** | 3-letter country code (e.g., AUS, NZL) |
 | Q | **Immunising Provider Number** | Provider who administered the vaccine | **YES** | 6-8 characters |
@@ -75,13 +79,12 @@ The system accepts Excel files (.xlsx) with the following 19 columns. All column
 
 ### Gender Values
 
-Use one of these four values:
+Use one of these three values:
 - **M** = Male
 - **F** = Female
-- **I** = Intersex or Indeterminate
-- **U** = Unknown
+- **X** = Indeterminate/Intersex/Unspecified
 
-You can enter the full word (Male, Female, Intersex, Unknown) and the system will convert it automatically.
+You can enter the full word (Male, Female) and the system will convert it automatically.
 
 ### Vaccine Types
 
@@ -94,9 +97,8 @@ You can enter the full word (Male, Female, Intersex, Unknown) and the system wil
 - **IM** = Intramuscular
 - **SC** = Subcutaneous
 - **ID** = Intradermal
-- **OR** = Oral
-- **IN** = Intranasal
-- **NAS** = Nasal
+- **PO** = Oral (Per Os)
+- **NS** = Nasal
 
 ### Date Format
 
@@ -177,7 +179,7 @@ The system validates your data before submission to prevent errors. Here are com
 | **Date of Birth more than 130 years ago** | Date is too old to be valid | Verify the correct date of birth |
 | **Date of Service must be after Date of Birth** | Vaccination date is before patient was born | Check both dates for accuracy |
 | **Date of Service cannot be in the future** | Vaccination date hasn't occurred yet | Use today's date or earlier |
-| **Invalid gender value** | Gender is not M, F, I, or U | Use only M, F, I, or U |
+| **Invalid gender value** | Gender is not M, F, or X | Use only M, F, or X |
 | **Medicare check digit invalid** | The Medicare number has an error | Verify the Medicare number from the patient's card |
 | **Medicare IRN required when Medicare Card Number provided** | IRN is missing | Enter the IRN (position number) from the card |
 | **IHI Number must be 16 digits** | IHI is wrong length | Check the IHI number carefully |
@@ -483,8 +485,74 @@ The batch number appears on the vaccine vial or packaging. Without a valid batch
 
 ---
 
-**Document Version:** 1.0
-**Last Updated:** February 2026
-**System:** AIR Bulk Vaccination Upload System
+---
 
-For system updates and release notes, check with your system administrator.
+## Location Management
+
+### Setting Up Locations
+
+If your organisation operates from multiple sites, each location needs its own Minor ID for AIR submissions.
+
+1. Go to **Admin > Locations** in the sidebar
+2. Click **Add Location** and enter the location name and address
+3. A Minor ID is automatically assigned to each location
+4. Select your active location from the dropdown in the header before submitting records
+
+### Linking Providers to Locations
+
+Providers must be linked to locations before their records can be submitted:
+
+1. Go to **Admin > Providers** in the sidebar
+2. Click **Link Provider** and enter the provider number
+3. The system verifies the provider's access against AIR's Authorisation Access List
+4. If HW027 form submission is required, guidance is displayed
+
+---
+
+## Individual Record Management
+
+### Searching for Individuals
+
+1. Go to **Individuals** in the sidebar
+2. Search by Medicare Card Number, IHI Number, or demographics (name + DOB + gender)
+3. View the individual's record hub with links to history, statements, and more
+
+### Viewing Immunisation History
+
+From an individual's record:
+- **History** — full immunisation history from AIR
+- **Statement** — downloadable immunisation history statement
+- **Vaccine Trial** — vaccine trial participation history
+
+### Medical Exemptions
+
+From an individual's record, go to **Exemptions** to:
+- View contraindication history
+- Record new contraindications
+- View natural immunity history
+- Record new natural immunity entries
+
+---
+
+## Vaccine Indicators & Catch-Up
+
+### Vaccine Indicators
+
+Go to **Indicators** in the sidebar to:
+- Add vaccine indicators to an individual's record
+- Remove existing indicators
+- Update indigenous status
+
+### Planned Catch-Up
+
+Go to **Catch-Up** in the sidebar to:
+- Look up an individual's planned catch-up vaccination schedule
+- Uses Medicare card details (not individualIdentifier)
+
+---
+
+**Document Version:** 1.2.0
+**Last Updated:** February 2026
+**System:** AIR Bulk Vaccination Upload System v1.2.0
+
+For system updates and release notes, see CHANGELOG.md or check with your system administrator.

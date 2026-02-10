@@ -42,7 +42,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="AIR Bulk Vaccination Upload API",
         description="Backend API for uploading vaccination records to the Australian Immunisation Register",
-        version="0.1.0",
+        version="1.2.0",
     )
 
     # CORS

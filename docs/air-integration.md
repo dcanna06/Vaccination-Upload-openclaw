@@ -315,7 +315,7 @@ dhs-auditId: MMS00001
 dhs-auditIdType: Minor Id
 dhs-subjectId: 18102005
 dhs-subjectIdType: Date of Birth
-dhs-productId: AIRBulkVax 1.0
+dhs-productId: EM Bulk Vaccination Upload V1.2
 ```
 
 **Header Details:**
@@ -332,7 +332,7 @@ dhs-productId: AIRBulkVax 1.0
 | `dhs-auditIdType` | Literal string | Minor Id | Always "Minor Id" |
 | `dhs-subjectId` | ddMMyyyy | 18102005 | Patient DOB (18 Oct 2005) |
 | `dhs-subjectIdType` | Literal string | Date of Birth | Always "Date of Birth" |
-| `dhs-productId` | Name Version | AIRBulkVax 1.0 | Your software name + version |
+| `dhs-productId` | Name Version | EM Bulk Vaccination Upload V1.2 | Your software name + version |
 
 **Critical Date Format Rules:**
 - **API Request Body**: Dates use `yyyy-MM-dd` format (e.g., `2005-10-18`)
@@ -407,7 +407,7 @@ POST /air/immunisation/v1.4/encounters/record
 | Field | Type | Required | Format | Notes |
 |-------|------|----------|--------|-------|
 | `dateOfBirth` | string | Yes | yyyy-MM-dd | Must not be future or >130 years ago |
-| `gender` | string | Yes | M, F, I, U | M=Male, F=Female, I=Intersex, U=Unknown |
+| `gender` | string | Yes | M, F, X | M=Male, F=Female, X=Indeterminate/Intersex/Unspecified |
 | `firstName` | string | Conditional | Max 40 chars | Required if no Medicare/IHI |
 | `lastName` | string | Conditional | Max 40 chars | Required if no Medicare/IHI |
 | `medicareCardNumber` | string | Conditional | 10 digits | Validated with check digit algorithm |
@@ -419,7 +419,7 @@ POST /air/immunisation/v1.4/encounters/record
 | `vaccineDose` | string | Yes | 1-20 | Dose sequence number |
 | `vaccineBatch` | string | Conditional | 1-15 chars | Mandatory for COVID/Flu/Yellow Fever |
 | `vaccineType` | string | Conditional | NIP, AEN, OTH | NIP=National, AEN=Additional, OTH=Other |
-| `routeOfAdministration` | string | Conditional | IM, SC, ID, OR, IN, NAS | See reference data |
+| `routeOfAdministration` | string | Conditional | PO, SC, ID, IM, NS | See reference data |
 | `providerNumber` | string | Yes | 6-8 chars | Must be current at date of service |
 
 ### Minimum Identification Requirements

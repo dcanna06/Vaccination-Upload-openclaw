@@ -42,7 +42,7 @@ class Settings(BaseSettings):
 
     # === AIR API ===
     AIR_CLIENT_ID: str = ""  # X-IBM-Client-Id
-    AIR_PRODUCT_ID: str = "EM Bulk Vaccination Upload V1.0"  # dhs-productId
+    AIR_PRODUCT_ID: str = "EM Bulk Vaccination Upload V1.2"  # dhs-productId
     AIR_API_BASE_URL_VENDOR: str = "https://test.healthclaiming.api.humanservices.gov.au/claiming/ext-vnd"
     AIR_VENDOR_BASE_URL: str = ""  # Deprecated, use AIR_API_BASE_URL_VENDOR
     AIR_PROD_BASE_URL: str = ""
