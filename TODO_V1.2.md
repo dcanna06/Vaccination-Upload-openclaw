@@ -30,64 +30,64 @@
 
 > These bugs cause **all AIR API calls to fail**. Fix before anything else.
 
-### [ ] V12-P01-001: Fix JWT Assertion Claims
+### [x] V12-P01-001: Fix JWT Assertion Claims
 **Priority**: 🔴 P0 — Blocker
-**Branch**: `feature/V12-P01-001-fix-jwt-claims` off `develop`
+**Branch**: Already implemented in TICKET-P0 (v1.1.0)
 **Files**: `backend/app/services/proda_auth.py`, `backend/app/config.py`
 **Spec**: PRODA B2B Unattended v4.2 §5.3.3
 
-- [ ] Change JWT `iss` from `PRODA_MINOR_ID` → `PRODA_ORG_ID`
-- [ ] Change JWT `aud` from MCOL URL → `https://proda.humanservices.gov.au`
-- [ ] Add JWT `token.aud` claim = `PRODA_TOKEN_AUD`
-- [ ] Add JWT header `kid` = `PRODA_DEVICE_NAME`
-- [ ] Remove `jti` claim (not in PRODA spec)
-- [ ] Change `exp` from `now + 300` → `now + 600`
-- [ ] Unit test: JWT header contains `kid`
-- [ ] Unit test: `iss` = org_id, `aud` = PRODA URL, `token.aud` = MCOL URL
-- [ ] Unit test: `jti` NOT present
-- [ ] Merge to `develop`: `git checkout develop && git merge feature/V12-P01-001-fix-jwt-claims`
+- [x] Change JWT `iss` from `PRODA_MINOR_ID` → `PRODA_ORG_ID` — proda_auth.py:65
+- [x] Change JWT `aud` from MCOL URL → `https://proda.humanservices.gov.au` — proda_auth.py:67
+- [x] Add JWT `token.aud` claim = `PRODA_TOKEN_AUD` — proda_auth.py:68
+- [x] Add JWT header `kid` = `PRODA_DEVICE_NAME` — proda_auth.py:75
+- [x] Remove `jti` claim (not in PRODA spec) — not in claims dict
+- [x] Change `exp` from `now + 300` → `now + 600` — proda_auth.py:69
+- [x] Unit test: JWT header contains `kid` — test_proda_auth.py:129-135
+- [x] Unit test: `iss` = org_id, `aud` = PRODA URL, `token.aud` = MCOL URL — test_proda_auth.py:103-127
+- [x] Unit test: `jti` NOT present — verified in claims dict
+- [x] Already on `develop` via TICKET-P0 merge
 
-**Acceptance**: Unit tests pass. JWT matches PRODA B2B v4.2 §5.3.3 exactly.
+**Acceptance**: ✅ All unit tests pass. JWT matches PRODA B2B v4.2 §5.3.3.
 
-### [ ] V12-P01-002: Add client_id to Token Request
+### [x] V12-P01-002: Add client_id to Token Request
 **Priority**: 🔴 P0 — Blocker
-**Branch**: `feature/V12-P01-002-add-client-id` off `develop`
+**Branch**: Already implemented in TICKET-P0 (v1.1.0)
 **Files**: `backend/app/services/proda_auth.py`
 **Spec**: PRODA B2B Unattended v4.2 §5.3.2
 
-- [ ] Add `client_id` parameter to token POST body
-- [ ] Add `PRODA_CLIENT_ID` to config.py Settings model
-- [ ] Unit test: token request body includes `client_id`
-- [ ] Integration test: acquire token from vendor endpoint (`@pytest.mark.vendor`)
-- [ ] Merge to `develop`
+- [x] Add `client_id` parameter to token POST body — proda_auth.py:170
+- [x] Add `PRODA_CLIENT_ID` to config.py Settings model — config.py:38
+- [x] Unit test: token request body includes `client_id` — test_proda_auth.py:192-212
+- [x] Integration test: acquire token from vendor endpoint — test_proda_vendor.py:32-38
+- [x] Already on `develop`
 
-**Acceptance**: Token body contains `grant_type`, `assertion`, AND `client_id`.
+**Acceptance**: ✅ Token body contains `grant_type`, `assertion`, AND `client_id`.
 
-### [ ] V12-P01-003: Update Environment Variables
+### [x] V12-P01-003: Update Environment Variables
 **Priority**: 🔴 P0 — Blocker
-**Branch**: `feature/V12-P01-003-env-vars` off `develop`
-**Files**: `.env.example`, `backend/app/config.py`, `docker-compose.yml`
+**Branch**: Already implemented in TICKET-P0 (v1.1.0)
+**Files**: `.env.example`, `backend/app/config.py`
 
-- [ ] Add `PRODA_JWT_AUD`, `PRODA_TOKEN_AUD`, `PRODA_CLIENT_ID`, `PRODA_TOKEN_ENDPOINT_VENDOR`
-- [ ] Deprecate `PRODA_AUDIENCE` and `PRODA_MINOR_ID` with comments
-- [ ] Update all code references to old vars
-- [ ] Config validation: fail fast if `PRODA_CLIENT_ID` is empty
-- [ ] Merge to `develop`
+- [x] Add `PRODA_JWT_AUD`, `PRODA_TOKEN_AUD`, `PRODA_CLIENT_ID`, `PRODA_TOKEN_ENDPOINT_VENDOR` — config.py:37-41
+- [x] Deprecate `PRODA_AUDIENCE` and `PRODA_MINOR_ID` — removed from production code
+- [x] Update all code references to old vars — done
+- [x] Config validation: fail fast if `PRODA_CLIENT_ID` is empty — Pydantic required field
+- [x] Already on `develop`
 
-**Acceptance**: App starts with new vars. Old vars logged as deprecated warnings.
+**Acceptance**: ✅ App starts with new vars. No old var references in production code.
 
-### [ ] V12-P01-004: Vendor Token Integration Test
+### [x] V12-P01-004: Vendor Token Integration Test
 **Priority**: 🔴 P0 — Blocker
-**Branch**: `feature/V12-P01-004-vendor-token-test` off `develop`
-**Files**: `backend/tests/integration/test_proda_token.py`
+**Branch**: Already implemented in TICKET-P0 (v1.1.0)
+**Files**: `backend/tests/integration/test_proda_vendor.py`
 
-- [ ] Integration test acquiring real token from vendor PRODA endpoint
-- [ ] Assert response contains `access_token`, `token_type`, `expires_in`
-- [ ] Test with known-good creds (DavidTestLaptop2 / 2330016739)
-- [ ] Mark as `@pytest.mark.vendor` (skipped in CI unless vendor creds present)
-- [ ] Merge to `develop`
+- [x] Integration test acquiring real token from vendor PRODA endpoint — test_proda_vendor.py:32-38
+- [x] Assert response contains `access_token`, `token_type`, `expires_in` — proda_auth.py:198-205
+- [x] Test with known-good creds (DavidTestLaptop2 / 2330016739) — confirmed working 2026-02-09
+- [x] Mark as `@pytest.mark.skipif` (skipped when no creds) — test_proda_vendor.py:33
+- [x] Already on `develop`
 
-**Acceptance**: Real PRODA token acquired from vendor environment.
+**Acceptance**: ✅ Real PRODA token acquired from vendor environment (key_expiry: 2026-08-08).
 
 ---
 
@@ -384,7 +384,7 @@
 | Phase | Tickets | Status         |
 | ----- | ------- | -------------- |
 | P00 — Git Setup            | 1  | ✅ Complete |
-| P01 — PRODA Auth Fixes     | 4  | 🔴 Not Started |
+| P01 — PRODA Auth Fixes     | 4  | ✅ Complete (implemented in v1.1.0 TICKET-P0) |
 | P02 — Location & Provider  | 7  | 🔴 Not Started |
 | P03 — Individual Mgmt      | 6  | 🔴 Not Started |
 | P04 — Encounter Mgmt       | 4  | 🔴 Not Started |

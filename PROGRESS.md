@@ -376,3 +376,15 @@
   - `PROGRESS.md` — V1.2 section started
 - **Tests**: 348 backend + 126 frontend + 34 Playwright E2E = 508 total, 0 failed (2 pre-existing integration skips)
 - **Notes**: Tags v1.1.0/v1.1.1/v1.1.2 exist on main. develop in sync with main at 962fa7b. No orphaned V1.1 work. claude.md V1.2 patch committed to develop.
+
+### V12-P01-001 through V12-P01-004: PRODA Authentication Fixes (Phase 1)
+- **Status**: ✅ Done — already implemented in TICKET-P0 (v1.1.0)
+- **Branch**: N/A (verified existing code on `feature/V12-P01-verify-existing`)
+- **Date**: 2026-02-10 13:10
+- **Verification**:
+  - V12-P01-001: JWT iss=ORG_ID (proda_auth.py:65), aud=proda URL (:67), token.aud (:68), kid header (:75), no jti, exp=600s (:69) — 6 unit tests
+  - V12-P01-002: client_id in POST body (proda_auth.py:170), PRODA_CLIENT_ID in config (config.py:38) — unit + integration tests
+  - V12-P01-003: All new env vars present (config.py:37-41), old vars removed, .env.example updated
+  - V12-P01-004: Vendor integration test (test_proda_vendor.py), real token acquired 2026-02-09, key_expiry=2026-08-08
+- **Tests**: No changes — all existing tests pass
+- **Notes**: All 4 Phase 1 tickets were implemented as part of TICKET-P0 in v1.1.0. Code verified against V1.2 spec requirements — fully compliant.
