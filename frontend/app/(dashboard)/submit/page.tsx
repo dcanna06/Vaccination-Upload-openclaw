@@ -53,6 +53,15 @@ export default function SubmitPage() {
     }>;
   } | null>(null);
 
+  // Clear stale submission state when arriving with new data
+  useEffect(() => {
+    if (groupedBatches.length > 0 && submissionId) {
+      setSubmissionId(null);
+      setProgress(null);
+      hasStarted.current = false;
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Auto-start submission when arriving with parsed rows
   useEffect(() => {
     if (hasStarted.current || groupedBatches.length === 0 || submissionId) return;
