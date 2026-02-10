@@ -49,7 +49,7 @@ export default function RegisterPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({ detail: 'Registration failed' }));
-        const msg = data.message || data.detail;
+        const msg = data.message || data.error || data.detail;
         setError(typeof msg === 'string' ? msg : 'Registration failed');
         setIsLoading(false);
         return;

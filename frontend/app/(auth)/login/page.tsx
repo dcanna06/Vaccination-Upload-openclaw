@@ -8,15 +8,18 @@ import { useAuthStore } from '@/stores/authStore';
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login, isLoading, error, clearError } = useAuthStore();
+  const { login, error, clearError } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const justRegistered = searchParams.get('registered') === '1';
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     clearError();
+    setSubmitting(true);
     const success = await login(email, password);
+    setSubmitting(false);
     if (success) {
       router.push('/upload');
     }
@@ -76,10 +79,10 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={submitting}
             className="w-full rounded bg-emerald-600 px-4 py-2 font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
           >
-            {isLoading ? 'Signing in...' : 'Sign In'}
+            {submitting ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
