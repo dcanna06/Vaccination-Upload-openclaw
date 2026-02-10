@@ -23,6 +23,7 @@ interface ResultsSummaryProps {
   results: ResultRecord[];
   onExport?: () => void;
   onNewUpload?: () => void;
+  onViewDetails?: () => void;
 }
 
 export function ResultsSummary({
@@ -35,6 +36,7 @@ export function ResultsSummary({
   results,
   onExport,
   onNewUpload,
+  onViewDetails,
 }: ResultsSummaryProps) {
   const failedRecords = results.filter((r) => r.status === 'failed');
 
@@ -70,13 +72,18 @@ export function ResultsSummary({
         </div>
 
         <div className="mt-4 flex justify-end gap-2">
+          {onViewDetails && (
+            <Button size="sm" onClick={onViewDetails}>
+              View Detailed Results
+            </Button>
+          )}
           {onExport && (
             <Button variant="secondary" size="sm" onClick={onExport}>
               Export Report
             </Button>
           )}
           {onNewUpload && (
-            <Button size="sm" onClick={onNewUpload}>
+            <Button variant="secondary" size="sm" onClick={onNewUpload}>
               New Upload
             </Button>
           )}

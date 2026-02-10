@@ -110,12 +110,9 @@ export default function SubmitPage() {
         setProgress(data.progress);
 
         if (data.status === 'completed') {
-          setStatus('completed');
-          // Fetch final results
-          const resultsRes = await fetch(`${env.apiUrl}/api/submit/${submissionId}/results`);
-          if (resultsRes.ok) {
-            setResults(await resultsRes.json());
-          }
+          // Navigate to detailed results page with edit/resubmit capabilities
+          router.push(`/submissions/${submissionId}/results`);
+          return;
         } else if (data.status === 'paused') {
           setStatus('paused');
         }
@@ -223,6 +220,7 @@ export default function SubmitPage() {
           failed={results.failed}
           confirmed={results.confirmed}
           results={results.results}
+          onViewDetails={() => router.push(`/submissions/${results.submissionId}/results`)}
           onExport={() => window.open(`${env.apiUrl}/api/submit/${results.submissionId}/download`, '_blank')}
           onNewUpload={() => router.push('/upload')}
         />
