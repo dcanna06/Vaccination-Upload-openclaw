@@ -361,3 +361,18 @@
 - **New files**: 15 source + 8 test files
 - **Compliance**: All AIR messages stored and displayed verbatim (TECH.SIS.AIR.02 section 5.2.2)
 - **QA bugs addressed**: BUG-001 (P0), BUG-002 (P0), BUG-003 (P1), BUG-004 (P1), BUG-005 (P2)
+
+---
+
+## v1.2.0 — NOI-Complete (16 AIR APIs, Location Management, PRODA Auth)
+
+### V12-P00-001: Tag & Branch Setup
+- **Status**: ✅ Done
+- **Branch**: `feature/V12-P00-001-tag-branch-setup`
+- **Date**: 2026-02-10 13:00
+- **Files**:
+  - `claude.md` — V1.2 patch appended (432 lines: git strategy, 16 AIR APIs, location schema, auth fixes)
+  - `TODO_V1.2.md` — Phase 0 sub-tasks checked off
+  - `PROGRESS.md` — V1.2 section started
+- **Tests**: 348 backend + 126 frontend + 34 Playwright E2E = 508 total, 0 failed (2 pre-existing integration skips)
+- **Notes**: Tags v1.1.0/v1.1.1/v1.1.2 exist on main. develop in sync with main at 962fa7b. No orphaned V1.1 work. claude.md V1.2 patch committed to develop.

@@ -945,3 +945,435 @@ Claude Code must follow this workflow for every ticket. No exceptions.
 - **Never modify PROGRESS.md log entries** — append only
 - **Always update both files** — TODO.md (checkboxes) AND PROGRESS.md (log)
 - **Commit message format**: `feat|fix|test|docs(scope): TICKET-NNN short description`
+
+
+---
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# V1.2 PATCH — Appended 2026-02-09
+# Everything ABOVE this line is V1.1 (frozen — tagged as v1.1.0 on main)
+# Everything BELOW this line is V1.2 (active on develop branch, targeting v1.2.0 tag)
+# If V1.2 contradicts V1.1, V1.2 WINS.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+## Version Control & Git Strategy
+
+### Versioning
+
+This project uses **Semantic Versioning** (semver). Version numbers live on **Git tags**, not branch names. Branches are ephemeral workspaces; tags are permanent release markers.
+
+| Tag       | Scope                                                                                         | Status                               |
+| --------- | --------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `v1.0.0`  | Auth, PRODA B2B, bulk upload, core AIR Record Encounter                                       | ✅ RELEASED — tagged on `main`       |
+| `v1.1.0`  | Submission results, edit/resubmit, confirm flow, export                                       | ✅ RELEASED — tagged on `main`       |
+| `v1.2.0`  | PRODA JWT fixes, 14 missing AIR APIs, Location/Minor ID, full NOI-ready architecture          | 🔄 IN DEVELOPMENT — on `develop`     |
+
+### Branch Structure
+
+```
+main                              ← production-ready, tagged releases only
+  ├── tag: v1.0.0                 ← initial release
+  ├── tag: v1.1.0                 ← submission results release (current stable)
+  └── (future) tag: v1.2.0       ← NOI-complete release
+develop                           ← integration branch for v1.2.0
+  ├── feature/V12-P01-*           ← PRODA auth fix tickets
+  ├── feature/V12-P02-*           ← Location & provider tickets
+  ├── feature/V12-P03-*           ← Individual management tickets
+  ├── feature/V12-P04-*           ← Encounter management tickets
+  ├── feature/V12-P05-*           ← Exemptions tickets
+  ├── feature/V12-P06-*           ← Indicators & catch-up tickets
+  ├── feature/V12-P07-*           ← Bulk upload hardening tickets
+  ├── fix/*                       ← QA-reported bug fixes (priority merge)
+  ├── test/*                      ← QA test infrastructure
+  └── release/v1.2.0             ← created when all tests pass → merges to main + tag
+```
+
+### Tag & Release Process
+
+```bash
+# STEP 0: Tag current stable as v1.1.0 (if not already tagged)
+git checkout main
+git tag -a v1.1.0 -m "Release v1.1.0 — Submission results, edit/resubmit, confirm flow"
+git push origin main --tags
+
+# STEP 1: Create develop from latest main (if not already present)
+git checkout main
+git checkout -b develop
+git push origin develop
+
+# STEP 2: DEV works on feature branches off develop
+git checkout develop && git pull
+git checkout -b feature/V12-P01-001-fix-jwt-claims
+# ... work ...
+git checkout develop && git merge feature/V12-P01-001-fix-jwt-claims
+
+# STEP 3: When all phases pass QA on develop, create release branch
+git checkout develop
+git checkout -b release/v1.2.0
+# Final QA, version bump in dhs-productId, changelog update
+git checkout main
+git merge release/v1.2.0
+git tag -a v1.2.0 -m "Release v1.2.0 — NOI-complete: all 16 AIR APIs, location management, PRODA auth fixes"
+git push origin main --tags
+# Back-merge to develop
+git checkout develop
+git merge main
+```
+
+### Rollback Safety
+
+If v1.2.0 introduces regressions, production can instantly revert:
+```bash
+git checkout v1.1.0          # roll back to last stable tag
+# or: deploy the v1.1.0 tagged commit to production
+```
+
+This is why **we never modify tagged commits** and why `main` only receives code through release branches.
+
+### Branch Naming Convention
+
+| Prefix       | Pattern                                     | Who     | Example                                      |
+| ------------ | ------------------------------------------- | ------- | -------------------------------------------- |
+| `feature/`   | `feature/V12-PNN-NNN-short-name`            | DEV     | `feature/V12-P01-001-fix-jwt-claims`         |
+| `fix/`       | `fix/QA-FIX-NNN-short-name`                 | DEV     | `fix/QA-FIX-003-missing-client-id`           |
+| `test/`      | `test/V12-PNN-description`                  | QA      | `test/V12-P03-individual-search-e2e`         |
+| `release/`   | `release/vX.Y.Z`                            | Lead    | `release/v1.2.0`                             |
+
+### Commit Message Convention
+
+```
+feat(scope): V12-PNN-NNN description          # New feature
+fix(scope): V12-PNN-NNN description            # Bug fix
+fix(qa): QA-FIX-NNN description                # QA-reported fix
+test(scope): V12-PNN-NNN description           # Test addition
+docs(scope): V12-PNN-NNN description           # Documentation
+```
+
+### Rules
+
+- **Never commit directly to `main`** — only release branches merge to main
+- **Never commit directly to `develop`** — use feature/fix/test branches
+- **Never modify a tagged commit** — tags are immutable release markers
+- **Always pull develop before branching** — `git checkout develop && git pull`
+- **Run tests before merging to develop** — `pytest` and `npm test`
+- **QA works on `develop`** after feature branches merge — creates `test/` branches for new tests
+- **Bug fixes get `fix/` branches** off develop with priority merge
+
+---
+
+## V1.2 ERRATA — PRODA Authentication Corrections
+
+> **OVERRIDES V1.1 section "PRODA B2B Authentication" (lines ~399–428)**
+> The V1.1 JWT claims contain multiple errors that will cause authentication failures.
+
+### Corrected JWT Assertion
+
+```
+JWT Header:
+  alg: RS256
+  kid: {PRODA_DEVICE_NAME}                ← Software instance name (MISSING in V1.1)
+
+JWT Payload:
+  iss: {PRODA_ORG_ID}                     ← Organisation RA number (V1.1 WRONGLY used Minor ID)
+  sub: {PRODA_DEVICE_NAME}                ← Software instance name (correct in V1.1)
+  aud: "https://proda.humanservices.gov.au"    ← ALWAYS this value (V1.1 WRONGLY used MCOL URL)
+  token.aud: {PRODA_TOKEN_AUD}            ← Service target audience (MISSING in V1.1)
+  iat: <epoch seconds>
+  exp: <epoch seconds + 600>              ← 10 minute max (V1.1 said 5 min, spec says 600 sec)
+```
+
+### V1.1 → V1.2 Correction Table
+
+| Field                  | V1.1 (WRONG)                            | V1.2 (CORRECT)                                     | Spec Reference             |
+| ---------------------- | --------------------------------------- | --------------------------------------------------- | -------------------------- |
+| JWT `iss`              | `PRODA_MINOR_ID`                        | `PRODA_ORG_ID` (Organisation RA number)             | PRODA B2B v4.2 §5.3.3     |
+| JWT `aud`              | `https://medicareaustralia.gov.au/MCOL` | `https://proda.humanservices.gov.au`                | PRODA B2B v4.2 §5.3.3     |
+| JWT `token.aud`        | *(missing entirely)*                    | `https://medicareaustralia.gov.au/MCOL`             | PRODA B2B v4.2 §5.4       |
+| JWT header `kid`       | *(missing entirely)*                    | `{PRODA_DEVICE_NAME}`                               | PRODA B2B v4.2 §5.3.3     |
+| Token body `client_id` | *(missing entirely)*                    | Required — from Developer Portal software reg       | PRODA B2B v4.2 §5.3.2     |
+| JWT `jti`              | Present                                 | Removed — not in PRODA spec                         | PRODA B2B v4.2 §5.3.3     |
+| JWT `exp`              | `now + 5 min`                           | `now + 600` sec (spec says 600 explicitly)          | PRODA B2B v4.2 §5.3.3     |
+
+### Corrected Token Request
+
+```
+POST {PRODA_TOKEN_ENDPOINT}
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer
+&assertion={signed_jwt}
+&client_id={PRODA_CLIENT_ID}              ← REQUIRED — was missing in V1.1
+```
+
+### Corrected Environment Variables
+
+> **OVERRIDES V1.1 env vars for all PRODA fields.**
+
+```env
+# === PRODA B2B Authentication (V1.2 corrected) ===
+PRODA_TOKEN_ENDPOINT=https://proda.humanservices.gov.au/piaweb/api/b2b/v1/token
+PRODA_TOKEN_ENDPOINT_VENDOR=https://vnd.proda.humanservices.gov.au/piaweb/api/b2b/v1/token
+PRODA_ORG_ID=2330016739                                        # Organisation RA number → JWT iss
+PRODA_DEVICE_NAME=DavidTestLaptop2                             # Software instance → JWT sub + kid
+PRODA_CLIENT_ID=                                               # From Developer Portal → token body
+PRODA_JWT_AUD=https://proda.humanservices.gov.au               # JWT aud (ALWAYS this value)
+PRODA_TOKEN_AUD=https://medicareaustralia.gov.au/MCOL          # JWT token.aud (AIR service target)
+PRODA_JKS_BASE64=                                              # Base64-encoded JKS keystore
+PRODA_JKS_PASSWORD=                                            # JKS keystore password
+PRODA_KEY_ALIAS=                                               # Private key alias within JKS
+
+# === RETIRED V1.1 vars — do not use ===
+# PRODA_MINOR_ID     → replaced by per-location lookup from locations table
+# PRODA_AUDIENCE     → split into PRODA_JWT_AUD + PRODA_TOKEN_AUD
+```
+
+### Corrected Python Implementation
+
+```python
+# backend/app/services/proda_auth.py  (V1.2 — replaces V1.1 implementation)
+
+import time, jwt, httpx
+from app.config import settings
+
+def build_proda_assertion() -> str:
+    now = int(time.time())
+    headers = {
+        "alg": "RS256",
+        "kid": settings.PRODA_DEVICE_NAME,
+    }
+    claims = {
+        "iss": settings.PRODA_ORG_ID,            # Org RA, NOT Minor ID
+        "sub": settings.PRODA_DEVICE_NAME,
+        "aud": settings.PRODA_JWT_AUD,            # https://proda.humanservices.gov.au
+        "token.aud": settings.PRODA_TOKEN_AUD,    # https://medicareaustralia.gov.au/MCOL
+        "iat": now,
+        "exp": now + 600,
+    }
+    private_key = load_private_key_from_jks()
+    return jwt.encode(claims, private_key, algorithm="RS256", headers=headers)
+
+async def acquire_token() -> dict:
+    assertion = build_proda_assertion()
+    endpoint = (settings.PRODA_TOKEN_ENDPOINT_VENDOR
+                if settings.APP_ENV == "vendor"
+                else settings.PRODA_TOKEN_ENDPOINT)
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(endpoint, data={
+            "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
+            "assertion": assertion,
+            "client_id": settings.PRODA_CLIENT_ID,
+        })
+        resp.raise_for_status()
+    return resp.json()
+```
+
+### Proven Working Test Configuration (from SoapUI vendor testing)
+
+```
+orgId:      2330016739
+deviceName: DavidTestLaptop2
+JKS alias:  proda-alias
+JKS pass:   Pass-123
+client_id:  soape-testing-client-v2
+token.aud:  https://medicareaustralia.gov.au/MCOL
+```
+
+---
+
+## V1.2 — Mandatory AIR APIs for NOI Certification
+
+> Per AIR Developer Guide V3.0.8 §6.3:
+> *"It is a requirement to develop ALL AIR Web Services so full AIR functionality is provided."*
+>
+> V1.1 only implements APIs #8 and #16 below. **All 16 are mandatory.**
+
+### Complete API Inventory
+
+| #  | API Name                                 | Spec              | Method | Path                                                              | V1.1 | V1.2 |
+|----|------------------------------------------|-------------------|--------|-------------------------------------------------------------------|------|------|
+| 1  | Get Authorisation Access List            | TECH.SIS.AIR.04   | POST   | `/air/immunisation/v1/authorisation/accesslist`                   | ❌   | ✅   |
+| 2  | Identify Individual                      | TECH.SIS.AIR.05   | POST   | `/air/immunisation/v1.1/individual/details`                       | ❌   | ✅   |
+| 3  | Get Immunisation History Details         | TECH.SIS.AIR.05   | POST   | `/air/immunisation/v1.3/individual/history/details`               | ❌   | ✅   |
+| 4  | Get Immunisation History Statement       | TECH.SIS.AIR.05   | POST   | `/air/immunisation/v1/individual/history/statement`               | ❌   | ✅   |
+| 5  | Get Medical Contraindication History     | TECH.SIS.AIR.06   | POST   | `/air/immunisation/v1/individual/contraindication/history`        | ❌   | ✅   |
+| 6  | Get Natural Immunity History             | TECH.SIS.AIR.06   | POST   | `/air/immunisation/v1/individual/naturalimmunity/history`         | ❌   | ✅   |
+| 7  | Get Vaccine Trial History                | TECH.SIS.AIR.05   | POST   | `/air/immunisation/v1/individual/vaccinetrial/history`            | ❌   | ✅   |
+| 8  | Record Encounter                         | TECH.SIS.AIR.02   | POST   | `/air/immunisation/v1.4/encounters/record`                        | ✅   | ✅   |
+| 9  | Update Encounter                         | TECH.SIS.AIR.05   | POST   | `/air/immunisation/v1.3/encounters/update`                        | ❌   | ✅   |
+| 10 | Record Medical Contraindication          | TECH.SIS.AIR.06   | POST   | `/air/immunisation/v1/individual/contraindication/record`         | ❌   | ✅   |
+| 11 | Record Natural Immunity                  | TECH.SIS.AIR.06   | POST   | `/air/immunisation/v1/individual/naturalimmunity/record`          | ❌   | ✅   |
+| 12 | Add Additional Vaccine Indicator         | TECH.SIS.AIR.05   | POST   | `/air/immunisation/v1/individual/vaccineindicator/add`            | ❌   | ✅   |
+| 13 | Remove Additional Vaccine Indicator      | TECH.SIS.AIR.05   | POST   | `/air/immunisation/v1/individual/vaccineindicator/remove`         | ❌   | ✅   |
+| 14 | Update Indigenous Status                 | TECH.SIS.AIR.05   | POST   | `/air/immunisation/v1/individual/indigenousstatus/update`         | ❌   | ✅   |
+| 15 | Planned Catch Up Date                    | TECH.SIS.AIR.03   | POST   | `/air/immunisation/v1.1/schedule/catchup`                         | ❌   | ✅   |
+| 16 | Reference Data (multiple endpoints)      | TECH.SIS.AIR.07   | GET    | `/air/immunisation/v1/refdata/*`                                  | ✅   | ✅   |
+
+### Common HTTP Headers (V1.2 Corrected)
+
+> **OVERRIDES V1.1 headers block.** Key change: `dhs-auditId` is now per-location.
+
+```python
+def build_air_headers(
+    proda_token: str,
+    location_minor_id: str,    # ← Per-location Minor ID, NOT global config
+    subject_dob: str | None,   # ddMMyyyy format — None for APIs that don't use subjectId
+) -> dict:
+    headers = {
+        "Authorization": f"Bearer {proda_token}",
+        "X-IBM-Client-Id": config.AIR_CLIENT_ID,
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "dhs-messageId": f"urn:uuid:{uuid4()}",
+        "dhs-correlationId": f"urn:uuid:{uuid4()}",
+        "dhs-auditId": location_minor_id,             # ← PER LOCATION
+        "dhs-auditIdType": "Minor Id",
+        "dhs-productId": config.AIR_PRODUCT_ID,
+    }
+    if subject_dob:
+        headers["dhs-subjectId"] = subject_dob
+        headers["dhs-subjectIdType"] = "Date of Birth"
+    return headers
+```
+
+### Individual Identifier Pattern
+
+APIs #2–7 and #9–14 follow a two-step pattern:
+
+```
+Step 1: Call Identify Individual (API #2) → returns individualIdentifier (opaque, max 128 chars)
+Step 2: Pass individualIdentifier to subsequent calls in request body
+```
+
+**Exceptions** (do NOT use individualIdentifier):
+- Record Encounter (#8), Planned Catch Up Date (#15), Reference Data (#16)
+
+### Authorisation Access List API (Detail)
+
+```json
+// Request: POST /air/immunisation/v1/authorisation/accesslist
+{ "informationProvider": { "providerNumber": "1234567A" } }
+
+// Response (AIR-I-1100)
+{
+    "statusCode": "AIR-I-1100",
+    "message": "Your request was successfully processed",
+    "accessList": [
+        { "accessTypeCode": "IDEN", "accessTypeDescription": "Identify Individual" },
+        { "accessTypeCode": "HIST", "accessTypeDescription": "Immunisation History" },
+        { "accessTypeCode": "RECD", "accessTypeDescription": "Record Encounter" }
+    ]
+}
+```
+
+**Frontend**: Cache access list per provider session. Grey out menu items the provider can't access.
+
+---
+
+## V1.2 — Location & Minor ID Management
+
+> **EXTENDS V1.1 schema. DEPRECATES** `organisations.minor_id`.
+
+### New Database Tables
+
+```sql
+CREATE TABLE locations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    organisation_id UUID NOT NULL REFERENCES organisations(id),
+    name VARCHAR(200) NOT NULL,
+    address_line1 VARCHAR(200), address_line2 VARCHAR(200),
+    suburb VARCHAR(100), state VARCHAR(3), postcode VARCHAR(4),
+    minor_id VARCHAR(20) NOT NULL UNIQUE,
+    proda_link_status VARCHAR(20) DEFAULT 'pending',
+    status VARCHAR(20) DEFAULT 'active',
+    created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE location_providers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    location_id UUID NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
+    provider_number VARCHAR(8) NOT NULL,
+    provider_type VARCHAR(20) NOT NULL,
+    hw027_status VARCHAR(20) DEFAULT 'pending',
+    air_access_list JSONB,
+    access_list_fetched_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(location_id, provider_number)
+);
+
+-- Existing table changes
+ALTER TABLE organisations ADD COLUMN minor_id_prefix VARCHAR(3);
+ALTER TABLE users ADD COLUMN default_location_id UUID REFERENCES locations(id);
+ALTER TABLE submission_batches ADD COLUMN location_id UUID REFERENCES locations(id);
+```
+
+---
+
+## V1.2 — Updated Folder Structure (New Files Only)
+
+```
+backend/app/
+├── routers/   locations.py, providers.py, individuals.py, encounters_update.py,
+│              exemptions.py, indicators.py, catchup.py
+├── services/  air_authorisation.py, air_individual.py, air_encounter_update.py,
+│              air_exemptions.py, air_indicators.py, air_catchup.py, location_manager.py
+├── models/    location.py
+├── schemas/   air_authorisation.py, air_individual.py, air_encounter_update.py,
+│              air_exemptions.py, air_indicators.py, air_catchup.py, location.py
+
+frontend/app/(dashboard)/
+├── admin/     locations/page.tsx, providers/page.tsx
+├── individuals/  page.tsx, [id]/page.tsx, [id]/history/page.tsx,
+│                 [id]/statement/page.tsx, [id]/exemptions/page.tsx
+├── encounters/   [id]/update/page.tsx
+├── indicators/page.tsx, catchup/page.tsx, confirm/page.tsx
+```
+
+---
+
+## V1.2 — Updated RBAC (Extends V1.1)
+
+| Action                     | Super Admin | Org Admin | Provider | Reviewer | Read Only |
+| -------------------------- | ----------- | --------- | -------- | -------- | --------- |
+| Manage Locations           | ✔           | ✔         | —        | —        | —         |
+| Manage Providers           | ✔           | ✔         | —        | —        | —         |
+| Search Individuals         | ✔           | ✔         | ✔        | ✔        | ✔         |
+| View History/Statement     | ✔           | ✔         | ✔        | ✔        | ✔         |
+| Record Exemptions          | ✔           | ✔         | ✔        | —        | —         |
+| Update Encounters          | ✔           | ✔         | ✔        | —        | —         |
+| Indicators/Indigenous/Catchup | ✔        | ✔         | ✔        | —        | —         |
+
+---
+
+## V1.2 — Additional Error Codes
+
+| Code       | Type    | Description                                      | Action                                 |
+| ---------- | ------- | ------------------------------------------------ | -------------------------------------- |
+| AIR-E-1026 | Error   | Insufficient individual information              | Prompt for more details                |
+| AIR-E-1035 | Error   | Individual details could not be retrieved        | Display verbatim, suggest retry        |
+| AIR-E-1039 | Error   | Provider not associated with Minor ID/PRODA org  | Check location + provider setup        |
+| AIR-E-1061 | Error   | Invalid individual identifier                    | Re-identify individual (API #2)        |
+| AIR-E-1063 | Error   | Provider not authorised for service              | Check Authorisation access list        |
+| AIR-I-1001 | Info    | Individual details found                         | Proceed with individualIdentifier      |
+| AIR-I-1100 | Info    | Request processed (Auth/RefData)                 | Proceed                                |
+| AIR-W-0103 | Warning | Duplicate antigen dose                           | Display verbatim                       |
+
+---
+
+## V1.2 — Reminders for Claude Code
+
+> **SUPPLEMENTS V1.1 reminders 1–10.**
+
+11. **PRODA `iss` is Org RA, NOT Minor ID** — single most critical auth fix
+12. **PRODA JWT needs `token.aud`** — separate from `aud`
+13. **PRODA token request needs `client_id`** — in POST body
+14. **`dhs-auditId` per-location** — from `locations.minor_id`, not global config
+15. **individualIdentifier is opaque** — never display, parse, or log
+16. **Authorisation API first** — verify provider access before data operations
+17. **NOI tests ALL 16 APIs** — build and test every one
+18. **HW027 is external** — app guides users but doesn't submit the form
+19. **Git tags are immutable** — never modify v1.0.0 or v1.1.0 tagged commits
+20. **All work on `develop`** via feature branches. Only `release/v1.2.0` merges to `main`
+21. **V1.2 wins on conflicts** — always
+22. **All optional fields MUST be developed** — mandatory for developers per TECH.SIS
+23. **Read the TECH.SIS spec** before implementing each API
+24. **`dhs-productId` must match NOI** — version in header = version on NOI certificate
