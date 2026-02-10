@@ -52,7 +52,7 @@ class IdentifyIndividualRequest(BaseModel):
 class IdentifyIndividualResponse(BaseModel):
     """Parsed response from the Identify Individual API."""
     status: str  # success, error
-    statusCode: str  # AIR-I-1001, AIR-E-1026, etc.
+    statusCode: str  # AIR-I-1100, AIR-E-1026, etc.
     message: str
     individualIdentifier: str | None = None
     personalDetails: dict | None = None

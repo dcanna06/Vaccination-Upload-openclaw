@@ -121,8 +121,8 @@ class AIRIndividualClient:
                         air_status=air_status,
                     )
 
-                    # Return known error codes as structured responses instead of raising
-                    if air_status in ("AIR-E-1026", "AIR-E-1035", "AIR-E-1061"):
+                    # Return AIR error responses as structured data instead of raising
+                    if air_status:
                         return {
                             "statusCode": air_status,
                             "message": air_message,
@@ -174,9 +174,14 @@ class AIRIndividualClient:
         dob = request_data.get("personalDetails", {}).get("dateOfBirth", "")
         dob_header = self._dob_to_header_format(dob)
 
+        # Convert personalDetails DOB from yyyy-MM-dd to ddMMyyyy for AIR body
+        body_personal_details = dict(request_data["personalDetails"])
+        if dob and "-" in dob:
+            body_personal_details["dateOfBirth"] = dob_header
+
         payload: dict[str, Any] = {
             "individual": {
-                "personalDetails": request_data["personalDetails"],
+                "personalDetails": body_personal_details,
             },
             "informationProvider": request_data["informationProvider"],
         }
@@ -199,10 +204,11 @@ class AIRIndividualClient:
             "rawResponse": data,
         }
 
-        if status_code == "AIR-I-1001":
+        if status_code == "AIR-I-1100":
             result["status"] = "success"
-            result["individualIdentifier"] = data.get("individualIdentifier")
-            result["personalDetails"] = data.get("individual", {}).get("personalDetails")
+            individual_details = data.get("individualDetails", {})
+            result["individualIdentifier"] = individual_details.get("individualIdentifier")
+            result["personalDetails"] = individual_details.get("individual", {}).get("personalDetails")
 
             # Cache the result in Redis
             if self._redis and result.get("individualIdentifier"):

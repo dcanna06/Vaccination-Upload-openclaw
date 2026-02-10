@@ -166,16 +166,18 @@ class TestAIRIndividualClient:
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
-            "statusCode": "AIR-I-1001",
-            "message": "Individual details found",
-            "individualIdentifier": "OPAQUE-ID-12345",
-            "individual": {
-                "personalDetails": {
-                    "dateOfBirth": "1990-01-15",
-                    "gender": "F",
-                    "firstName": "Jane",
-                    "lastName": "Smith",
-                }
+            "statusCode": "AIR-I-1100",
+            "message": "Your request was successfully processed.",
+            "individualDetails": {
+                "individualIdentifier": "OPAQUE-ID-12345",
+                "individual": {
+                    "personalDetails": {
+                        "dateOfBirth": "15011990",
+                        "gender": "F",
+                        "firstName": "Jane",
+                        "lastName": "Smith",
+                    }
+                },
             },
         }
 
@@ -194,7 +196,7 @@ class TestAIRIndividualClient:
 
             assert result["status"] == "success"
             assert result["individualIdentifier"] == "OPAQUE-ID-12345"
-            assert result["statusCode"] == "AIR-I-1001"
+            assert result["statusCode"] == "AIR-I-1100"
 
     @pytest.mark.anyio
     async def test_identify_individual_not_found(self):
@@ -228,7 +230,7 @@ class TestAIRIndividualClient:
         mock_redis = AsyncMock()
         mock_redis.get.return_value = json.dumps({
             "status": "success",
-            "statusCode": "AIR-I-1001",
+            "statusCode": "AIR-I-1100",
             "individualIdentifier": "CACHED-ID",
         })
 
@@ -253,10 +255,12 @@ class TestAIRIndividualClient:
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
-            "statusCode": "AIR-I-1001",
-            "message": "Found",
-            "individualIdentifier": "NEW-ID-999",
-            "individual": {"personalDetails": {"dateOfBirth": "1990-01-15"}},
+            "statusCode": "AIR-I-1100",
+            "message": "Your request was successfully processed.",
+            "individualDetails": {
+                "individualIdentifier": "NEW-ID-999",
+                "individual": {"personalDetails": {"dateOfBirth": "15011990"}},
+            },
         }
 
         with patch("app.services.air_individual.httpx.AsyncClient") as MockClient:
