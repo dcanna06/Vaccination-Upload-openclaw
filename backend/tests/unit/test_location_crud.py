@@ -151,6 +151,50 @@ class TestLocationManager:
         result = await mgr.get_minor_id(1)
         assert result == "MI-001"
 
+    @pytest.mark.asyncio
+    async def test_verify_provider_linked_true(self, mock_db):
+        from app.services.location_manager import LocationManager
+
+        mock_result = MagicMock()
+        mock_result.scalar_one.return_value = 1
+        mock_db.execute.return_value = mock_result
+
+        mgr = LocationManager(mock_db)
+        result = await mgr.verify_provider_linked(1, "1234567A")
+        assert result is True
+
+    @pytest.mark.asyncio
+    async def test_verify_provider_linked_false(self, mock_db):
+        from app.services.location_manager import LocationManager
+
+        mock_result = MagicMock()
+        mock_result.scalar_one.return_value = 0
+        mock_db.execute.return_value = mock_result
+
+        mgr = LocationManager(mock_db)
+        result = await mgr.verify_provider_linked(1, "UNKNOWN")
+        assert result is False
+
+    @pytest.mark.asyncio
+    async def test_get_unlinked_providers_empty_list(self, mock_db):
+        from app.services.location_manager import LocationManager
+
+        mgr = LocationManager(mock_db)
+        result = await mgr.get_unlinked_providers(1, [])
+        assert result == []
+
+    @pytest.mark.asyncio
+    async def test_get_unlinked_providers_some_unlinked(self, mock_db):
+        from app.services.location_manager import LocationManager
+
+        mock_result = MagicMock()
+        mock_result.all.return_value = [("1234567A",)]
+        mock_db.execute.return_value = mock_result
+
+        mgr = LocationManager(mock_db)
+        result = await mgr.get_unlinked_providers(1, ["1234567A", "9999999Z"])
+        assert result == ["9999999Z"]
+
 
 # --- Router tests (mocked dependencies) ---
 

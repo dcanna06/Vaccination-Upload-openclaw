@@ -4,7 +4,7 @@ import structlog
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.location import Location
+from app.models.location import Location, LocationProvider
 from app.models.organisation import Organisation
 
 logger = structlog.get_logger(__name__)
@@ -104,3 +104,32 @@ class LocationManager:
             select(Location.minor_id).where(Location.id == location_id)
         )
         return result.scalar_one_or_none()
+
+    async def verify_provider_linked(self, location_id: int, provider_number: str) -> bool:
+        """Check if a provider is linked to the given location."""
+        result = await self._db.execute(
+            select(func.count())
+            .select_from(LocationProvider)
+            .where(
+                LocationProvider.location_id == location_id,
+                LocationProvider.provider_number == provider_number,
+            )
+        )
+        return (result.scalar_one() or 0) > 0
+
+    async def get_unlinked_providers(
+        self, location_id: int, provider_numbers: list[str]
+    ) -> list[str]:
+        """Return provider numbers from the list that are NOT linked to the location."""
+        if not provider_numbers:
+            return []
+        linked_stmt = (
+            select(LocationProvider.provider_number)
+            .where(
+                LocationProvider.location_id == location_id,
+                LocationProvider.provider_number.in_(provider_numbers),
+            )
+        )
+        result = await self._db.execute(linked_stmt)
+        linked = {row[0] for row in result.all()}
+        return [p for p in provider_numbers if p not in linked]
