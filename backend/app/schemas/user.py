@@ -24,6 +24,8 @@ class UserCreate(BaseModel):
     password: str = Field(..., min_length=12)
     first_name: str = Field(..., max_length=50)
     last_name: str = Field(..., max_length=50)
+    phone: str | None = Field(None, max_length=20)
+    ahpra_number: str | None = Field(None, max_length=20)
     role: UserRole = "provider"
 
 
@@ -32,6 +34,8 @@ class UserResponse(BaseModel):
     email: str
     first_name: str
     last_name: str
+    phone: str | None = None
+    ahpra_number: str | None = None
     role: UserRole
     status: UserStatus
 

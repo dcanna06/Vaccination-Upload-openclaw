@@ -90,6 +90,8 @@ async def register(
         password_hash=hash_password(body.password),
         first_name=body.first_name,
         last_name=body.last_name,
+        phone=body.phone,
+        ahpra_number=body.ahpra_number,
         role=body.role,
         status="active",
     )
@@ -103,6 +105,8 @@ async def register(
         email=user.email,
         first_name=user.first_name,
         last_name=user.last_name,
+        phone=user.phone,
+        ahpra_number=user.ahpra_number,
         role=user.role,
         status=user.status,
     )
@@ -116,6 +120,8 @@ async def get_me(user: User = Depends(get_current_user)) -> UserResponse:
         email=user.email,
         first_name=user.first_name,
         last_name=user.last_name,
+        phone=user.phone,
+        ahpra_number=user.ahpra_number,
         role=user.role,
         status=user.status,
     )

@@ -19,6 +19,8 @@ class User(TimestampMixin, Base):
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     first_name: Mapped[str] = mapped_column(String(50), nullable=False)
     last_name: Mapped[str] = mapped_column(String(50), nullable=False)
+    phone: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    ahpra_number: Mapped[str | None] = mapped_column(String(20), nullable=True)
     role: Mapped[str] = mapped_column(
         String(20), nullable=False, server_default="provider"
     )
