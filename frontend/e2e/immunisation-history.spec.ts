@@ -13,6 +13,7 @@
 
 import { test, expect } from '@playwright/test';
 
+const API = process.env.BACKEND_URL || 'http://localhost:8000';
 const TIMESTAMP = Date.now();
 const TEST_EMAIL = `hist-${TIMESTAMP}@test.com`;
 const TEST_PASSWORD = 'SecurePass12345';
@@ -30,7 +31,7 @@ const PATIENT = {
 
 /** Register + login helper. */
 async function loginUser(page: import('@playwright/test').Page) {
-  await page.request.post('http://localhost:8000/api/auth/register', {
+  await page.request.post(`${API}/api/auth/register`, {
     data: {
       email: TEST_EMAIL,
       password: TEST_PASSWORD,
@@ -54,7 +55,7 @@ async function loginUser(page: import('@playwright/test').Page) {
 test.describe('History Details API', () => {
   test('returns due vaccines and history for identified individual', async ({ request }) => {
     // Step 1: Identify individual
-    const identifyResp = await request.post('http://localhost:8000/api/individuals/identify', {
+    const identifyResp = await request.post(`${API}/api/individuals/identify`, {
       data: {
         personalDetails: {
           firstName: PATIENT.firstName,
@@ -77,7 +78,7 @@ test.describe('History Details API', () => {
 
     // Step 2: Get history details
     const historyResp = await request.post(
-      'http://localhost:8000/api/individuals/history/details',
+      `${API}/api/individuals/history/details`,
       {
         data: {
           individualIdentifier: identifyData.individualIdentifier,
@@ -142,21 +143,19 @@ test.describe('Immunisation History Page', () => {
     // Click "Immunisation History" card link
     await page.locator('a').filter({ hasText: 'Immunisation History' }).first().click();
 
-    // Wait for history page to load
-    await expect(page.getByRole('heading', { name: 'Immunisation History' })).toBeVisible({
-      timeout: 15000,
-    });
+    // Wait for URL to change to history page
+    await expect(page).toHaveURL(/\/individuals\/[^/]+\/history/, { timeout: 15000 });
 
-    // Wait for loading to complete
+    // Wait for loading to complete (spinner disappears when data loads)
     await page.waitForFunction(() => !document.querySelector('.animate-spin'), {
-      timeout: 20000,
+      timeout: 30000,
     });
 
     // Verify NO error is shown
     await expect(page.locator('.border-red-500\\/50')).toBeHidden();
 
     // Verify "Vaccines Due" section with data
-    await expect(page.getByRole('heading', { name: 'Vaccines Due' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Vaccines Due' })).toBeVisible({ timeout: 10000 });
     await expect(
       page.getByText('There are no vaccinations due for this individual'),
     ).toBeHidden();

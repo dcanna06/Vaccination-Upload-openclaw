@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { FileUpload } from '@/components/FileUpload';
+import { useClinicStore } from '@/stores/clinicStore';
 
 type Step = 'upload' | 'validate' | 'process' | 'results';
 
@@ -79,6 +81,8 @@ function formatDate(dateStr: string | undefined): string {
 }
 
 export default function BulkHistoryPage() {
+  const router = useRouter();
+  const clinicStore = useClinicStore();
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -228,6 +232,7 @@ export default function BulkHistoryPage() {
               setStep('results');
             } else {
               setError(progressData.error || 'Processing failed');
+              setStep('validate');
             }
           }
         } catch {
@@ -655,13 +660,24 @@ export default function BulkHistoryPage() {
             </div>
           </div>
 
-          {/* Download button */}
+          {/* Action buttons */}
           <div className="flex gap-2">
             <button
               onClick={handleDownload}
               className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
             >
               Download Excel Report
+            </button>
+            <button
+              onClick={() => {
+                clinicStore.setResults(results);
+                clinicStore.setRecords(records);
+                router.push('/clinic-mode');
+              }}
+              disabled={results.filter(r => r.status === 'success').length === 0}
+              className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            >
+              Enter Clinic Mode
             </button>
             <div className="flex gap-1">
               {(['all', 'success', 'error'] as const).map((f) => (

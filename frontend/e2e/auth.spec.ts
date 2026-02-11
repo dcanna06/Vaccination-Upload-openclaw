@@ -2,7 +2,7 @@
  * E2E Tests — Registration, Login, Logout, Auth Guard
  *
  * Prerequisites:
- *   - Backend running on http://localhost:8000
+ *   - Backend running on ${API}
  *   - Frontend running on http://localhost:3000
  *   - Database migrated (users table exists)
  *
@@ -10,6 +10,8 @@
  */
 
 import { test, expect } from '@playwright/test';
+
+const API = process.env.BACKEND_URL || 'http://localhost:8000';
 
 // Unique email per test run to avoid conflicts
 const TIMESTAMP = Date.now();
@@ -138,7 +140,7 @@ test.describe('Login Page', () => {
 
   test('successfully logs in with valid credentials', async ({ page }) => {
     // Register user via API first to ensure it exists
-    await page.request.post('http://localhost:8000/api/auth/register', {
+    await page.request.post(`${API}/api/auth/register`, {
       data: {
         email: `login-${TIMESTAMP}@test.com`,
         password: TEST_PASSWORD,
@@ -177,7 +179,7 @@ test.describe('Auth Guard', () => {
   test('authenticated user sees dashboard with their name', async ({ page }) => {
     // Register + login via API first
     const email = `guard-${TIMESTAMP}@test.com`;
-    await page.request.post('http://localhost:8000/api/auth/register', {
+    await page.request.post(`${API}/api/auth/register`, {
       data: { email, password: TEST_PASSWORD, first_name: 'Guard', last_name: 'User' },
       failOnStatusCode: false,
     });
@@ -196,7 +198,7 @@ test.describe('Auth Guard', () => {
   test('Sign Out button logs user out', async ({ page }) => {
     // Register + login via API first
     const email = `signout-${TIMESTAMP}@test.com`;
-    await page.request.post('http://localhost:8000/api/auth/register', {
+    await page.request.post(`${API}/api/auth/register`, {
       data: { email, password: TEST_PASSWORD, first_name: 'SignOut', last_name: 'Tester' },
       failOnStatusCode: false,
     });
@@ -222,7 +224,7 @@ test.describe('Auth Guard', () => {
 test.describe('Auth API', () => {
   test('POST /api/auth/register returns 201 with user data', async ({ request }) => {
     const email = `api-${TIMESTAMP}@test.com`;
-    const response = await request.post('http://localhost:8000/api/auth/register', {
+    const response = await request.post(`${API}/api/auth/register`, {
       data: {
         email,
         password: TEST_PASSWORD,
@@ -246,11 +248,11 @@ test.describe('Auth API', () => {
   test('POST /api/auth/login returns token and sets cookie', async ({ request }) => {
     // Register a user for this specific test
     const email = `apilogin-${TIMESTAMP}@test.com`;
-    await request.post('http://localhost:8000/api/auth/register', {
+    await request.post(`${API}/api/auth/register`, {
       data: { email, password: TEST_PASSWORD, first_name: 'ApiLogin', last_name: 'Test' },
     });
 
-    const response = await request.post('http://localhost:8000/api/auth/login', {
+    const response = await request.post(`${API}/api/auth/login`, {
       data: { email, password: TEST_PASSWORD },
     });
 
@@ -265,7 +267,7 @@ test.describe('Auth API', () => {
   });
 
   test('POST /api/auth/login returns 401 for bad credentials', async ({ request }) => {
-    const response = await request.post('http://localhost:8000/api/auth/login', {
+    const response = await request.post(`${API}/api/auth/login`, {
       data: { email: 'nobody@test.com', password: 'WrongPassword123' },
     });
 
@@ -273,12 +275,12 @@ test.describe('Auth API', () => {
   });
 
   test('GET /api/auth/me returns 401 without cookie', async ({ request }) => {
-    const response = await request.get('http://localhost:8000/api/auth/me');
+    const response = await request.get(`${API}/api/auth/me`);
     expect(response.status()).toBe(401);
   });
 
   test('POST /api/auth/logout returns 200', async ({ request }) => {
-    const response = await request.post('http://localhost:8000/api/auth/logout');
+    const response = await request.post(`${API}/api/auth/logout`);
     expect(response.status()).toBe(200);
     const data = await response.json();
     expect(data.message).toBe('Logged out');

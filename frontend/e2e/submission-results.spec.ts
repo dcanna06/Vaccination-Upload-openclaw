@@ -11,7 +11,7 @@
 
 import { test, expect } from '@playwright/test';
 
-const API = 'http://localhost:8000';
+const API = process.env.BACKEND_URL || 'http://localhost:8000';
 
 // Use a submission that has real AIR response data
 const REAL_SUB_ID = '6b481c33-7821-4b82-821e-8378c4a3f7dd';

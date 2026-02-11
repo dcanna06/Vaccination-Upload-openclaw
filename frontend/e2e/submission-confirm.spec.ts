@@ -14,7 +14,7 @@
 
 import { test, expect } from '@playwright/test';
 
-const API = 'http://localhost:8000';
+const API = process.env.BACKEND_URL || 'http://localhost:8000';
 
 /**
  * Find a submission with warning records. Limits API calls to avoid rate limits.

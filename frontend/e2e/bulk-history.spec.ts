@@ -15,7 +15,7 @@
 
 import { test, expect } from '@playwright/test';
 
-const API = 'http://localhost:8000';
+const API = process.env.BACKEND_URL || 'http://localhost:8000';
 const TIMESTAMP = Date.now();
 const TEST_EMAIL = `bulk-hist-${TIMESTAMP}@test.com`;
 const TEST_PASSWORD = 'SecurePass12345';

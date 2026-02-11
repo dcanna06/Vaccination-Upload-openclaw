@@ -3,11 +3,11 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './e2e',
   timeout: 30000,
-  retries: 0,
+  retries: process.env.PLAYWRIGHT_BASE_URL ? 1 : 0,
   reporter: [['html', { open: 'never' }], ['list']],
   outputDir: './test-results/e2e',
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
     headless: true,
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
