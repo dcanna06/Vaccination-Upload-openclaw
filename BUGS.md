@@ -259,7 +259,7 @@ Add a retry counter. After N consecutive failures (e.g., 5), show an error banne
 |-------|-------|
 | **Severity** | P2 — Minor |
 | **File** | `frontend/components/submission/EditResubmitPanel.tsx:291-297, 383-391` |
-| **Status** | Open |
+| **Status** | Fixed |
 | **Suggested branch** | `fix/edit-panel-dropdown-values` |
 
 ### Description
@@ -280,7 +280,7 @@ Remove I, U from gender options. Remove OR, IN, NAS from route options. Add PO (
 |-------|-------|
 | **Severity** | P2 — Minor (effectively dead code) |
 | **File** | `frontend/components/ResultsSummary.tsx:136-165` |
-| **Status** | Open |
+| **Status** | Fixed |
 | **Suggested branch** | `fix/results-summary-cleanup` |
 
 ### Description
@@ -295,7 +295,7 @@ Minimal — the code is unreachable in normal flow. But if the redirect fails or
 
 ## QA Re-Verification (2026-02-09)
 
-All 6 original bugs verified as fixed. 2 new P2 issues found (BUG-007, BUG-008).
+All 8 bugs verified as fixed (BUG-001–008).
 
 ## Test Suite Status
 
