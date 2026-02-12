@@ -24,8 +24,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r backend/requirements.txt
 
-      - name: Run tests
-        run: python -m pytest backend/tests/ -v --tb=short --cov=backend/app --cov-report=xml
+      - name: Run tests (skip integration/e2e — require live vendor API)
+        run: python -m pytest backend/tests/ -v --tb=short --cov=backend/app --cov-report=xml -m "not integration"
         env:
           APP_ENV: vendor
 

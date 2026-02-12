@@ -33,8 +33,8 @@ jobs:
       - name: Install backend dependencies
         run: pip install -r backend/requirements.txt
 
-      - name: Run backend tests
-        run: python -m pytest backend/tests/ -v --tb=short
+      - name: Run backend tests (skip integration/e2e — require live vendor API)
+        run: python -m pytest backend/tests/ -v --tb=short -m "not integration"
         env:
           APP_ENV: vendor
 
