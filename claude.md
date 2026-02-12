@@ -1499,3 +1499,73 @@ The login page exists as a shell but auth is not wired. The compliance audit not
 - Push `main` branch and `v1.2.0` tag to remote
 - Push `develop` branch to remote
 - Delete `release/v1.2.0` branch (local + remote)
+
+## Vaccine Clinic Mode
+
+Summary of feature
+
+The user of the system runs vaccines clinics 
+This means that they need to know which patients are eligible for certain vaccines and which patients are not eligible
+Eligible is defined by a set of clinic rules. 
+After uploading to the Bulk Immunisation History, the user would need the ability to enter vaccine clinic mode
+this gives the user the ability to see patients eligible for certain vaccines 
+The user can export this list
+
+Vaccines 
+Vaccine clinics are run for either Flu, COVID, Shingrix, Prevnar 13
+The system would need to know which vaccine codes relate to flu, which codes relate to covid, which relate to shingles and which relate to pneumococcal
+
+eligibility rules
+eligibility rules can be hard coded but should be able to change in the future
+--Flu clinic rules
+Patients eligible for flu clinic are those that have not had any type of flu vaccine in 2026. If a patient has had any type of flu vaccine in 2026 then they would not be eligible
+--COVID Clinic Rules
+COVID vaccines are allowed once every 6 months
+if a patient has had any type covid vaccine in the previous 6 months they are not eligible
+if a patient has not had a covid vaccine in previous 6 months, they are eligible
+--Shingles clinic rules
+3 rules to meet to be eligible 
+patients must be over the age of 65, and
+patients must not have had 2 doses of Shingrix vaccine
+patient must not have had Zostavax in the previous 5 years
+If patient is eligible and they have had no doses of Shingrix vaccine - return eligible for two doses
+if, patient is eligible and they have had one dose of Shingrix vaccines - return eligible for one dose
+Patient due date for Shingrix is equal to either (due date is only valid if patient meets eligibility rule)
+1. The date they turned 65 years old if they have had no Shingrix doses, or 
+2. If patient has had 1 dose of Shingrix, the due date is equal to 2 months after the first dose 
+--Prevnar 13 clinic rules
+3 rules to be eligible
+patient must be over 70 years of age or older 
+patient must not have had Prevnar 13 previously at any stage
+Patient must not have had Prevnar 23 in the previous 12 months 
+patient due date for Prevnar is equal to either of the below (due date is only valid if patient meets eligibility rule)
+1. If the patient has had 12 months since Prevnar 23 or has never had Prevnar 23, then the due date for prevnar 13 is the date the patient turned 70
+2. if the patient has previously had Prevnar 23, but it has not yet been 12 months, then the due date is equal to the date when it has been 12 months since the Prevnar 23. 
+
+Returned results per clinic 
+below results may be displayed on screen and available as a csv file to download
+For all clinics return patient room number - in original upload document
+For all clinics return patient first name, last name, DOB, age, medicare card number and reference number
+--Returned results for flu clinic
+Return if eligible or not eligible
+Return date of last flu vaccine if found
+--Returned results for COVID clinic
+Return if eligible or not eligible
+Return last date of COVID vaccine if found
+--Returned results Shingrix clinic
+Return if eligible for one dose or two doses or if not eligible
+return last date of Shingrix dose 1 and dose 2 if applicable
+return last date of Zostovax if applicable
+return due date for Shingrix if applicable
+--Returned results Prevnar 13 clinic
+Return if eligible or not
+return last date of Prevnar 13 if applicable
+return last date of Prevnar 23 if applicable
+Return due date for Prevnar 13 if applicable
+
+An example of what this may be look like, and a starting point for your team can be found here \\wsl$\Ubuntu\home\david\Vaccination-Upload\docs\air-bulk-manager (1).jsx
+
+Develop an implementation plan, and mockups before proceeding to todo tickets
+
+End of feature Vaccine Clinic Mode
+-------

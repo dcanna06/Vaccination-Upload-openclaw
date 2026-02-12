@@ -8,12 +8,16 @@ services:
     container_name: air-backend
     ports:
       - "8000:8000"
+    volumes:
+      - /mnt/c/ProdaCertificates:/certs:ro
     environment:
       APP_ENV: vendor
       FRONTEND_URL: http://localhost:3000
       LOG_FORMAT: json
       DATABASE_URL: postgresql+asyncpg://air_admin:airdev123@postgres:5432/air_vaccination
       REDIS_URL: redis://redis:6379/0
+      PRODA_JKS_FILE_PATH: /certs/DavidTestLaptop2_vnd.jks
+      PRODA_JKS_PASSWORD: Pass-123
     depends_on:
       postgres:
         condition: service_healthy

@@ -37,12 +37,13 @@ async def login(
     user = await authenticate_user(db, body.email, body.password)
     token = create_access_token(user.id, user.role)
 
+    is_cross_site = settings.FRONTEND_URL and "azurewebsites.net" in settings.FRONTEND_URL
     response.set_cookie(
         key="access_token",
         value=token,
         httponly=True,
-        secure=settings.APP_ENV != "vendor",
-        samesite="lax",
+        secure=True if is_cross_site else settings.APP_ENV != "vendor",
+        samesite="none" if is_cross_site else "lax",
         max_age=settings.JWT_MAX_SESSION_HOURS * 3600,
         path="/",
     )
@@ -53,11 +54,12 @@ async def login(
 @router.post("/logout")
 async def logout(response: Response) -> dict:
     """Clear the auth cookie."""
+    is_cross_site = settings.FRONTEND_URL and "azurewebsites.net" in settings.FRONTEND_URL
     response.delete_cookie(
         key="access_token",
         httponly=True,
-        secure=settings.APP_ENV != "vendor",
-        samesite="lax",
+        secure=True if is_cross_site else settings.APP_ENV != "vendor",
+        samesite="none" if is_cross_site else "lax",
         path="/",
     )
     return {"message": "Logged out"}
