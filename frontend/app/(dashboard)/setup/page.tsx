@@ -419,7 +419,7 @@ export default function SetupPage() {
                 </ul>
               ) : (
                 <p className="text-xs text-red-400">
-                  {verifyResult.error || 'Verification returned no access list'}
+                  {String(verifyResult.error || 'Verification returned no access list')}
                 </p>
               )}
             </div>
