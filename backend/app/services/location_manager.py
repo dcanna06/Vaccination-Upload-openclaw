@@ -117,6 +117,34 @@ class LocationManager:
         )
         return (result.scalar_one() or 0) > 0
 
+    async def get_default_provider(self, location_id: int) -> str | None:
+        """Return the first linked provider_number for a location (by creation date).
+
+        Used as fallback when frontend doesn't specify informationProvider.
+        """
+        stmt = (
+            select(LocationProvider.provider_number)
+            .where(LocationProvider.location_id == location_id)
+            .order_by(LocationProvider.created_at)
+            .limit(1)
+        )
+        result = await self._db.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def update_proda_link_status(
+        self, location_id: int, new_status: str
+    ) -> None:
+        """Update the proda_link_status for a location."""
+        location = await self.get(location_id)
+        if location and location.proda_link_status != new_status:
+            location.proda_link_status = new_status
+            await self._db.commit()
+            logger.info(
+                "proda_link_status_updated",
+                location_id=location_id,
+                new_status=new_status,
+            )
+
     async def get_unlinked_providers(
         self, location_id: int, provider_numbers: list[str]
     ) -> list[str]:

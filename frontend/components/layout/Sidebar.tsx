@@ -20,6 +20,7 @@ const navItems: NavItem[] = [
   { href: '/confirm', label: 'Confirm' },
   { href: '/indicators', label: 'Indicators' },
   { href: '/catchup', label: 'Catch-Up' },
+  { href: '/setup', label: 'Site Setup' },
   { href: '/admin/locations', label: 'Locations' },
   { href: '/admin/providers', label: 'Providers' },
   { href: '/settings', label: 'Settings' },

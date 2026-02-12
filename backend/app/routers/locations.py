@@ -1,10 +1,15 @@
 """Location management endpoints."""
 
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+from app.models.location import LocationProvider
 from app.schemas.location import LocationCreate, LocationRead, LocationUpdate
+from app.schemas.provider import ProviderRead
 from app.services.location_manager import LocationManager
 
 router = APIRouter(prefix="/api/locations", tags=["locations"])
@@ -78,3 +83,60 @@ async def deactivate_location(
     if not loc:
         raise HTTPException(status_code=404, detail="Location not found")
     return LocationRead.model_validate(loc)
+
+
+@router.get("/{location_id}/setup-status")
+async def get_setup_status(
+    location_id: int,
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    """Return complete setup status for a location.
+
+    Includes location details, linked providers, HW027 statuses,
+    PRODA link status, and provider verification results.
+    """
+    mgr = LocationManager(db)
+    loc = await mgr.get(location_id)
+    if not loc:
+        raise HTTPException(status_code=404, detail="Location not found")
+
+    # Fetch linked providers
+    result = await db.execute(
+        select(LocationProvider)
+        .where(LocationProvider.location_id == location_id)
+        .order_by(LocationProvider.created_at)
+    )
+    providers = [ProviderRead.model_validate(p) for p in result.scalars().all()]
+
+    # Compute setup completeness
+    has_location = True
+    has_provider = len(providers) > 0
+    any_hw027_approved = any(p.hw027_status == "approved" for p in providers)
+    proda_linked = loc.proda_link_status == "linked"
+    any_verified = any(p.air_access_list is not None for p in providers)
+
+    return {
+        "location": LocationRead.model_validate(loc).model_dump(),
+        "providers": [p.model_dump() for p in providers],
+        "setupComplete": has_location and has_provider and proda_linked,
+        "steps": {
+            "siteDetails": {"complete": has_location},
+            "providerLinked": {"complete": has_provider},
+            "hw027": {
+                "complete": any_hw027_approved,
+                "statuses": {p.provider_number: p.hw027_status for p in providers},
+            },
+            "prodaLink": {
+                "complete": proda_linked,
+                "status": loc.proda_link_status,
+            },
+            "providerVerified": {
+                "complete": any_verified,
+                "accessLists": {
+                    p.provider_number: p.air_access_list
+                    for p in providers
+                    if p.air_access_list
+                },
+            },
+        },
+    }

@@ -1569,3 +1569,84 @@ Develop an implementation plan, and mockups before proceeding to todo tickets
 
 End of feature Vaccine Clinic Mode
 -------
+
+## Provider Setup & Minor ID Architecture
+
+### Overview
+
+The system provides a guided onboarding flow for healthcare sites to set up AIR submission capability. The key concepts are:
+
+1. **Location** = a physical healthcare site with an auto-assigned **Minor ID**
+2. **Provider** = a healthcare provider linked to a location
+3. **Minor ID** = identifier used in `dhs-auditId` header for all AIR API calls
+4. **PRODA Link Status** = tracks whether the location's Minor ID has been successfully used with AIR
+
+### Minor ID Allocation Flow
+
+1. Admin creates a Location via `/api/locations` (POST)
+2. `LocationManager._assign_next_minor_id()` atomically generates the next Minor ID using `{org_prefix}-{sequence}`
+3. The Minor ID is immutable after creation (silently stripped from update requests)
+4. Minor ID is used in `dhs-auditId` header via `AIRClient._build_headers()`
+
+### Provider-Location Linking
+
+- Providers are linked to locations via `location_providers` table
+- Endpoint: `POST /api/providers` with `location_id` + `provider_number`
+- Provider AIR access can be verified: `POST /api/providers/{id}/verify`
+- HW027 status is tracked per provider: `PATCH /api/providers/{id}/hw027`
+
+### informationProvider Resolution Chain
+
+When submitting to AIR, the `informationProvider.providerNumber` is resolved in this order:
+
+1. **Frontend-supplied**: If the submit request includes `informationProvider.providerNumber`, use it
+2. **Location-resolved**: If empty and `locationId` is set, call `LocationManager.get_default_provider(locationId)` — returns the first linked provider (by creation date)
+3. **Config fallback**: If still empty, `BatchSubmissionService._submit_single_batch()` uses `settings.AIR_PROVIDER_NUMBER`
+
+### PRODA Link Status Auto-Update
+
+- After a successful AIR API call (where `result.successful > 0`) with a `location_minor_id`:
+  - `submit.py._update_proda_link_status()` updates `Location.proda_link_status` from `"pending"` to `"linked"`
+  - Only updates if current status differs (idempotent)
+  - Logged via structlog
+
+### Confirmation Flow Fix
+
+The confirmation endpoint (`POST /api/submit/{id}/confirm`) now resolves `location_minor_id` from the original submission's `locationId`, ensuring the `dhs-auditId` header matches the original submission.
+
+### Site Setup Page (`/setup`)
+
+A 4-step wizard that guides users through:
+
+1. **Site Details** — Create location, receive auto-assigned Minor ID
+2. **Provider Number** — Link provider, verify AIR access list
+3. **HW027 Form** — Track HW027 submission status (external process)
+4. **PRODA Link** — PRODA linking guidance, status verification
+
+Backend endpoint: `GET /api/locations/{id}/setup-status` returns complete setup status.
+
+### Settings Page (`/settings`)
+
+- Loads provider number from selected location's linked providers (API)
+- Saves changes via `POST /api/providers` (new link) when location is selected
+- Displays location Minor ID and PRODA link status (read-only)
+- Falls back to localStorage when no location is selected
+
+### Updated Folder Structure
+
+```
+frontend/app/(dashboard)/
+├── setup/        page.tsx              # 4-step site setup wizard
+├── settings/     page.tsx              # DB-backed settings (was localStorage-only)
+```
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `backend/app/services/location_manager.py` | `get_default_provider()`, `update_proda_link_status()` |
+| `backend/app/routers/submit.py` | Provider resolution + PRODA link auto-update |
+| `backend/app/routers/locations.py` | `GET /api/locations/{id}/setup-status` |
+| `frontend/app/(dashboard)/setup/page.tsx` | 4-step setup wizard |
+| `frontend/app/(dashboard)/settings/page.tsx` | DB-backed settings |
+| `frontend/components/layout/Sidebar.tsx` | "Site Setup" nav item |

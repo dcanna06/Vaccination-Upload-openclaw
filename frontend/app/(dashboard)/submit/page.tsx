@@ -71,12 +71,32 @@ export default function SubmitPage() {
       setStatus('running');
       setError(null);
       try {
+        // Fetch linked providers for selected location to pass as informationProvider
+        let informationProvider: Record<string, string> = {};
+        if (selectedLocationId) {
+          try {
+            const provRes = await fetch(
+              `${env.apiUrl}/api/providers?location_id=${selectedLocationId}`,
+            );
+            if (provRes.ok) {
+              const providers = await provRes.json();
+              if (Array.isArray(providers) && providers.length > 0) {
+                informationProvider = {
+                  providerNumber: providers[0].provider_number,
+                };
+              }
+            }
+          } catch {
+            // Non-critical — backend will resolve from location
+          }
+        }
+
         const res = await fetch(`${env.apiUrl}/api/submit`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             batches: groupedBatches,
-            informationProvider: {},
+            informationProvider,
             dryRun: false,
             locationId: selectedLocationId,
           }),

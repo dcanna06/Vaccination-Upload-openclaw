@@ -61,6 +61,30 @@ async def _resolve_location_minor_id(location_id: int | None) -> str | None:
         return await mgr.get_minor_id(location_id)
 
 
+async def _resolve_default_provider(location_id: int | None) -> str | None:
+    """Resolve the default provider number for a location. Returns None if not found."""
+    if location_id is None:
+        return None
+    from app.database import async_session_factory
+    from app.services.location_manager import LocationManager
+
+    async with async_session_factory() as session:
+        mgr = LocationManager(session)
+        return await mgr.get_default_provider(location_id)
+
+
+async def _update_proda_link_status(location_id: int | None, status: str) -> None:
+    """Update the PRODA link status for a location after a successful AIR call."""
+    if location_id is None:
+        return
+    from app.database import async_session_factory
+    from app.services.location_manager import LocationManager
+
+    async with async_session_factory() as session:
+        mgr = LocationManager(session)
+        await mgr.update_proda_link_status(location_id, status)
+
+
 async def _check_provider_location_links(
     location_id: int | None, batches: list[dict[str, Any]]
 ) -> list[str]:
@@ -110,6 +134,19 @@ async def _run_submission(submission_id: str) -> None:
             # Resolve per-location minor_id (falls back to config if None)
             location_minor_id = await _resolve_location_minor_id(sub.get("locationId"))
 
+            # Auto-resolve informationProvider from location if empty
+            info_provider = dict(sub["informationProvider"])
+            if not info_provider.get("providerNumber") and sub.get("locationId"):
+                resolved_provider = await _resolve_default_provider(sub["locationId"])
+                if resolved_provider:
+                    info_provider["providerNumber"] = resolved_provider
+                    logger.info(
+                        "provider_auto_resolved",
+                        submission_id=submission_id,
+                        location_id=sub["locationId"],
+                        provider_number=resolved_provider,
+                    )
+
             # Warn if providers are not linked to the selected location
             unlinked = await _check_provider_location_links(
                 sub.get("locationId"), sub["batches"]
@@ -133,8 +170,12 @@ async def _run_submission(submission_id: str) -> None:
                 client, submission_id=submission_id, store=_store
             )
             result = await service.submit_batches(
-                sub["batches"], sub["informationProvider"]
+                sub["batches"], info_provider
             )
+
+            # Phase 2: Auto-update PRODA link status on first success
+            if location_minor_id and result.get("successful", 0) > 0:
+                await _update_proda_link_status(sub["locationId"], "linked")
 
         sub["results"] = result
         sub["completedAt"] = datetime.now(timezone.utc).isoformat()
@@ -290,9 +331,11 @@ async def confirm_records(submission_id: str, request: ConfirmRequest) -> dict[s
             dob_iso = dob_raw
 
         try:
+            # Resolve location minor_id from original submission for confirmation
+            confirm_minor_id = await _resolve_location_minor_id(sub.get("locationId"))
             proda = ProdaAuthService()
             token = await proda.get_token()
-            air_client = AIRClient(access_token=token)
+            air_client = AIRClient(access_token=token, location_minor_id=confirm_minor_id)
             confirm_service = ConfirmService(air_client)
             result = await confirm_service.confirm_record(
                 original_payload, claim_id, claim_seq, dob_iso
