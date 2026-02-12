@@ -53,6 +53,7 @@ class BulkHistoryProcessRequest(BaseModel):
     """Request body to start bulk history processing."""
     records: list[dict[str, Any]]
     providerNumber: str = Field(..., min_length=6, max_length=8)
+    locationId: int | None = None
 
 
 class BulkHistoryProcessResponse(BaseModel):

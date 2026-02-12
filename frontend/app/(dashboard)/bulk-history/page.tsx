@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FileUpload } from '@/components/FileUpload';
 import { useClinicStore } from '@/stores/clinicStore';
+import { useLocationStore } from '@/stores/locationStore';
 
 type Step = 'upload' | 'validate' | 'process' | 'results';
 
@@ -83,6 +84,7 @@ function formatDate(dateStr: string | undefined): string {
 export default function BulkHistoryPage() {
   const router = useRouter();
   const clinicStore = useClinicStore();
+  const { selectedLocationId } = useLocationStore();
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -194,9 +196,11 @@ export default function BulkHistoryPage() {
       const resp = await fetch(`${API_URL}/api/bulk-history/process`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           records: activeRecords,
           providerNumber,
+          locationId: selectedLocationId || undefined,
         }),
       });
 

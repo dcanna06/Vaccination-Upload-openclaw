@@ -146,8 +146,18 @@ async def _process_bulk_history(request_id: str) -> None:
         proda = ProdaAuthService()
         access_token = await proda.get_token()
 
+        # Resolve minor_id: location → config fallback
         from app.config import settings
         minor_id = settings.PRODA_MINOR_ID
+        location_id = req.get("locationId")
+        if location_id:
+            from app.database import async_session_factory
+            from app.services.location_manager import LocationManager
+            async with async_session_factory() as session:
+                mgr = LocationManager(session)
+                loc = await mgr.get(location_id)
+                if loc and loc.minor_id:
+                    minor_id = loc.minor_id
 
         client = AIRIndividualClient(
             access_token=access_token,
@@ -298,6 +308,7 @@ async def start_processing(request: BulkHistoryProcessRequest) -> BulkHistoryPro
         "createdAt": datetime.now(timezone.utc).isoformat(),
         "records": request.records,
         "providerNumber": request.providerNumber,
+        "locationId": request.locationId,
         "progress": {
             "totalRecords": len(request.records),
             "processedRecords": 0,
