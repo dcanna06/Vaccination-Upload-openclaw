@@ -2,11 +2,13 @@
 
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 import structlog
 
+from app.dependencies import get_current_user
+from app.models.user import User
 from app.services.validation_engine import ValidationOrchestrator
 from app.services.batch_grouping import BatchGroupingService
 
@@ -28,7 +30,7 @@ class ValidateResponse(BaseModel):
 
 
 @router.post("/validate", response_model=ValidateResponse)
-async def validate_records(request: ValidateRequest) -> ValidateResponse:
+async def validate_records(request: ValidateRequest, user: User = Depends(get_current_user)) -> ValidateResponse:
     """Run full validation suite on parsed records and group into batches."""
     orchestrator = ValidationOrchestrator()
     result = orchestrator.validate(request.records)

@@ -140,8 +140,21 @@ class TestIndicatorsRouter:
     @pytest.fixture
     def client(self):
         from app.main import create_app
+        from app.dependencies import get_current_user
         from fastapi.testclient import TestClient
-        return TestClient(create_app())
+
+        app = create_app()
+
+        mock_user = MagicMock()
+        mock_user.id = 1
+        mock_user.role = "admin"
+        mock_user.status = "active"
+
+        async def mock_auth():
+            return mock_user
+
+        app.dependency_overrides[get_current_user] = mock_auth
+        return TestClient(app)
 
     def test_add_indicator_endpoint(self, client):
         resp = client.post("/api/indicators/vaccine/add", json={})

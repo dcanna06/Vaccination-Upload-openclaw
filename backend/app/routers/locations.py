@@ -7,7 +7,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+from app.dependencies import get_current_user
 from app.models.location import LocationProvider
+from app.models.user import User
 from app.schemas.location import LocationCreate, LocationRead, LocationUpdate
 from app.schemas.provider import ProviderRead
 from app.services.location_manager import LocationManager
@@ -19,6 +21,7 @@ router = APIRouter(prefix="/api/locations", tags=["locations"])
 async def create_location(
     body: LocationCreate,
     db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> LocationRead:
     """Create a new location with auto-assigned minor_id."""
     mgr = LocationManager(db)
@@ -38,6 +41,7 @@ async def create_location(
 async def list_locations(
     organisation_id: int | None = None,
     db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> list[LocationRead]:
     """List active locations."""
     mgr = LocationManager(db)
@@ -49,6 +53,7 @@ async def list_locations(
 async def get_location(
     location_id: int,
     db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> LocationRead:
     """Get a single location by ID."""
     mgr = LocationManager(db)
@@ -63,6 +68,7 @@ async def update_location(
     location_id: int,
     body: LocationUpdate,
     db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> LocationRead:
     """Update a location (minor_id is immutable)."""
     mgr = LocationManager(db)
@@ -76,6 +82,7 @@ async def update_location(
 async def deactivate_location(
     location_id: int,
     db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> LocationRead:
     """Soft-delete a location (sets status to inactive)."""
     mgr = LocationManager(db)
@@ -89,6 +96,7 @@ async def deactivate_location(
 async def get_setup_status(
     location_id: int,
     db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> dict[str, Any]:
     """Return complete setup status for a location.
 

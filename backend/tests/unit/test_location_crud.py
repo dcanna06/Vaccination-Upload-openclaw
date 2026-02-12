@@ -203,13 +203,23 @@ class TestLocationsRouter:
     def client(self):
         from app.main import create_app
         from app.database import get_db
+        from app.dependencies import get_current_user
 
         app = create_app()
 
         async def mock_db():
             yield AsyncMock()
 
+        mock_user = MagicMock()
+        mock_user.id = 1
+        mock_user.role = "admin"
+        mock_user.status = "active"
+
+        async def mock_auth():
+            return mock_user
+
         app.dependency_overrides[get_db] = mock_db
+        app.dependency_overrides[get_current_user] = mock_auth
         return TestClient(app)
 
     @patch("app.routers.locations.LocationManager")

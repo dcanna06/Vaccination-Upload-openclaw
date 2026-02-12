@@ -16,11 +16,13 @@ from typing import Any
 from uuid import uuid4
 
 import structlog
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from app.config import settings
+from app.dependencies import get_current_user
+from app.models.user import User
 from app.services.submission_store import SubmissionStore
 from app.services.air_response_parser import parse_air_response
 from app.services.air_resubmit import ResubmitService, ConfirmService
@@ -148,6 +150,7 @@ async def get_submission_results(
     status_filter: str | None = Query(None, alias="status"),
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=100),
+    user: User = Depends(get_current_user),
 ) -> dict[str, Any]:
     """Get detailed results for a submission.
 
@@ -272,6 +275,7 @@ async def resubmit_record(
     submission_id: str,
     row: int,
     data: ResubmitRequest,
+    user: User = Depends(get_current_user),
 ) -> dict[str, Any]:
     """Build a fresh AddEncounterRequestType from edited data and send to AIR.
 
@@ -321,6 +325,7 @@ async def resubmit_record(
 async def confirm_record(
     submission_id: str,
     row: int,
+    user: User = Depends(get_current_user),
 ) -> dict[str, Any]:
     """Confirm a record that requires confirmation (AIR-W-1004, pended episodes).
 
@@ -416,7 +421,7 @@ async def confirm_record(
 
 
 @router.post("/submissions/{submission_id}/confirm-all-warnings")
-async def confirm_all_warnings(submission_id: str) -> dict[str, Any]:
+async def confirm_all_warnings(submission_id: str, user: User = Depends(get_current_user)) -> dict[str, Any]:
     """Batch confirm all CONFIRM_OR_CORRECT records in a submission."""
     metadata = _store.load_metadata(submission_id)
     if not metadata:
@@ -511,7 +516,7 @@ async def confirm_all_warnings(submission_id: str) -> dict[str, Any]:
             confirmation_results.append({
                 "row": row_num,
                 "status": "ERROR",
-                "message": str(e),
+                "message": "Confirmation request failed",
             })
             failed += 1
 
@@ -540,6 +545,7 @@ async def confirm_all_warnings(submission_id: str) -> dict[str, Any]:
 async def export_results(
     submission_id: str,
     format: str = Query("csv", pattern="^(csv)$"),
+    user: User = Depends(get_current_user),
 ) -> StreamingResponse:
     """Export detailed submission results as CSV.
 

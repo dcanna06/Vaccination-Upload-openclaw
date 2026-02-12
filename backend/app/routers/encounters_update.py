@@ -7,8 +7,10 @@ Provides endpoint for:
 from typing import Any
 
 import structlog
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
+from app.dependencies import get_current_user
+from app.models.user import User
 from app.schemas.air_encounter_update import UpdateEncounterRequest
 from app.services.air_encounter_update import AIREncounterUpdateClient
 from app.services.proda_auth import ProdaAuthService
@@ -19,7 +21,7 @@ router = APIRouter(prefix="/api/encounters", tags=["encounters"])
 
 
 @router.post("/update")
-async def update_encounter(request: UpdateEncounterRequest) -> dict[str, Any]:
+async def update_encounter(request: UpdateEncounterRequest, user: User = Depends(get_current_user)) -> dict[str, Any]:
     """Update encounters on the AIR.
 
     Calls API #9: POST /air/immunisation/v1.3/encounters/update.
@@ -50,4 +52,4 @@ async def update_encounter(request: UpdateEncounterRequest) -> dict[str, Any]:
 
     except Exception as e:
         logger.error("update_encounter_failed", error=str(e))
-        raise HTTPException(status_code=502, detail=str(e))
+        raise HTTPException(status_code=502, detail="AIR API request failed")

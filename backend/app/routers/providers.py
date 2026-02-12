@@ -8,7 +8,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+from app.dependencies import get_current_user
 from app.models.location import Location, LocationProvider
+from app.models.user import User
 from app.schemas.provider import HW027StatusUpdate, ProviderLinkRequest, ProviderRead
 from app.services.air_authorisation import AIRAuthorisationClient
 from app.services.proda_auth import ProdaAuthService
@@ -21,6 +23,7 @@ logger = structlog.get_logger(__name__)
 async def link_provider(
     body: ProviderLinkRequest,
     db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> ProviderRead:
     """Link a provider to a location."""
     # Verify location exists
@@ -62,6 +65,7 @@ async def link_provider(
 async def list_providers(
     location_id: int | None = None,
     db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> list[ProviderRead]:
     """List providers, optionally filtered by location."""
     stmt = select(LocationProvider)
@@ -76,6 +80,7 @@ async def list_providers(
 async def unlink_provider(
     provider_id: int,
     db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> None:
     """Unlink a provider from a location (hard delete)."""
     result = await db.execute(
@@ -93,6 +98,7 @@ async def unlink_provider(
 async def verify_provider(
     provider_id: int,
     db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> dict[str, Any]:
     """Verify a provider's AIR access list via the Authorisation API."""
     result = await db.execute(
@@ -137,6 +143,7 @@ async def update_hw027_status(
     provider_id: int,
     body: HW027StatusUpdate,
     db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> ProviderRead:
     """Update HW027 form submission status for a provider."""
     result = await db.execute(

@@ -2,12 +2,14 @@
 
 from typing import Any
 
-from fastapi import APIRouter, UploadFile
+from fastapi import APIRouter, Depends, UploadFile
 from pydantic import BaseModel
 
 import structlog
 
+from app.dependencies import get_current_user
 from app.middleware.file_upload import validate_upload_file
+from app.models.user import User
 from app.services.excel_parser import ExcelParserService
 
 router = APIRouter(prefix="/api", tags=["upload"])
@@ -26,7 +28,7 @@ class UploadResponse(BaseModel):
 
 
 @router.post("/upload", response_model=UploadResponse)
-async def upload_file(file: UploadFile) -> UploadResponse:
+async def upload_file(file: UploadFile, user: User = Depends(get_current_user)) -> UploadResponse:
     """Accept an Excel file upload, validate, parse, and return results."""
     content = await validate_upload_file(file)
 

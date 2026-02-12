@@ -6,8 +6,10 @@ Provides endpoints for APIs #12, #13, #14, #15.
 from typing import Any
 
 import structlog
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
+from app.dependencies import get_current_user
+from app.models.user import User
 from app.schemas.air_indicators import (
     AddVaccineIndicatorRequest,
     RemoveVaccineIndicatorRequest,
@@ -30,7 +32,7 @@ async def _get_client() -> AIRIndicatorsClient:
 
 
 @router.post("/vaccine/add")
-async def add_vaccine_indicator(request: AddVaccineIndicatorRequest) -> dict[str, Any]:
+async def add_vaccine_indicator(request: AddVaccineIndicatorRequest, user: User = Depends(get_current_user)) -> dict[str, Any]:
     """Add an additional vaccine indicator (API #12)."""
     try:
         client = await _get_client()
@@ -41,11 +43,11 @@ async def add_vaccine_indicator(request: AddVaccineIndicatorRequest) -> dict[str
         )
     except Exception as e:
         logger.error("add_vaccine_indicator_failed", error=str(e))
-        raise HTTPException(status_code=502, detail=str(e))
+        raise HTTPException(status_code=502, detail="AIR API request failed")
 
 
 @router.post("/vaccine/remove")
-async def remove_vaccine_indicator(request: RemoveVaccineIndicatorRequest) -> dict[str, Any]:
+async def remove_vaccine_indicator(request: RemoveVaccineIndicatorRequest, user: User = Depends(get_current_user)) -> dict[str, Any]:
     """Remove an additional vaccine indicator (API #13)."""
     try:
         client = await _get_client()
@@ -56,11 +58,11 @@ async def remove_vaccine_indicator(request: RemoveVaccineIndicatorRequest) -> di
         )
     except Exception as e:
         logger.error("remove_vaccine_indicator_failed", error=str(e))
-        raise HTTPException(status_code=502, detail=str(e))
+        raise HTTPException(status_code=502, detail="AIR API request failed")
 
 
 @router.post("/indigenous-status")
-async def update_indigenous_status(request: UpdateIndigenousStatusRequest) -> dict[str, Any]:
+async def update_indigenous_status(request: UpdateIndigenousStatusRequest, user: User = Depends(get_current_user)) -> dict[str, Any]:
     """Update indigenous status (API #14)."""
     try:
         client = await _get_client()
@@ -71,11 +73,11 @@ async def update_indigenous_status(request: UpdateIndigenousStatusRequest) -> di
         )
     except Exception as e:
         logger.error("update_indigenous_status_failed", error=str(e))
-        raise HTTPException(status_code=502, detail=str(e))
+        raise HTTPException(status_code=502, detail="AIR API request failed")
 
 
 @router.post("/catchup")
-async def planned_catch_up_date(request: PlannedCatchUpRequest) -> dict[str, Any]:
+async def planned_catch_up_date(request: PlannedCatchUpRequest, user: User = Depends(get_current_user)) -> dict[str, Any]:
     """Record a planned catch-up date (API #15). Does NOT use individualIdentifier."""
     try:
         client = await _get_client()
@@ -89,4 +91,4 @@ async def planned_catch_up_date(request: PlannedCatchUpRequest) -> dict[str, Any
         )
     except Exception as e:
         logger.error("planned_catch_up_failed", error=str(e))
-        raise HTTPException(status_code=502, detail=str(e))
+        raise HTTPException(status_code=502, detail="AIR API request failed")

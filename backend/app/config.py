@@ -4,7 +4,7 @@ All sensitive values are loaded from environment variables.
 Never log secrets - use the mask_secret helper for log output.
 """
 
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings
 
 
@@ -73,6 +73,20 @@ class Settings(BaseSettings):
         if v not in allowed:
             raise ValueError(f"APP_ENV must be one of {allowed}, got '{v}'")
         return v
+
+    @model_validator(mode="after")
+    def validate_production_secrets(self) -> "Settings":
+        """Reject default placeholder secrets in production."""
+        if self.APP_ENV == "production":
+            if self.APP_SECRET_KEY == "change-me-to-a-random-64-char-string":
+                raise ValueError(
+                    "APP_SECRET_KEY must be changed from the default placeholder in production"
+                )
+            if self.PRODA_JKS_PASSWORD == "Pass-123":
+                raise ValueError(
+                    "PRODA_JKS_PASSWORD must be changed from the default 'Pass-123' in production"
+                )
+        return self
 
 
 settings = Settings()

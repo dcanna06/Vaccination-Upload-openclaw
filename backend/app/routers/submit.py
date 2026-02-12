@@ -7,12 +7,14 @@ from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 import structlog
 
+from app.dependencies import get_current_user
+from app.models.user import User
 from app.services.air_client import AIRClient, BatchSubmissionService
 from app.services.proda_auth import ProdaAuthService
 from app.services.submission_store import SubmissionStore
@@ -23,6 +25,33 @@ logger = structlog.get_logger(__name__)
 # Persistent JSON store — loads previous submissions on import
 _store = SubmissionStore()
 _submissions: dict[str, dict[str, Any]] = _store.load_all_metadata()
+
+# TTL cleanup: purge completed in-memory entries older than 1 hour
+_SUBMISSION_TTL_SECONDS = 3600
+
+
+async def _cleanup_expired_submissions() -> None:
+    """Periodically remove completed submissions from memory after TTL."""
+    while True:
+        await asyncio.sleep(300)  # Check every 5 minutes
+        now = datetime.now(timezone.utc)
+        expired = []
+        for sid, sub in _submissions.items():
+            if sub["status"] not in ("completed", "error"):
+                continue
+            completed_at = sub.get("completedAt")
+            if not completed_at:
+                continue
+            try:
+                completed_dt = datetime.fromisoformat(completed_at)
+                if (now - completed_dt).total_seconds() > _SUBMISSION_TTL_SECONDS:
+                    expired.append(sid)
+            except (ValueError, TypeError):
+                continue
+        for sid in expired:
+            del _submissions[sid]
+        if expired:
+            logger.info("submissions_ttl_cleanup", purged=len(expired))
 
 
 def _persist(submission_id: str) -> None:
@@ -212,7 +241,7 @@ async def _run_submission(submission_id: str) -> None:
 
 
 @router.post("/submit", response_model=SubmitResponse)
-async def start_submission(request: SubmitRequest) -> SubmitResponse:
+async def start_submission(request: SubmitRequest, user: User = Depends(get_current_user)) -> SubmitResponse:
     """Start a batch submission to AIR (returns immediately, work runs in background)."""
     submission_id = str(uuid4())
 
@@ -255,7 +284,7 @@ async def start_submission(request: SubmitRequest) -> SubmitResponse:
 
 
 @router.get("/submit/{submission_id}/progress")
-async def get_progress(submission_id: str) -> dict[str, Any]:
+async def get_progress(submission_id: str, user: User = Depends(get_current_user)) -> dict[str, Any]:
     """Get submission progress."""
     sub = _submissions.get(submission_id)
     if not sub:
@@ -269,7 +298,7 @@ async def get_progress(submission_id: str) -> dict[str, Any]:
 
 
 @router.post("/submit/{submission_id}/confirm")
-async def confirm_records(submission_id: str, request: ConfirmRequest) -> dict[str, Any]:
+async def confirm_records(submission_id: str, request: ConfirmRequest, user: User = Depends(get_current_user)) -> dict[str, Any]:
     """Submit confirmations for records requiring confirmation.
 
     Delegates to the real confirmation service in submission_results router.
@@ -351,7 +380,7 @@ async def confirm_records(submission_id: str, request: ConfirmRequest) -> dict[s
                 })
         except Exception as e:
             logger.error("confirm_record_error", record_id=record_id, error=str(e))
-            errors.append({"recordId": record_id, "error": str(e)})
+            errors.append({"recordId": record_id, "error": "Confirmation request failed"})
 
     # Update pending confirmation records
     sub["pendingConfirmationRecords"] = [
@@ -419,7 +448,7 @@ def _build_result_records(sub: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 @router.get("/submit/{submission_id}/results")
-async def get_results(submission_id: str) -> dict[str, Any]:
+async def get_results(submission_id: str, user: User = Depends(get_current_user)) -> dict[str, Any]:
     """Get final submission results."""
     sub = _submissions.get(submission_id)
     if not sub:
@@ -444,7 +473,7 @@ async def get_results(submission_id: str) -> dict[str, Any]:
 
 
 @router.get("/submit/{submission_id}/download")
-async def download_report(submission_id: str) -> StreamingResponse:
+async def download_report(submission_id: str, user: User = Depends(get_current_user)) -> StreamingResponse:
     """Download a CSV report for a submission."""
     sub = _submissions.get(submission_id)
     if not sub:
@@ -498,7 +527,7 @@ async def download_report(submission_id: str) -> StreamingResponse:
 
 
 @router.get("/submissions")
-async def list_submissions() -> dict[str, Any]:
+async def list_submissions(user: User = Depends(get_current_user)) -> dict[str, Any]:
     """List all submissions with summary info."""
     submissions = []
     for sid, sub in _submissions.items():
@@ -517,7 +546,7 @@ async def list_submissions() -> dict[str, Any]:
 
 
 @router.post("/submit/{submission_id}/pause")
-async def pause_submission(submission_id: str) -> dict[str, Any]:
+async def pause_submission(submission_id: str, user: User = Depends(get_current_user)) -> dict[str, Any]:
     """Pause a running submission."""
     sub = _submissions.get(submission_id)
     if not sub:
@@ -529,7 +558,7 @@ async def pause_submission(submission_id: str) -> dict[str, Any]:
 
 
 @router.post("/submit/{submission_id}/resume")
-async def resume_submission(submission_id: str) -> dict[str, Any]:
+async def resume_submission(submission_id: str, user: User = Depends(get_current_user)) -> dict[str, Any]:
     """Resume a paused submission."""
     sub = _submissions.get(submission_id)
     if not sub:

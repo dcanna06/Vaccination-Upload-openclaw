@@ -10,8 +10,10 @@ Provides endpoints for:
 from typing import Any
 
 import structlog
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
+from app.dependencies import get_current_user
+from app.models.user import User
 from app.schemas.air_individual import (
     HistoryDetailsRequest,
     HistoryStatementRequest,
@@ -41,7 +43,7 @@ async def _get_client(minor_id: str = "") -> AIRIndividualClient:
 
 
 @router.post("/identify")
-async def identify_individual(request: IdentifyIndividualRequest) -> dict[str, Any]:
+async def identify_individual(request: IdentifyIndividualRequest, user: User = Depends(get_current_user)) -> dict[str, Any]:
     """Identify an individual on the AIR.
 
     Calls API #2: POST /air/immunisation/v1.1/individual/details.
@@ -70,11 +72,11 @@ async def identify_individual(request: IdentifyIndividualRequest) -> dict[str, A
 
     except Exception as e:
         logger.error("identify_individual_failed", error=str(e))
-        raise HTTPException(status_code=502, detail=str(e))
+        raise HTTPException(status_code=502, detail="AIR API request failed")
 
 
 @router.post("/history/details")
-async def get_history_details(request: HistoryDetailsRequest) -> dict[str, Any]:
+async def get_history_details(request: HistoryDetailsRequest, user: User = Depends(get_current_user)) -> dict[str, Any]:
     """Get immunisation history details for an identified individual.
 
     Calls API #3: POST /air/immunisation/v1.3/individual/history/details.
@@ -100,11 +102,11 @@ async def get_history_details(request: HistoryDetailsRequest) -> dict[str, Any]:
 
     except Exception as e:
         logger.error("get_history_details_failed", error=str(e))
-        raise HTTPException(status_code=502, detail=str(e))
+        raise HTTPException(status_code=502, detail="AIR API request failed")
 
 
 @router.post("/history/statement")
-async def get_history_statement(request: HistoryStatementRequest) -> dict[str, Any]:
+async def get_history_statement(request: HistoryStatementRequest, user: User = Depends(get_current_user)) -> dict[str, Any]:
     """Get immunisation history statement for an identified individual.
 
     Calls API #4: POST /air/immunisation/v1/individual/history/statement.
@@ -122,11 +124,11 @@ async def get_history_statement(request: HistoryStatementRequest) -> dict[str, A
 
     except Exception as e:
         logger.error("get_history_statement_failed", error=str(e))
-        raise HTTPException(status_code=502, detail=str(e))
+        raise HTTPException(status_code=502, detail="AIR API request failed")
 
 
 @router.post("/vaccinetrial/history")
-async def get_vaccine_trial_history(request: VaccineTrialHistoryRequest) -> dict[str, Any]:
+async def get_vaccine_trial_history(request: VaccineTrialHistoryRequest, user: User = Depends(get_current_user)) -> dict[str, Any]:
     """Get vaccine trial history for an identified individual.
 
     Calls API #7: POST /air/immunisation/v1/individual/vaccinetrial/history.
@@ -144,4 +146,4 @@ async def get_vaccine_trial_history(request: VaccineTrialHistoryRequest) -> dict
 
     except Exception as e:
         logger.error("get_vaccine_trial_history_failed", error=str(e))
-        raise HTTPException(status_code=502, detail=str(e))
+        raise HTTPException(status_code=502, detail="AIR API request failed")

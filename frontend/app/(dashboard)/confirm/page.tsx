@@ -30,7 +30,19 @@ export default function ConfirmationFlowPage() {
       } catch {
         // Invalid data
       }
+      // Clear PII from sessionStorage immediately after loading into component state
+      sessionStorage.removeItem('pendedEncounters');
     }
+
+    // Cleanup: remove any originalPayload entries on unmount
+    return () => {
+      for (let i = sessionStorage.length - 1; i >= 0; i--) {
+        const key = sessionStorage.key(i);
+        if (key?.startsWith('originalPayload:')) {
+          sessionStorage.removeItem(key);
+        }
+      }
+    };
   }, []);
 
   const handleConfirm = async (encounter: PendedEncounter) => {
@@ -41,8 +53,11 @@ export default function ConfirmationFlowPage() {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-      const storedPayload = sessionStorage.getItem(`originalPayload:${encounter.encounterId}`);
+      const payloadKey = `originalPayload:${encounter.encounterId}`;
+      const storedPayload = sessionStorage.getItem(payloadKey);
       const originalPayload = storedPayload ? JSON.parse(storedPayload) : {};
+      // Clear PII from sessionStorage immediately after reading
+      sessionStorage.removeItem(payloadKey);
 
       const resp = await fetch(`${apiUrl}/api/submit/confirm`, {
         method: 'POST',

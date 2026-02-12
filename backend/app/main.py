@@ -1,5 +1,8 @@
 """FastAPI application factory for AIR Bulk Vaccination Upload API."""
 
+import asyncio
+from contextlib import asynccontextmanager
+
 import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,6 +38,19 @@ def configure_structlog() -> None:
     )
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Start background cleanup tasks for in-memory PII stores."""
+    from app.routers.submit import _cleanup_expired_submissions
+    from app.routers.bulk_history import _cleanup_expired_requests
+
+    task1 = asyncio.create_task(_cleanup_expired_submissions())
+    task2 = asyncio.create_task(_cleanup_expired_requests())
+    yield
+    task1.cancel()
+    task2.cancel()
+
+
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
     configure_structlog()
@@ -43,6 +59,7 @@ def create_app() -> FastAPI:
         title="AIR Bulk Vaccination Upload API",
         description="Backend API for uploading vaccination records to the Australian Immunisation Register",
         version="1.2.0",
+        lifespan=lifespan,
     )
 
     # CORS

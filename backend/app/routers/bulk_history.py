@@ -12,11 +12,13 @@ from typing import Any
 from uuid import uuid4
 
 import structlog
-from fastapi import APIRouter, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 from openpyxl import Workbook
 
+from app.dependencies import get_current_user
 from app.middleware.file_upload import validate_upload_file
+from app.models.user import User
 from app.schemas.bulk_history import (
     BulkHistoryProcessRequest,
     BulkHistoryProcessResponse,
@@ -34,13 +36,40 @@ logger = structlog.get_logger(__name__)
 # In-memory state for bulk history requests
 _requests: dict[str, dict[str, Any]] = {}
 
+# TTL cleanup: purge completed in-memory entries older than 1 hour
+_REQUEST_TTL_SECONDS = 3600
+
+
+async def _cleanup_expired_requests() -> None:
+    """Periodically remove completed bulk history requests from memory after TTL."""
+    while True:
+        await asyncio.sleep(300)  # Check every 5 minutes
+        now = datetime.now(timezone.utc)
+        expired = []
+        for rid, req in _requests.items():
+            if req["status"] not in ("completed", "error"):
+                continue
+            completed_at = req.get("completedAt")
+            if not completed_at:
+                continue
+            try:
+                completed_dt = datetime.fromisoformat(completed_at)
+                if (now - completed_dt).total_seconds() > _REQUEST_TTL_SECONDS:
+                    expired.append(rid)
+            except (ValueError, TypeError):
+                continue
+        for rid in expired:
+            del _requests[rid]
+        if expired:
+            logger.info("bulk_history_ttl_cleanup", purged=len(expired))
+
 
 # ============================================================================
 # Upload
 # ============================================================================
 
 @router.post("/upload")
-async def upload_bulk_history(file: UploadFile) -> dict[str, Any]:
+async def upload_bulk_history(file: UploadFile, user: User = Depends(get_current_user)) -> dict[str, Any]:
     """Upload an Excel file with patient identification details for bulk history lookup.
 
     The Excel file should have columns for individual identification:
@@ -94,7 +123,7 @@ async def upload_bulk_history(file: UploadFile) -> dict[str, Any]:
 # ============================================================================
 
 @router.post("/validate", response_model=BulkHistoryValidateResponse)
-async def validate_records(request: BulkHistoryValidateRequest) -> BulkHistoryValidateResponse:
+async def validate_records(request: BulkHistoryValidateRequest, user: User = Depends(get_current_user)) -> BulkHistoryValidateResponse:
     """Validate individual identification fields in uploaded records.
 
     Only validates fields needed for Identify Individual API:
@@ -270,7 +299,7 @@ async def _process_bulk_history(request_id: str) -> None:
                     "rowNumber": row_number,
                     "status": "error",
                     "statusCode": "",
-                    "message": str(e),
+                    "message": "AIR API request failed for this individual",
                     "firstName": record.get("firstName"),
                     "lastName": record.get("lastName"),
                     "dateOfBirth": dob,
@@ -291,11 +320,11 @@ async def _process_bulk_history(request_id: str) -> None:
         logger.error("bulk_history_process_error", request_id=request_id, error=str(e))
         req["status"] = "error"
         req["progress"]["status"] = "error"
-        req["error"] = str(e)
+        req["error"] = "Processing failed unexpectedly"
 
 
 @router.post("/process", response_model=BulkHistoryProcessResponse)
-async def start_processing(request: BulkHistoryProcessRequest) -> BulkHistoryProcessResponse:
+async def start_processing(request: BulkHistoryProcessRequest, user: User = Depends(get_current_user)) -> BulkHistoryProcessResponse:
     """Start bulk history processing for validated records.
 
     Identifies each individual on AIR and fetches their immunisation history.
@@ -342,7 +371,7 @@ async def start_processing(request: BulkHistoryProcessRequest) -> BulkHistoryPro
 # ============================================================================
 
 @router.get("/{request_id}/progress")
-async def get_progress(request_id: str) -> dict[str, Any]:
+async def get_progress(request_id: str, user: User = Depends(get_current_user)) -> dict[str, Any]:
     """Get processing progress for a bulk history request."""
     req = _requests.get(request_id)
     if not req:
@@ -361,7 +390,7 @@ async def get_progress(request_id: str) -> dict[str, Any]:
 # ============================================================================
 
 @router.get("/{request_id}/results")
-async def get_results(request_id: str) -> dict[str, Any]:
+async def get_results(request_id: str, user: User = Depends(get_current_user)) -> dict[str, Any]:
     """Get the results of a completed bulk history request."""
     req = _requests.get(request_id)
     if not req:
@@ -405,7 +434,7 @@ def _format_date_display(date_str: str | None) -> str:
 
 
 @router.get("/{request_id}/download")
-async def download_results(request_id: str) -> StreamingResponse:
+async def download_results(request_id: str, user: User = Depends(get_current_user)) -> StreamingResponse:
     """Download the bulk history results as an Excel file."""
     req = _requests.get(request_id)
     if not req:

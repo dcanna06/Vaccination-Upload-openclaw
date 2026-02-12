@@ -42,6 +42,8 @@ class TestSettings:
     def test_production_env_uses_prod_url(self):
         s = Settings(
             APP_ENV="production",
+            APP_SECRET_KEY="a-real-production-secret-key-not-default",
+            PRODA_JKS_PASSWORD="RealProductionPassword123",
             AIR_API_BASE_URL_VENDOR="https://vendor.example.com",
             AIR_PROD_BASE_URL="https://prod.example.com",
             _env_file=None,
@@ -51,6 +53,22 @@ class TestSettings:
     def test_invalid_app_env_raises(self):
         with pytest.raises(ValidationError, match="APP_ENV"):
             Settings(APP_ENV="invalid", _env_file=None)
+
+    def test_production_rejects_default_secret_key(self):
+        with pytest.raises(ValidationError, match="APP_SECRET_KEY"):
+            Settings(
+                APP_ENV="production",
+                PRODA_JKS_PASSWORD="RealPassword",
+                _env_file=None,
+            )
+
+    def test_production_rejects_default_jks_password(self):
+        with pytest.raises(ValidationError, match="PRODA_JKS_PASSWORD"):
+            Settings(
+                APP_ENV="production",
+                APP_SECRET_KEY="a-real-production-secret-key-not-default",
+                _env_file=None,
+            )
 
     def test_default_product_id(self):
         s = Settings(_env_file=None)
