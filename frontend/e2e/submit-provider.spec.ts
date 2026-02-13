@@ -45,6 +45,7 @@ test.describe('Submission with Provider Resolution', () => {
             location_id: 1,
             provider_number: 'LOC001A',
             provider_type: 'GP',
+            minor_id: 'WRR00001',
             hw027_status: 'approved',
             air_access_list: null,
             created_at: '2026-01-01T00:00:00Z',

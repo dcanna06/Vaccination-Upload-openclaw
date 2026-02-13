@@ -6,15 +6,17 @@ const PUBLIC_PATHS = ['/login', '/register', '/forgot-password'];
 // Role -> allowed path prefixes
 const ROLE_ROUTES: Record<string, string[]> = {
   facility_staff: ['/facility-'],
+  provider: ['/upload', '/validate', '/submit', '/results', '/submission-results', '/encounters', '/indicators', '/individuals', '/exemptions', '/bulk-history', '/setup', '/settings', '/history', '/confirm'],
   pharmacist: ['/upload', '/validate', '/submit', '/results', '/pharm-', '/submission-results', '/encounters', '/indicators', '/individuals', '/exemptions', '/bulk-history', '/providers', '/locations'],
   nurse_manager: ['/nm-'],
-  org_admin: ['/facility-', '/pharm-', '/nm-', '/upload', '/validate', '/submit', '/results', '/submission-results', '/encounters', '/indicators', '/individuals', '/exemptions', '/bulk-history', '/providers', '/locations'],
-  super_admin: ['/facility-', '/pharm-', '/nm-', '/upload', '/validate', '/submit', '/results', '/submission-results', '/encounters', '/indicators', '/individuals', '/exemptions', '/bulk-history', '/providers', '/locations'],
+  org_admin: ['/facility-', '/pharm-', '/nm-', '/upload', '/validate', '/submit', '/results', '/submission-results', '/encounters', '/indicators', '/individuals', '/exemptions', '/bulk-history', '/providers', '/locations', '/setup', '/admin', '/settings', '/history', '/confirm', '/catchup', '/clinic-mode', '/users'],
+  super_admin: ['/facility-', '/pharm-', '/nm-', '/upload', '/validate', '/submit', '/results', '/submission-results', '/encounters', '/indicators', '/individuals', '/exemptions', '/bulk-history', '/providers', '/locations', '/setup', '/admin', '/settings', '/history', '/confirm', '/catchup', '/clinic-mode', '/users'],
 };
 
 // Role -> default landing page
 const ROLE_HOME: Record<string, string> = {
   facility_staff: '/facility-dashboard',
+  provider: '/upload',
   pharmacist: '/pharm-dashboard',
   nurse_manager: '/nm-dashboard',
   org_admin: '/upload',

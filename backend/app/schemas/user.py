@@ -5,7 +5,16 @@ from typing import Literal
 from pydantic import BaseModel, EmailStr, Field
 
 
-UserRole = Literal["super_admin", "org_admin", "provider", "reviewer", "read_only"]
+UserRole = Literal[
+    "super_admin",
+    "org_admin",
+    "provider",
+    "reviewer",
+    "read_only",
+    "facility_staff",
+    "pharmacist",
+    "nurse_manager",
+]
 UserStatus = Literal["pending", "active", "locked", "inactive"]
 
 
