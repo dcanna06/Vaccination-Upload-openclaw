@@ -16,6 +16,7 @@ from app.middleware.error_handler import (
 from app.middleware.request_logger import RequestLoggerMiddleware
 from app.middleware.security import RateLimitMiddleware, SecurityHeadersMiddleware
 from app.routers import auth, bulk_history, encounters_update, exemptions, health, indicators, individuals, locations, providers, submit, submission_results, template, upload, validate
+from app.routers import portal_clinics, portal_eligibility, portal_facilities, portal_messages, portal_notifications, portal_residents
 
 
 def configure_structlog() -> None:
@@ -99,6 +100,14 @@ def create_app() -> FastAPI:
     app.include_router(exemptions.router)
     app.include_router(indicators.router)
     app.include_router(bulk_history.router)
+
+    # Portal routers (Aged Care Vaccination Portal)
+    app.include_router(portal_facilities.router)
+    app.include_router(portal_residents.router)
+    app.include_router(portal_clinics.router)
+    app.include_router(portal_messages.router)
+    app.include_router(portal_eligibility.router)
+    app.include_router(portal_notifications.router)
 
     return app
 
