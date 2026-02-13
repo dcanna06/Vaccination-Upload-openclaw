@@ -40,6 +40,7 @@ class LocationProvider(TimestampMixin, Base):
     location_id: Mapped[int] = mapped_column(ForeignKey("locations.id"), nullable=False)
     provider_number: Mapped[str] = mapped_column(String(20), nullable=False)
     provider_type: Mapped[str] = mapped_column(String(50), server_default="")
+    minor_id: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
     hw027_status: Mapped[str] = mapped_column(String(20), server_default="not_submitted")
     air_access_list: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 

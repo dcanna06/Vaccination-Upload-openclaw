@@ -273,20 +273,9 @@ export default function SetupPage() {
             <CardTitle>Step 1: Site Details</CardTitle>
           </CardHeader>
           <p className="mb-4 text-sm text-slate-400">
-            Create your healthcare location. A Minor ID will be automatically assigned for AIR
-            submissions.
+            Create your healthcare location. Once you link a provider number in the next step,
+            a Minor ID (WRR#####) will be assigned for AIR submissions.
           </p>
-
-          {setupStatus?.location && (
-            <div className="mb-4 rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3">
-              <p className="text-sm font-medium text-emerald-400">
-                Minor ID: <span className="font-mono text-lg">{setupStatus.location.minor_id}</span>
-              </p>
-              <p className="text-xs text-slate-400">
-                This is your Location ID for AIR submissions (used in dhs-auditId header)
-              </p>
-            </div>
-          )}
 
           <div className="space-y-3">
             <div>
@@ -369,8 +358,8 @@ export default function SetupPage() {
             <CardTitle>Step 2: Provider Number</CardTitle>
           </CardHeader>
           <p className="mb-4 text-sm text-slate-400">
-            Link a provider number to your location. This provider will be used as the information
-            provider for AIR submissions.
+            Link your AIR provider number. A Minor ID (WRR#####) will be automatically assigned
+            and used as the dhs-auditId for AIR submissions.
           </p>
 
           {setupStatus?.providers && setupStatus.providers.length > 0 && (
@@ -379,23 +368,30 @@ export default function SetupPage() {
               {setupStatus.providers.map((p) => (
                 <div
                   key={p.id}
-                  className="flex items-center justify-between rounded-md border border-slate-600 p-2"
+                  className="rounded-md border border-slate-600 p-3"
                 >
-                  <div>
-                    <span className="font-mono text-sm text-emerald-400">{p.provider_number}</span>
-                    <span className="ml-2 text-xs text-slate-400">({p.provider_type})</span>
-                    {p.air_access_list && (
-                      <span className="ml-2 text-xs text-emerald-600">Verified</span>
-                    )}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="font-mono text-sm text-emerald-400">{p.provider_number}</span>
+                      <span className="ml-2 text-xs text-slate-400">({p.provider_type})</span>
+                      {p.air_access_list && (
+                        <span className="ml-2 text-xs text-emerald-600">Verified</span>
+                      )}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => handleVerifyProvider(p.id)}
+                      disabled={loading}
+                    >
+                      Verify AIR Access
+                    </Button>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => handleVerifyProvider(p.id)}
-                    disabled={loading}
-                  >
-                    Verify AIR Access
-                  </Button>
+                  <div className="mt-2 rounded bg-slate-700/50 px-2 py-1">
+                    <span className="text-xs text-slate-400">Minor ID: </span>
+                    <span className="font-mono text-sm font-medium text-emerald-400">{p.minor_id}</span>
+                    <span className="ml-2 text-xs text-slate-500">(use this on HW027 form)</span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -483,20 +479,14 @@ export default function SetupPage() {
           </CardHeader>
           <p className="mb-4 text-sm text-slate-400">
             Health professionals must submit form HW027 to Services Australia to link their provider
-            number to the location&apos;s Minor ID. This is an external process.
+            number to their assigned Minor ID. This is an external process.
           </p>
 
           <div className="mb-4 rounded-md border border-slate-600 bg-slate-700/50 p-4 text-sm text-slate-300">
             <p className="mb-2 font-medium">What to do:</p>
             <ol className="list-inside list-decimal space-y-1 text-slate-400">
               <li>Download or obtain an HW027 form from Services Australia</li>
-              <li>
-                Fill in the provider number and Minor ID (
-                <span className="font-mono text-emerald-400">
-                  {setupStatus?.location?.minor_id || '...'}
-                </span>
-                )
-              </li>
+              <li>Fill in the provider number and their assigned Minor ID (shown below)</li>
               <li>Submit to Services Australia for processing</li>
               <li>Update the status below once submitted/approved</li>
             </ol>
@@ -508,21 +498,27 @@ export default function SetupPage() {
               {setupStatus.providers.map((p) => (
                 <div
                   key={p.id}
-                  className="flex items-center justify-between rounded-md border border-slate-600 p-2"
+                  className="rounded-md border border-slate-600 p-3"
                 >
-                  <span className="font-mono text-sm text-slate-300">{p.provider_number}</span>
-                  <select
-                    value={p.hw027_status}
-                    onChange={(e) => handleHW027Update(p.id, e.target.value)}
-                    className="rounded-md border border-slate-600 bg-slate-700 px-2 py-1 text-sm text-slate-200"
-                    disabled={loading}
-                  >
-                    {HW027_STATUSES.map((s) => (
-                      <option key={s} value={s}>
-                        {s.replace('_', ' ')}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="font-mono text-sm text-slate-300">{p.provider_number}</span>
+                      <span className="mx-2 text-slate-500">&rarr;</span>
+                      <span className="font-mono text-sm font-medium text-emerald-400">{p.minor_id}</span>
+                    </div>
+                    <select
+                      value={p.hw027_status}
+                      onChange={(e) => handleHW027Update(p.id, e.target.value)}
+                      className="rounded-md border border-slate-600 bg-slate-700 px-2 py-1 text-sm text-slate-200"
+                      disabled={loading}
+                    >
+                      {HW027_STATUSES.map((s) => (
+                        <option key={s} value={s}>
+                          {s.replace('_', ' ')}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               ))}
             </div>

@@ -175,7 +175,7 @@ async def _process_bulk_history(request_id: str) -> None:
         proda = ProdaAuthService()
         access_token = await proda.get_token()
 
-        # Resolve minor_id: location → config fallback
+        # Resolve minor_id: provider → location → config fallback
         from app.config import settings
         minor_id = settings.PRODA_MINOR_ID
         location_id = req.get("locationId")
@@ -184,9 +184,16 @@ async def _process_bulk_history(request_id: str) -> None:
             from app.services.location_manager import LocationManager
             async with async_session_factory() as session:
                 mgr = LocationManager(session)
-                loc = await mgr.get(location_id)
-                if loc and loc.minor_id:
-                    minor_id = loc.minor_id
+                # Prefer provider minor_id (WRR#####)
+                provider_mid = await mgr.get_provider_minor_id_by_location(
+                    location_id, provider_number
+                )
+                if provider_mid:
+                    minor_id = provider_mid
+                else:
+                    loc = await mgr.get(location_id)
+                    if loc and loc.minor_id:
+                        minor_id = loc.minor_id
 
         client = AIRIndividualClient(
             access_token=access_token,

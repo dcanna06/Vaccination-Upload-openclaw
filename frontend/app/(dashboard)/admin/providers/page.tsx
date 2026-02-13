@@ -219,6 +219,9 @@ export default function ProvidersPage() {
                     )}
                   </p>
                   <p className="mt-1 text-xs text-slate-400">
+                    Minor ID: <span className="font-mono text-emerald-400">{p.minor_id}</span>
+                  </p>
+                  <p className="mt-0.5 text-xs text-slate-400">
                     HW027: <span className={
                       p.hw027_status === 'approved' ? 'text-emerald-400' :
                       p.hw027_status === 'rejected' ? 'text-red-400' :

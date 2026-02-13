@@ -13,6 +13,7 @@ from app.models.location import Location, LocationProvider
 from app.models.user import User
 from app.schemas.provider import HW027StatusUpdate, ProviderLinkRequest, ProviderRead
 from app.services.air_authorisation import AIRAuthorisationClient
+from app.services.location_manager import LocationManager
 from app.services.proda_auth import ProdaAuthService
 
 router = APIRouter(prefix="/api/providers", tags=["providers"])
@@ -25,7 +26,7 @@ async def link_provider(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> ProviderRead:
-    """Link a provider to a location."""
+    """Link a provider to a location with auto-assigned Minor ID (WRR#####)."""
     # Verify location exists
     loc_result = await db.execute(
         select(Location).where(Location.id == body.location_id)
@@ -45,18 +46,11 @@ async def link_provider(
             status_code=409, detail="Provider already linked to this location"
         )
 
-    provider = LocationProvider(
+    mgr = LocationManager(db)
+    provider = await mgr.link_provider(
         location_id=body.location_id,
         provider_number=body.provider_number,
         provider_type=body.provider_type,
-    )
-    db.add(provider)
-    await db.commit()
-    await db.refresh(provider)
-    logger.info(
-        "provider_linked",
-        location_id=body.location_id,
-        provider_number=body.provider_number,
     )
     return ProviderRead.model_validate(provider)
 
@@ -108,18 +102,10 @@ async def verify_provider(
     if not provider:
         raise HTTPException(status_code=404, detail="Provider link not found")
 
-    # Get the location's minor_id for the API call
-    loc_result = await db.execute(
-        select(Location).where(Location.id == provider.location_id)
-    )
-    location = loc_result.scalar_one_or_none()
-    if not location:
-        raise HTTPException(status_code=404, detail="Location not found")
-
     proda = ProdaAuthService()
     token = await proda.get_token()
     auth_client = AIRAuthorisationClient(
-        access_token=token, minor_id=location.minor_id
+        access_token=token, minor_id=provider.minor_id
     )
     api_result = await auth_client.get_access_list(provider.provider_number)
 

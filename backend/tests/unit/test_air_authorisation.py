@@ -37,6 +37,7 @@ class TestProviderSchemas:
         mock.location_id = 1
         mock.provider_number = "1234567A"
         mock.provider_type = "GP"
+        mock.minor_id = "WRR00001"
         mock.hw027_status = "not_submitted"
         mock.air_access_list = None
         mock.created_at = "2026-01-01T00:00:00+00:00"
@@ -44,6 +45,7 @@ class TestProviderSchemas:
 
         read = ProviderRead.model_validate(mock, from_attributes=True)
         assert read.provider_number == "1234567A"
+        assert read.minor_id == "WRR00001"
 
 
 # ============================================================================

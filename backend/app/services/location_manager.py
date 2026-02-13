@@ -9,6 +9,8 @@ from app.models.organisation import Organisation
 
 logger = structlog.get_logger(__name__)
 
+MINOR_ID_PREFIX = "WRR"
+
 
 class LocationManager:
     def __init__(self, db: AsyncSession) -> None:
@@ -103,6 +105,80 @@ class LocationManager:
         result = await self._db.execute(
             select(Location.minor_id).where(Location.id == location_id)
         )
+        return result.scalar_one_or_none()
+
+    async def _assign_provider_minor_id(self) -> str:
+        """Generate the next provider minor_id in WRR##### format.
+
+        Uses the current max sequence across all providers to prevent collisions.
+        """
+        result = await self._db.execute(
+            select(func.count()).select_from(LocationProvider)
+        )
+        total = result.scalar_one()
+        # Start from total + 1 to avoid collisions with existing rows
+        next_seq = total + 1
+        minor_id = f"{MINOR_ID_PREFIX}{next_seq:05d}"
+
+        # Verify uniqueness (handle gaps from deletions)
+        while True:
+            exists = await self._db.execute(
+                select(func.count())
+                .select_from(LocationProvider)
+                .where(LocationProvider.minor_id == minor_id)
+            )
+            if exists.scalar_one() == 0:
+                break
+            next_seq += 1
+            minor_id = f"{MINOR_ID_PREFIX}{next_seq:05d}"
+
+        return minor_id
+
+    async def link_provider(
+        self, location_id: int, provider_number: str, provider_type: str = ""
+    ) -> LocationProvider:
+        """Link a provider to a location with auto-assigned minor_id."""
+        minor_id = await self._assign_provider_minor_id()
+        provider = LocationProvider(
+            location_id=location_id,
+            provider_number=provider_number,
+            provider_type=provider_type,
+            minor_id=minor_id,
+        )
+        self._db.add(provider)
+        await self._db.commit()
+        await self._db.refresh(provider)
+        logger.info(
+            "provider_linked",
+            location_id=location_id,
+            provider_number=provider_number,
+            minor_id=minor_id,
+        )
+        return provider
+
+    async def get_provider_minor_id(self, provider_number: str) -> str | None:
+        """Resolve a provider_number to its minor_id. Returns None if not found."""
+        result = await self._db.execute(
+            select(LocationProvider.minor_id)
+            .where(LocationProvider.provider_number == provider_number)
+            .limit(1)
+        )
+        return result.scalar_one_or_none()
+
+    async def get_provider_minor_id_by_location(
+        self, location_id: int, provider_number: str | None = None
+    ) -> str | None:
+        """Resolve minor_id for a provider at a specific location.
+
+        If provider_number is None, returns the first provider's minor_id at that location.
+        """
+        stmt = select(LocationProvider.minor_id).where(
+            LocationProvider.location_id == location_id
+        )
+        if provider_number:
+            stmt = stmt.where(LocationProvider.provider_number == provider_number)
+        stmt = stmt.order_by(LocationProvider.created_at).limit(1)
+        result = await self._db.execute(stmt)
         return result.scalar_one_or_none()
 
     async def verify_provider_linked(self, location_id: int, provider_number: str) -> bool:

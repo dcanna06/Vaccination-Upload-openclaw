@@ -90,6 +90,30 @@ async def _resolve_location_minor_id(location_id: int | None) -> str | None:
         return await mgr.get_minor_id(location_id)
 
 
+async def _resolve_provider_minor_id(
+    location_id: int | None, provider_number: str | None = None
+) -> str | None:
+    """Resolve the provider's minor_id for AIR API calls (dhs-auditId).
+
+    Looks up the provider linked to the given location. Falls back to
+    _resolve_location_minor_id if no provider minor_id is found.
+    """
+    if location_id is None:
+        return None
+    from app.database import async_session_factory
+    from app.services.location_manager import LocationManager
+
+    async with async_session_factory() as session:
+        mgr = LocationManager(session)
+        minor_id = await mgr.get_provider_minor_id_by_location(
+            location_id, provider_number
+        )
+        if minor_id:
+            return minor_id
+        # Fallback to location minor_id for backward compat
+        return await mgr.get_minor_id(location_id)
+
+
 async def _resolve_default_provider(location_id: int | None) -> str | None:
     """Resolve the default provider number for a location. Returns None if not found."""
     if location_id is None:
@@ -160,8 +184,11 @@ async def _run_submission(submission_id: str) -> None:
                 ],
             }
         else:
-            # Resolve per-location minor_id (falls back to config if None)
-            location_minor_id = await _resolve_location_minor_id(sub.get("locationId"))
+            # Resolve provider minor_id for dhs-auditId (falls back to location, then config)
+            location_minor_id = await _resolve_provider_minor_id(
+                sub.get("locationId"),
+                sub.get("informationProvider", {}).get("providerNumber"),
+            )
 
             # Auto-resolve informationProvider from location if empty
             info_provider = dict(sub["informationProvider"])
@@ -360,8 +387,11 @@ async def confirm_records(submission_id: str, request: ConfirmRequest, user: Use
             dob_iso = dob_raw
 
         try:
-            # Resolve location minor_id from original submission for confirmation
-            confirm_minor_id = await _resolve_location_minor_id(sub.get("locationId"))
+            # Resolve provider minor_id from original submission for confirmation
+            confirm_minor_id = await _resolve_provider_minor_id(
+                sub.get("locationId"),
+                sub.get("informationProvider", {}).get("providerNumber"),
+            )
             proda = ProdaAuthService()
             token = await proda.get_token()
             air_client = AIRClient(access_token=token, location_minor_id=confirm_minor_id)

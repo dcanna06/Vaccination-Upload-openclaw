@@ -40,6 +40,7 @@ export interface LocationProvider {
   location_id: number;
   provider_number: string;
   provider_type: string;
+  minor_id: string;
   hw027_status: string;
   air_access_list: Record<string, unknown> | null;
   created_at: string;

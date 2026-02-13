@@ -17,6 +17,7 @@ class ProviderRead(BaseModel):
     location_id: int
     provider_number: str
     provider_type: str
+    minor_id: str
     hw027_status: str
     air_access_list: dict[str, Any] | None
     created_at: datetime
