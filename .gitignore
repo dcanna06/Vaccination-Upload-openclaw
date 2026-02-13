@@ -95,3 +95,5 @@ frontend/playwright-report/
 
 # Screenshots (manual QA captures)
 screenshots/
+.github/workflows/
+.github/workflows/
